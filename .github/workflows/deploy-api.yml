@@ -58,7 +58,11 @@ jobs:
       - name: Verify API on server
         run: |
           ssh -i ~/.ssh/curie_deploy_key "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST" \
-            "curl --fail --show-error --silent '$CURIE_TAILSCALE_API_URL' \
+            "for attempt in \$(seq 1 30); do \
+              if curl --fail --show-error --silent '$CURIE_TAILSCALE_API_URL'; then break; fi; \
+              if [ \"\$attempt\" -eq 30 ]; then echo 'API did not become healthy in time'; exit 1; fi; \
+              sleep 2; \
+            done \
             && docker port curie-api-prod | grep '100.65.42.72:8000'"
 
       - name: Verify public API port stays closed
