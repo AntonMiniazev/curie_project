@@ -126,6 +126,7 @@ def refresh_all_tables() -> dict[str, Any]:
         json.dump(manifest, file, indent=2)
 
     promote_release_to_current(release_dir=release_dir, current_dir=settings.cache_current)
+    cleanup_release_directories(cache_root=settings.cache_root)
 
     return manifest
 
@@ -142,6 +143,17 @@ def promote_release_to_current(release_dir: Path, current_dir: Path) -> None:
         shutil.rmtree(current_dir)
 
     temp_current_dir.replace(current_dir)
+
+
+def cleanup_release_directories(cache_root: Path) -> None:
+    releases_dir = cache_root / "releases"
+    releases_dir.mkdir(parents=True, exist_ok=True)
+
+    for path in releases_dir.iterdir():
+        if path.is_dir():
+            shutil.rmtree(path)
+        else:
+            path.unlink()
 
 
 def main() -> None:

@@ -9,6 +9,7 @@ on:
       - pyproject.toml
       - uv.lock
       - apps/api/**
+      - infra/certs/**
       - .github/workflows/api-image.yml
   workflow_dispatch:
 
@@ -48,4 +49,3 @@ jobs:
             ${{ env.IMAGE_NAME }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-

@@ -1,0 +1,69 @@
+name: Deploy API
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - infra/compose.prod.yml
+      - .github/workflows/deploy-api.yml
+  workflow_run:
+    workflows:
+      - API Image
+    types:
+      - completed
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CURIE_DEPLOY_HOST: 46.62.243.229
+  CURIE_DEPLOY_USER: root
+  CURIE_DEPLOY_DIR: /opt/curie
+  CURIE_TAILSCALE_API_URL: http://100.65.42.72:8000/api/health
+
+jobs:
+  deploy:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout deployment files
+        uses: actions/checkout@v5
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.CURIE_DEPLOY_SSH_KEY }}" > ~/.ssh/curie_deploy_key
+          chmod 600 ~/.ssh/curie_deploy_key
+          ssh-keyscan -H "$CURIE_DEPLOY_HOST" >> ~/.ssh/known_hosts
+
+      - name: Copy compose file
+        run: |
+          scp -i ~/.ssh/curie_deploy_key \
+            infra/compose.prod.yml \
+            "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST:$CURIE_DEPLOY_DIR/compose.yml"
+
+      - name: Deploy API
+        run: |
+          ssh -i ~/.ssh/curie_deploy_key "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST" \
+            "cd $CURIE_DEPLOY_DIR \
+            && docker compose --env-file env/curie-prod.env -f compose.yml pull api \
+            && docker compose --env-file env/curie-prod.env -f compose.yml up -d --force-recreate api \
+            && docker image prune -f \
+            && docker port curie-api-prod"
+
+      - name: Verify API on server
+        run: |
+          ssh -i ~/.ssh/curie_deploy_key "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST" \
+            "curl --fail --show-error --silent '$CURIE_TAILSCALE_API_URL' \
+            && docker port curie-api-prod | grep '100.65.42.72:8000'"
+
+      - name: Verify public API port stays closed
+        run: |
+          if curl --fail --silent --show-error --connect-timeout 5 "http://$CURIE_DEPLOY_HOST:8000/api/health"; then
+            echo "Public API port 8000 is reachable; expected it to stay closed."
+            exit 1
+          fi
