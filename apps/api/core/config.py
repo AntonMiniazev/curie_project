@@ -1,0 +1,74 @@
+from functools import lru_cache
+from pathlib import Path
+
+from pydantic import Field, SecretStr
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=REPO_ROOT / ".env.dev",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    app_env: str = Field(default="dev", alias="APP_ENV")
+    database_url: str = Field(alias="CURIE_DATABASE_URL")
+
+    uc_base_url: str = Field(default="http://ucatalog.local", alias="CURIE_UC_BASE_URL")
+    uc_timeout_seconds: int = Field(default=10, alias="CURIE_UC_TIMEOUT_SECONDS")
+
+    source_catalog: str = Field(default="ampere", alias="CURIE_SOURCE_CATALOG")
+    source_schema: str = Field(default="gold", alias="CURIE_SOURCE_SCHEMA")
+    source_tables_csv: str = Field(
+        default=(
+            "dim_clients,"
+            "dim_costing,"
+            "dim_delivery_cost,"
+            "dim_products,"
+            "dim_resource,"
+            "dim_stores,"
+            "fct_deliveries,"
+            "fct_order_margin,"
+            "fct_orders_sales"
+        ),
+        alias="CURIE_SOURCE_TABLES",
+    )
+
+    minio_endpoint: str = Field(
+        default="https://s3.minio.local", alias="CURIE_MINIO_ENDPOINT"
+    )
+    minio_region: str = Field(default="us-east-1", alias="CURIE_MINIO_REGION")
+    minio_access_key: SecretStr | None = Field(
+        default=None, alias="CURIE_MINIO_ACCESS_KEY"
+    )
+    minio_secret_key: SecretStr | None = Field(
+        default=None, alias="CURIE_MINIO_SECRET_KEY"
+    )
+    minio_allow_invalid_certificates: bool = Field(
+        default=True,
+        alias="CURIE_MINIO_ALLOW_INVALID_CERTIFICATES",
+    )
+
+    cache_root: Path = Field(
+        default=REPO_ROOT / "data" / "dev-cache", alias="CURIE_CACHE_ROOT"
+    )
+    cache_current: Path = Field(
+        default=REPO_ROOT / "data" / "dev-cache" / "current",
+        alias="CURIE_CACHE_CURRENT",
+    )
+
+    @property
+    def source_tables(self) -> list[str]:
+        return [item.strip() for item in self.source_tables_csv.split(",") if item.strip()]
+
+    @property
+    def has_minio_credentials(self) -> bool:
+        return bool(self.minio_access_key and self.minio_secret_key)
+
+
+@lru_cache
+def get_settings() -> Settings:
+    return Settings()

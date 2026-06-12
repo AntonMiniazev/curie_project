@@ -1,0 +1,27 @@
+name: curie-prod
+
+services:
+  api:
+    image: ${CURIE_IMAGE:-ghcr.io/antonminiazev/curie-api:latest}
+    restart: unless-stopped
+    env_file:
+      - ${CURIE_ENV_FILE:-./env/curie-prod.env}
+    environment:
+      CURIE_CACHE_ROOT: /app/data/cache
+      CURIE_CACHE_CURRENT: /app/data/cache/current
+    ports:
+      - "${CURIE_API_PORT:-8000}:8000"
+    volumes:
+      - ${CURIE_HOST_CACHE_DIR:-/var/lib/curie/cache}:/app/data/cache
+
+  cache-refresh:
+    image: ${CURIE_IMAGE:-ghcr.io/antonminiazev/curie-api:latest}
+    profiles: ["cache"]
+    env_file:
+      - ${CURIE_ENV_FILE:-./env/curie-prod.env}
+    environment:
+      CURIE_CACHE_ROOT: /app/data/cache
+      CURIE_CACHE_CURRENT: /app/data/cache/current
+    command: ["uv", "run", "python", "-m", "apps.api.cache.refresh"]
+    volumes:
+      - ${CURIE_HOST_CACHE_DIR:-/var/lib/curie/cache}:/app/data/cache

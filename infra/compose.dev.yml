@@ -1,0 +1,69 @@
+name: curie-dev
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: curie-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - curie-postgres-dev-data:/var/lib/postgresql/data
+      - ./postgres/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: curie-api:dev
+    container_name: curie-api-dev
+    profiles: ["api"]
+    restart: unless-stopped
+    env_file:
+      - ../.env.dev
+    environment:
+      CURIE_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      CURIE_CACHE_ROOT: /app/data/dev-cache
+      CURIE_CACHE_CURRENT: /app/data/dev-cache/current
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../data/dev-cache:/app/data/dev-cache
+    extra_hosts:
+      - "ucatalog.local:192.168.1.29"
+      - "s3.minio.local:192.168.1.29"
+      - "minio.local:192.168.1.29"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  cache-refresh:
+    image: curie-api:dev
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    profiles: ["cache"]
+    env_file:
+      - ../.env.dev
+    environment:
+      CURIE_CACHE_ROOT: /app/data/dev-cache
+      CURIE_CACHE_CURRENT: /app/data/dev-cache/current
+    command: ["uv", "run", "python", "-m", "apps.api.cache.refresh"]
+    volumes:
+      - ../data/dev-cache:/app/data/dev-cache
+    extra_hosts:
+      - "ucatalog.local:192.168.1.29"
+      - "s3.minio.local:192.168.1.29"
+      - "minio.local:192.168.1.29"
+
+volumes:
+  curie-postgres-dev-data:

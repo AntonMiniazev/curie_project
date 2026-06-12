@@ -1,0 +1,105 @@
+{
+    // General settings
+    "security.workspace.trust.untrustedFiles": "newWindow",
+    "window.zoomLevel": -1,
+    "window.commandCenter": true,
+    "files.exclude": {
+        ".git": true,
+        "**/.git": false
+    },
+    "extensions.autoUpdate": "onlyEnabledExtensions",
+    // Python settings
+    "python.analysis.autoSearchPaths": true,
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingImports": "none"
+    },
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/src"
+    ],
+    "python.envFile": "${workspaceFolder}/.env",
+    "python.terminal.activateEnvInCurrentTerminal": false,
+    "python.terminal.activateEnvironment": true,
+    "python.defaultInterpreterPath": "C:/Users/likelol/Projects/curie_project/.venv/Scripts/python.exe",
+    // Test settings
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.cwd": "${workspaceFolder}/tests",
+    "python.testing.pytestPath": "pytest",
+    "python.testing.autoTestDiscoverOnSaveEnabled": true,
+    // Git settings
+    "git.autofetch": true,
+    "git.confirmSync": false,
+    "git.enableSmartCommit": true,
+    "git.showActionButton": {
+        "commit": false,
+        "publish": false,
+        "sync": false
+    },
+    "github.copilot.enable": {
+        "*": true,
+        "plaintext": false,
+        "markdown": false,
+        "scminput": false,
+        "yaml": false
+    },
+    "github.copilot.advanced": {
+        "authProvider": "github"
+    },
+    // Explorer settings
+    "explorer.excludeGitIgnore": false,
+    "explorer.autoReveal": true,
+    "explorer.confirmDelete": false,
+    "explorer.confirmDragAndDrop": false,
+    "explorer.copyRelativePathSeparator": "/",
+    // Workbench settings
+    "workbench.colorTheme": "Dark Modern",
+    "workbench.editor.enablePreview": false,
+    "workbench.editor.tabSizing": "shrink",
+    "workbench.settings.editor": "json",
+    // Editor settings
+    "ruff.importStrategy": "useBundled",
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file",
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "never",
+        "source.fixAll": "never"
+    },
+    "files.autoSave": "onFocusChange",
+    "[json]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "[jsonc]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    // Debug settings
+    "debug.toolBarLocation": "docked",
+    // Terminal settings
+    "terminal.integrated.tabs.enabled": true,
+    "terminal.integrated.tabs.hideCondition": "never",
+    "terminal.integrated.tabs.location": "right",
+    // Markdown settings
+    "markdown.preview.scrollEditorWithPreview": true,
+    "markdown.preview.scrollPreviewWithEditor": true,
+    "terminal.integrated.defaultProfile.windows": "Git Bash (login)",
+    "terminal.integrated.profiles.windows": {
+        "Git Bash (login)": {
+            "path": "C:\\Program Files\\Git\\bin\\bash.exe",
+            "args": [
+                "-l",
+                "-i"
+            ],
+            "icon": "terminal-bash"
+        }
+    },
+    "terminal.integrated.shellIntegration.enabled": false,
+    "terminal.integrated.inheritEnv": true,
+    "terminal.integrated.env.windows": {
+        "PATH": ""
+    },
+    "[sql]": {
+        "editor.defaultFormatter": "ms-mssql.mssql"
+    },
+    "chatgpt.openOnStartup": false
+}
