@@ -3,6 +3,7 @@ name: curie-prod
 services:
   api:
     image: ${CURIE_IMAGE:-ghcr.io/antonminiazev/curie-api:latest}
+    container_name: curie-api-prod
     restart: unless-stopped
     env_file:
       - ${CURIE_ENV_FILE:-./env/curie-prod.env}
@@ -12,6 +13,7 @@ services:
       CURIE_CACHE_REFRESH_ENABLED: "true"
       CURIE_CACHE_REFRESH_IMAGE: ${CURIE_IMAGE:-ghcr.io/antonminiazev/curie-api:latest}
       CURIE_CACHE_REFRESH_HOST_CACHE_DIR: ${CURIE_HOST_CACHE_DIR:-/var/lib/curie/cache}
+      CURIE_CACHE_REFRESH_VOLUMES_FROM: curie-api-prod
       CURIE_CACHE_REFRESH_NETWORK: curie-prod_default
     ports:
       - "${CURIE_API_PORT:-8000}:8000"

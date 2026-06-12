@@ -70,6 +70,9 @@ class Settings(BaseSettings):
         default=str(REPO_ROOT / "data" / "dev-cache"),
         alias="CURIE_CACHE_REFRESH_HOST_CACHE_DIR",
     )
+    cache_refresh_volumes_from: str | None = Field(
+        default=None, alias="CURIE_CACHE_REFRESH_VOLUMES_FROM"
+    )
     cache_refresh_container_prefix: str = Field(
         default="curie-cache-refresh",
         alias="CURIE_CACHE_REFRESH_CONTAINER_PREFIX",

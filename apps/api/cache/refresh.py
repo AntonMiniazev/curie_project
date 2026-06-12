@@ -36,6 +36,9 @@ def build_storage_options() -> dict[str, str]:
         ).lower(),
     }
 
+    if settings.minio_endpoint.startswith("http://"):
+        storage_options["AWS_ALLOW_HTTP"] = "true"
+
     if settings.minio_access_key and settings.minio_secret_key:
         storage_options["AWS_ACCESS_KEY_ID"] = (
             settings.minio_access_key.get_secret_value()

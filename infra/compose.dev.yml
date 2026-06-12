@@ -34,10 +34,16 @@ services:
       CURIE_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       CURIE_CACHE_ROOT: /app/data/dev-cache
       CURIE_CACHE_CURRENT: /app/data/dev-cache/current
+      CURIE_CACHE_REFRESH_ENABLED: "true"
+      CURIE_CACHE_REFRESH_IMAGE: curie-api:dev
+      CURIE_CACHE_REFRESH_VOLUMES_FROM: curie-api-dev
+      CURIE_CACHE_REFRESH_NETWORK: curie-dev_default
+      CURIE_CACHE_REFRESH_EXTRA_HOSTS: ucatalog.local:192.168.1.29,s3.minio.local:192.168.1.29,minio.local:192.168.1.29
     ports:
       - "8000:8000"
     volumes:
       - ../data/dev-cache:/app/data/dev-cache
+      - /var/run/docker.sock:/var/run/docker.sock
     extra_hosts:
       - "ucatalog.local:192.168.1.29"
       - "s3.minio.local:192.168.1.29"

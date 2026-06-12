@@ -17,16 +17,27 @@ def trigger_cache_refresh_job() -> str:
         "docker",
         "run",
         "-d",
-        "--rm",
         "--name",
         job_id,
-        "-v",
-        f"{settings.cache_refresh_host_cache_dir}:/app/data/cache",
+        "--label",
+        "app=curie",
+        "--label",
+        "curie.job=cache-refresh",
         "-e",
         "CURIE_CACHE_ROOT=/app/data/cache",
         "-e",
         "CURIE_CACHE_CURRENT=/app/data/cache/current",
     ]
+
+    if settings.cache_refresh_volumes_from:
+        command.extend(["--volumes-from", settings.cache_refresh_volumes_from])
+    else:
+        command.extend(
+            [
+                "-v",
+                f"{settings.cache_refresh_host_cache_dir}:/app/data/cache",
+            ]
+        )
 
     if settings.cache_refresh_network:
         command.extend(["--network", settings.cache_refresh_network])

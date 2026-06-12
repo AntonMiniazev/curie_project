@@ -5,10 +5,15 @@ WORKDIR /app
 ENV PYTHONUNBUFFERED=1
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends docker.io \
+    && apt-get install -y --no-install-recommends ca-certificates docker.io \
     && rm -rf /var/lib/apt/lists/*
+
+COPY infra/certs/ampere-local-ca.crt /usr/local/share/ca-certificates/ampere-local-ca.crt
+RUN update-ca-certificates
 
 RUN pip install --no-cache-dir uv
 
