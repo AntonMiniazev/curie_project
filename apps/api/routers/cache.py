@@ -2,8 +2,8 @@ import json
 from json import JSONDecodeError
 from pathlib import Path
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, status
-from ..cache.refresh import refresh_all_tables
+from fastapi import APIRouter, HTTPException, status
+from ..cache.job_trigger import trigger_cache_refresh_job
 from ..core.config import get_settings
 from ..schemas.cache import CacheRefreshAcceptedResponse, CacheStatusResponse
 
@@ -46,11 +46,17 @@ def get_cache_status() -> CacheStatusResponse:
     status_code=status.HTTP_202_ACCEPTED,
 )
 def refresh_cache_endpoint(
-    background_tasks: BackgroundTasks,
 ) -> CacheRefreshAcceptedResponse:
-    background_tasks.add_task(refresh_all_tables)
+    try:
+        job_id = trigger_cache_refresh_job()
+    except RuntimeError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(exc),
+        ) from exc
 
     return CacheRefreshAcceptedResponse(
         status="accepted",
-        message="Cache refresh started in the API background task runner.",
+        message=f"Cache refresh job started: {job_id}",
+        job_id=job_id,
     )

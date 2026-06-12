@@ -9,10 +9,15 @@ services:
     environment:
       CURIE_CACHE_ROOT: /app/data/cache
       CURIE_CACHE_CURRENT: /app/data/cache/current
+      CURIE_CACHE_REFRESH_ENABLED: "true"
+      CURIE_CACHE_REFRESH_IMAGE: ${CURIE_IMAGE:-ghcr.io/antonminiazev/curie-api:latest}
+      CURIE_CACHE_REFRESH_HOST_CACHE_DIR: ${CURIE_HOST_CACHE_DIR:-/var/lib/curie/cache}
+      CURIE_CACHE_REFRESH_NETWORK: curie-prod_default
     ports:
       - "${CURIE_API_PORT:-8000}:8000"
     volumes:
       - ${CURIE_HOST_CACHE_DIR:-/var/lib/curie/cache}:/app/data/cache
+      - /var/run/docker.sock:/var/run/docker.sock
 
   cache-refresh:
     image: ${CURIE_IMAGE:-ghcr.io/antonminiazev/curie-api:latest}

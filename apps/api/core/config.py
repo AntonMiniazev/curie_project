@@ -59,10 +59,39 @@ class Settings(BaseSettings):
         default=REPO_ROOT / "data" / "dev-cache" / "current",
         alias="CURIE_CACHE_CURRENT",
     )
+    cache_refresh_enabled: bool = Field(
+        default=False, alias="CURIE_CACHE_REFRESH_ENABLED"
+    )
+    cache_refresh_image: str = Field(
+        default="ghcr.io/antonminiazev/curie-api:latest",
+        alias="CURIE_CACHE_REFRESH_IMAGE",
+    )
+    cache_refresh_host_cache_dir: str = Field(
+        default=str(REPO_ROOT / "data" / "dev-cache"),
+        alias="CURIE_CACHE_REFRESH_HOST_CACHE_DIR",
+    )
+    cache_refresh_container_prefix: str = Field(
+        default="curie-cache-refresh",
+        alias="CURIE_CACHE_REFRESH_CONTAINER_PREFIX",
+    )
+    cache_refresh_network: str | None = Field(
+        default=None, alias="CURIE_CACHE_REFRESH_NETWORK"
+    )
+    cache_refresh_extra_hosts_csv: str = Field(
+        default="", alias="CURIE_CACHE_REFRESH_EXTRA_HOSTS"
+    )
 
     @property
     def source_tables(self) -> list[str]:
         return [item.strip() for item in self.source_tables_csv.split(",") if item.strip()]
+
+    @property
+    def cache_refresh_extra_hosts(self) -> list[str]:
+        return [
+            item.strip()
+            for item in self.cache_refresh_extra_hosts_csv.split(",")
+            if item.strip()
+        ]
 
     @property
     def has_minio_credentials(self) -> bool:

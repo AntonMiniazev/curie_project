@@ -21,3 +21,4 @@ class CacheStatusResponse(BaseModel):
 class CacheRefreshAcceptedResponse(BaseModel):
     status: str
     message: str
+    job_id: str | None = None
