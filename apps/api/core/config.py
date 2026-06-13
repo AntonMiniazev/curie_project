@@ -9,13 +9,34 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=REPO_ROOT / ".env.dev",
+        env_file=REPO_ROOT / "infra" / "env" / "curie-dev.env",
         env_file_encoding="utf-8",
         extra="ignore",
     )
 
     app_env: str = Field(default="dev", alias="APP_ENV")
     database_url: str = Field(alias="CURIE_DATABASE_URL")
+    database_connect_timeout_seconds: int = Field(
+        default=2,
+        alias="CURIE_DATABASE_CONNECT_TIMEOUT_SECONDS",
+    )
+    database_statement_timeout_ms: int = Field(
+        default=15000,
+        alias="CURIE_DATABASE_STATEMENT_TIMEOUT_MS",
+    )
+    database_pool_timeout_seconds: int = Field(
+        default=2,
+        alias="CURIE_DATABASE_POOL_TIMEOUT_SECONDS",
+    )
+    curie_password_pepper: SecretStr = Field(alias="CURIE_PASSWORD_PEPPER")
+    jwt_secret_key: SecretStr = Field(alias="CURIE_JWT_SECRET_KEY")
+    jwt_algorithm: str = Field(default="HS256", alias="CURIE_JWT_ALGORITHM")
+    access_token_minutes: int = Field(default=60, alias="CURIE_ACCESS_TOKEN_MINUTES")
+    refresh_token_days: int = Field(default=14, alias="CURIE_REFRESH_TOKEN_DAYS")
+    admin_api_keys_csv: SecretStr | None = Field(
+        default=None,
+        alias="CURIE_ADMIN_API_KEYS",
+    )
 
     uc_base_url: str = Field(default="http://ucatalog.local", alias="CURIE_UC_BASE_URL")
     uc_timeout_seconds: int = Field(default=10, alias="CURIE_UC_TIMEOUT_SECONDS")
@@ -93,6 +114,16 @@ class Settings(BaseSettings):
         return [
             item.strip()
             for item in self.cache_refresh_extra_hosts_csv.split(",")
+            if item.strip()
+        ]
+
+    @property
+    def admin_api_keys(self) -> list[str]:
+        if self.admin_api_keys_csv is None:
+            return []
+        return [
+            item.strip()
+            for item in self.admin_api_keys_csv.get_secret_value().split(",")
             if item.strip()
         ]
 

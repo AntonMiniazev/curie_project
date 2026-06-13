@@ -1,9 +1,11 @@
 import json
 from json import JSONDecodeError
 from pathlib import Path
+from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from ..cache.job_trigger import trigger_cache_refresh_job
+from ..core.admin_auth import require_admin_api_key
 from ..core.config import get_settings
 from ..schemas.cache import CacheRefreshAcceptedResponse, CacheStatusResponse
 
@@ -46,6 +48,7 @@ def get_cache_status() -> CacheStatusResponse:
     status_code=status.HTTP_202_ACCEPTED,
 )
 def refresh_cache_endpoint(
+    _: Annotated[None, Depends(require_admin_api_key)],
 ) -> CacheRefreshAcceptedResponse:
     try:
         job_id = trigger_cache_refresh_job()

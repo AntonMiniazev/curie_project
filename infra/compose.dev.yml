@@ -29,7 +29,7 @@ services:
     profiles: ["api"]
     restart: unless-stopped
     env_file:
-      - ../.env.dev
+      - ./env/curie-dev.env
     environment:
       CURIE_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       CURIE_CACHE_ROOT: /app/data/dev-cache
@@ -59,7 +59,7 @@ services:
       dockerfile: Dockerfile
     profiles: ["cache"]
     env_file:
-      - ../.env.dev
+      - ./env/curie-dev.env
     environment:
       CURIE_CACHE_ROOT: /app/data/dev-cache
       CURIE_CACHE_CURRENT: /app/data/dev-cache/current

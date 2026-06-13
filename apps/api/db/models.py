@@ -82,7 +82,10 @@ class User(Base, TimestampMixin):
     is_verified: Mapped[bool] = mapped_column(Boolean, server_default=text("false"), nullable=False)
 
     roles: Mapped[list["Role"]] = relationship(secondary="curie.user_roles", back_populates="users")
-    refresh_tokens: Mapped[list["RefreshToken"]] = relationship(back_populates="user")
+    refresh_tokens: Mapped[list["RefreshToken"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
 
 
 class Role(Base, TimestampMixin):

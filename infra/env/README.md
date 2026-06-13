@@ -1,24 +1,47 @@
 # Environment Files
 
-Use committed `*.example` files as templates.
+Runtime environment files live in this folder.
 
-Local development:
+## Layout
 
-```bash
-cp .env.dev.example .env.dev
+```text
+infra/env/curie-dev.env          local dev runtime env, ignored
+infra/env/curie-dev.example.env  safe dev template, committed
+infra/env/curie-prod.env         plaintext prod env, ignored
+infra/env/curie-prod.example.env safe prod template, committed
+infra/env/curie-prod.sops.env    encrypted prod env, committed
 ```
 
-Production:
+## Local Development
+
+Create the local dev env from the template:
 
 ```bash
-cp .env.prod.example .env.prod
+cp infra/env/curie-dev.example.env infra/env/curie-dev.env
 ```
 
-Do not commit real `.env.dev` or `.env.prod` files. Production secrets should be encrypted with SOPS before they are committed.
+Then edit `infra/env/curie-dev.env` with your local passwords, MinIO keys, JWT secret, password pepper, and admin API key.
 
-The production Docker image should not contain secrets or cache files. Pass secrets through the environment, and mount the cache directory from the host:
+Run dev Docker Compose with:
 
 ```bash
-docker compose --env-file .env.prod -f infra/compose.prod.example.yml up -d api
-docker compose --env-file .env.prod -f infra/compose.prod.example.yml --profile cache run --rm cache-refresh
+docker compose --env-file infra/env/curie-dev.env -f infra/compose.dev.yml up -d postgres
 ```
+
+## Production
+
+Production real values should be stored encrypted in:
+
+```text
+infra/env/curie-prod.sops.env
+```
+
+Do not commit plaintext `infra/env/curie-prod.env`.
+
+GitHub Actions decrypts `infra/env/curie-prod.sops.env` during deployment and copies it to:
+
+```text
+/opt/curie/env/curie-prod.env
+```
+
+Manual server env copying should only be used for emergency debugging.
