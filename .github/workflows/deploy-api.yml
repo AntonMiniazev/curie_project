@@ -89,14 +89,18 @@ jobs:
         run: |
           ssh -i ~/.ssh/curie_deploy_key "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST" \
             "for attempt in \$(seq 1 30); do \
-              if docker exec curie-api-prod curl --fail --show-error --silent http://127.0.0.1:8000/api/health; then break; fi; \
+              if docker exec curie-api-prod curl --fail --silent --output /tmp/curie-health.json http://127.0.0.1:8000/api/health; then \
+                cat /tmp/curie-health.json; \
+                exit 0; \
+              fi; \
               if [ \"\$attempt\" -eq 30 ]; then echo 'API did not become healthy in time'; exit 1; fi; \
               sleep 2; \
             done"
 
       - name: Verify public API port stays closed
         run: |
-          if curl --fail --silent --show-error --connect-timeout 5 "http://$CURIE_DEPLOY_HOST:8000/api/health"; then
+          if curl --fail --silent --output /dev/null --connect-timeout 5 "http://$CURIE_DEPLOY_HOST:8000/api/health"; then
             echo "Public API port 8000 is reachable; expected it to stay closed."
             exit 1
           fi
+          echo "Public API port 8000 is not reachable, as expected."
