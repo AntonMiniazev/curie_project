@@ -1,6 +1,23 @@
 name: curie-prod
 
 services:
+  postgres:
+    image: postgres:16
+    container_name: curie-postgres-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - curie-postgres-prod-data:/var/lib/postgresql/data
+      - ./postgres/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   api:
     image: ${CURIE_IMAGE:-ghcr.io/antonminiazev/curie-api:latest}
     container_name: curie-api-prod
@@ -20,6 +37,9 @@ services:
     volumes:
       - ${CURIE_HOST_CACHE_DIR:-/var/lib/curie/cache}:/app/data/cache
       - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   cache-refresh:
     image: ${CURIE_IMAGE:-ghcr.io/antonminiazev/curie-api:latest}
@@ -32,3 +52,6 @@ services:
     command: ["uv", "run", "python", "-m", "apps.api.cache.refresh"]
     volumes:
       - ${CURIE_HOST_CACHE_DIR:-/var/lib/curie/cache}:/app/data/cache
+
+volumes:
+  curie-postgres-prod-data:
