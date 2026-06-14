@@ -24,7 +24,7 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
-    image: curie-api:dev
+    image: ${CURIE_IMAGE:-curie-api:dev}
     container_name: curie-api-dev
     profiles: ["api"]
     restart: unless-stopped
@@ -32,28 +32,27 @@ services:
       - ./env/curie-dev.env
     environment:
       CURIE_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      CURIE_CACHE_ROOT: /app/data/dev-cache
-      CURIE_CACHE_CURRENT: /app/data/dev-cache/current
+      CURIE_CACHE_ROOT: /app/data/cache
+      CURIE_CACHE_CURRENT: /app/data/cache/current
       CURIE_CACHE_REFRESH_ENABLED: "true"
-      CURIE_CACHE_REFRESH_IMAGE: curie-api:dev
+      CURIE_CACHE_REFRESH_IMAGE: ${CURIE_IMAGE:-curie-api:dev}
       CURIE_CACHE_REFRESH_VOLUMES_FROM: curie-api-dev
       CURIE_CACHE_REFRESH_NETWORK: curie-dev_default
-      CURIE_CACHE_REFRESH_EXTRA_HOSTS: ucatalog.local:192.168.1.29,s3.minio.local:192.168.1.29,minio.local:192.168.1.29
     ports:
       - "8000:8000"
     volumes:
-      - ../data/dev-cache:/app/data/dev-cache
+      - ../data/dev-cache:/app/data/cache
       - /var/run/docker.sock:/var/run/docker.sock
     extra_hosts:
-      - "ucatalog.local:192.168.1.29"
-      - "s3.minio.local:192.168.1.29"
-      - "minio.local:192.168.1.29"
+      - "ucatalog.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
+      - "s3.minio.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
+      - "minio.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
     depends_on:
       postgres:
         condition: service_healthy
 
   cache-refresh:
-    image: curie-api:dev
+    image: ${CURIE_IMAGE:-curie-api:dev}
     build:
       context: ..
       dockerfile: Dockerfile
@@ -61,15 +60,15 @@ services:
     env_file:
       - ./env/curie-dev.env
     environment:
-      CURIE_CACHE_ROOT: /app/data/dev-cache
-      CURIE_CACHE_CURRENT: /app/data/dev-cache/current
+      CURIE_CACHE_ROOT: /app/data/cache
+      CURIE_CACHE_CURRENT: /app/data/cache/current
     command: ["uv", "run", "python", "-m", "apps.api.cache.refresh"]
     volumes:
-      - ../data/dev-cache:/app/data/dev-cache
+      - ../data/dev-cache:/app/data/cache
     extra_hosts:
-      - "ucatalog.local:192.168.1.29"
-      - "s3.minio.local:192.168.1.29"
-      - "minio.local:192.168.1.29"
+      - "ucatalog.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
+      - "s3.minio.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
+      - "minio.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
 
 volumes:
   curie-postgres-dev-data:

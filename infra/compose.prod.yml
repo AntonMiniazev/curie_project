@@ -39,6 +39,10 @@ services:
     volumes:
       - ${CURIE_HOST_CACHE_DIR:-/var/lib/curie/cache}:/app/data/cache
       - /var/run/docker.sock:/var/run/docker.sock
+    extra_hosts:
+      - "ucatalog.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
+      - "s3.minio.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
+      - "minio.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
     depends_on:
       postgres:
         condition: service_healthy
@@ -54,6 +58,10 @@ services:
     command: ["uv", "run", "python", "-m", "apps.api.cache.refresh"]
     volumes:
       - ${CURIE_HOST_CACHE_DIR:-/var/lib/curie/cache}:/app/data/cache
+    extra_hosts:
+      - "ucatalog.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
+      - "s3.minio.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
+      - "minio.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
 
 volumes:
   curie-postgres-prod-data:

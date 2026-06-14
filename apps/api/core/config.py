@@ -101,6 +101,7 @@ class Settings(BaseSettings):
     cache_refresh_network: str | None = Field(
         default=None, alias="CURIE_CACHE_REFRESH_NETWORK"
     )
+    upstream_host_ip: str | None = Field(default=None, alias="CURIE_UPSTREAM_HOST_IP")
     cache_refresh_extra_hosts_csv: str = Field(
         default="", alias="CURIE_CACHE_REFRESH_EXTRA_HOSTS"
     )
@@ -111,11 +112,20 @@ class Settings(BaseSettings):
 
     @property
     def cache_refresh_extra_hosts(self) -> list[str]:
-        return [
+        explicit_hosts = [
             item.strip()
             for item in self.cache_refresh_extra_hosts_csv.split(",")
             if item.strip()
         ]
+        if explicit_hosts:
+            return explicit_hosts
+        if self.upstream_host_ip:
+            return [
+                f"ucatalog.local:{self.upstream_host_ip}",
+                f"s3.minio.local:{self.upstream_host_ip}",
+                f"minio.local:{self.upstream_host_ip}",
+            ]
+        return []
 
     @property
     def admin_api_keys(self) -> list[str]:
