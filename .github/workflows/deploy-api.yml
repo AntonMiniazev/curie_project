@@ -1,15 +1,7 @@
 name: Deploy API
-run-name: ${{ github.event_name == 'workflow_run' && 'Deploy API after API Image' || 'Deploy API direct' }}
+run-name: ${{ github.event_name == 'workflow_dispatch' && 'Deploy API manual' || 'Deploy API after API Image' }}
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - infra/compose.prod.yml
-      - infra/env/curie-prod.sops.env
-      - .sops.yaml
-      - .github/workflows/deploy-api.yml
   workflow_run:
     workflows:
       - API Image
@@ -24,46 +16,23 @@ env:
   CURIE_DEPLOY_HOST: 46.62.243.229
   CURIE_DEPLOY_USER: root
   CURIE_DEPLOY_DIR: /opt/curie
-  CURIE_TAILSCALE_API_URL: http://100.65.42.72:8000/api/health
 
 jobs:
   deploy:
-    name: ${{ github.event_name == 'workflow_run' && 'Deploy API after image build' || 'Deploy API direct' }}
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    name: ${{ github.event_name == 'workflow_dispatch' && 'Deploy API manual' || 'Deploy API after image build' }}
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout deployment files
         uses: actions/checkout@v5
-        with:
-          fetch-depth: 2
-
-      - name: Check push deploy eligibility
-        id: deploy_gate
-        run: |
-          if [ "${{ github.event_name }}" != "push" ]; then
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          changed_files="$(git diff --name-only HEAD^ HEAD)"
-          echo "$changed_files"
-
-          if echo "$changed_files" | grep -E '^(Dockerfile|pyproject\.toml|uv\.lock|apps/api/|infra/certs/|\.github/workflows/api-image\.yml)'; then
-            echo "Push changed API image inputs; deploy will wait for API Image workflow_run."
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
 
       - name: Authenticate to Azure for SOPS
-        if: steps.deploy_gate.outputs.skip != 'true'
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Install SOPS
-        if: steps.deploy_gate.outputs.skip != 'true'
         run: |
           curl --fail --location --output /usr/local/bin/sops \
             https://github.com/getsops/sops/releases/download/v3.12.2/sops-v3.12.2.linux.amd64
@@ -71,7 +40,6 @@ jobs:
           sops --version
 
       - name: Configure SSH
-        if: steps.deploy_gate.outputs.skip != 'true'
         run: |
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
@@ -80,7 +48,6 @@ jobs:
           ssh-keyscan -H "$CURIE_DEPLOY_HOST" >> ~/.ssh/known_hosts
 
       - name: Copy compose file
-        if: steps.deploy_gate.outputs.skip != 'true'
         run: |
           scp -i ~/.ssh/curie_deploy_key \
             infra/compose.prod.yml \
@@ -92,7 +59,6 @@ jobs:
             "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST:$CURIE_DEPLOY_DIR/postgres/initdb/"
 
       - name: Decrypt and copy prod env
-        if: steps.deploy_gate.outputs.skip != 'true'
         run: |
           mkdir -p .deploy
           sops --decrypt \
@@ -110,7 +76,6 @@ jobs:
           rm -f .deploy/curie-prod.env
 
       - name: Deploy API
-        if: steps.deploy_gate.outputs.skip != 'true'
         run: |
           ssh -i ~/.ssh/curie_deploy_key "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST" \
             "cd $CURIE_DEPLOY_DIR \
@@ -121,18 +86,15 @@ jobs:
             && docker port curie-api-prod"
 
       - name: Verify API on server
-        if: steps.deploy_gate.outputs.skip != 'true'
         run: |
           ssh -i ~/.ssh/curie_deploy_key "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST" \
             "for attempt in \$(seq 1 30); do \
-              if curl --fail --show-error --silent '$CURIE_TAILSCALE_API_URL'; then break; fi; \
+              if docker exec curie-api-prod curl --fail --show-error --silent http://127.0.0.1:8000/api/health; then break; fi; \
               if [ \"\$attempt\" -eq 30 ]; then echo 'API did not become healthy in time'; exit 1; fi; \
               sleep 2; \
-            done \
-            && docker port curie-api-prod | grep '100.65.42.72:8000'"
+            done"
 
       - name: Verify public API port stays closed
-        if: steps.deploy_gate.outputs.skip != 'true'
         run: |
           if curl --fail --silent --show-error --connect-timeout 5 "http://$CURIE_DEPLOY_HOST:8000/api/health"; then
             echo "Public API port 8000 is reachable; expected it to stay closed."

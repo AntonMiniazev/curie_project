@@ -10,7 +10,12 @@ on:
       - uv.lock
       - apps/api/**
       - infra/certs/**
+      - infra/compose.prod.yml
+      - infra/env/curie-prod.sops.env
+      - infra/postgres/initdb/**
+      - .sops.yaml
       - .github/workflows/api-image.yml
+      - .github/workflows/deploy-api.yml
   workflow_dispatch:
 
 permissions:
