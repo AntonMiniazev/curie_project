@@ -1,0 +1,140 @@
+<script lang="ts">
+	import { Calendar, Mail } from '@lucide/svelte';
+</script>
+
+<section class="resume-document">
+	<header class="resume-header">
+		<div>
+			<h1>Anton Miniazev</h1>
+			<h2>Data Platform Engineer</h2>
+		</div>
+
+		<nav class="resume-contact-links" aria-label="Resume contact links">
+			<a href="https://www.linkedin.com/" target="_blank" rel="noreferrer">
+				<span class="resume-brand-icon">in</span>
+				LinkedIn
+			</a>
+			<a href="https://github.com/" target="_blank" rel="noreferrer">
+				<span class="resume-brand-icon">GH</span>
+				GitHub
+			</a>
+			<a href="mailto:anton@example.com">
+				<Mail class="resume-link-icon" aria-hidden="true" />
+				anton@example.com
+			</a>
+		</nav>
+	</header>
+
+	<div class="resume-section-line"></div>
+
+	<section class="resume-section" aria-labelledby="resume-skills-title">
+		<h2 id="resume-skills-title">Skills and certifications</h2>
+
+		<div class="resume-skill-grid">
+			<section>
+				<h3>Data engineering</h3>
+				<p>Python, Polars, PostgreSQL, MinIO, Delta Lake, Unity Catalog OSS, Alembic, SQLAlchemy</p>
+			</section>
+
+			<section>
+				<h3>Application stack</h3>
+				<p>FastAPI, Pydantic, SvelteKit, TypeScript, Tailwind CSS, Svelte Flow, REST APIs</p>
+			</section>
+
+			<section>
+				<h3>Infrastructure</h3>
+				<p>Docker Compose, GitHub Actions, GHCR, SOPS, Azure Key Vault, Linux servers, Nginx</p>
+			</section>
+		</div>
+	</section>
+
+	<div class="resume-section-line"></div>
+
+	<section class="resume-section" aria-labelledby="resume-work-title">
+		<h2 id="resume-work-title">Work Experience</h2>
+
+		<article class="resume-experience-item">
+			<h3>Curie Reporting Platform</h3>
+			<div class="resume-date-row">
+				<Calendar class="resume-date-icon" aria-hidden="true" />
+				<h4>2026 - Present</h4>
+			</div>
+			<ul>
+				<li>
+					Built a private reporting application with FastAPI, SvelteKit, PostgreSQL, and Docker.
+				</li>
+				<li>
+					Implemented authentication, refresh tokens, role-aware reports, and protected frontend
+					routes.
+				</li>
+				<li>
+					Prepared parquet cache refresh flows backed by MinIO, Unity Catalog OSS, and Polars.
+				</li>
+			</ul>
+		</article>
+
+		<div class="resume-small-line"></div>
+
+		<article class="resume-experience-item">
+			<h3>Ampere Data Platform</h3>
+			<div class="resume-date-row">
+				<Calendar class="resume-date-icon" aria-hidden="true" />
+				<h4>2025 - Present</h4>
+			</div>
+			<ul>
+				<li>
+					Designed a gold-layer access pattern for downstream reporting and cache preparation.
+				</li>
+				<li>
+					Used Unity Catalog metadata as a baseline for schema extraction and data contract work.
+				</li>
+				<li>
+					Validated MinIO-backed analytical data access from local development and service
+					workflows.
+				</li>
+			</ul>
+		</article>
+
+		<div class="resume-small-line"></div>
+
+		<article class="resume-experience-item">
+			<h3>Bohr Infrastructure Lab</h3>
+			<div class="resume-date-row">
+				<Calendar class="resume-date-icon" aria-hidden="true" />
+				<h4>2025 - Present</h4>
+			</div>
+			<ul>
+				<li>
+					Documented Kubernetes, home-lab, server, and deployment architecture as interactive
+					diagrams.
+				</li>
+				<li>
+					Prepared GitHub Actions-driven deployment conventions for production server updates.
+				</li>
+				<li>
+					Organized service relationships across infrastructure, observability, and data components.
+				</li>
+			</ul>
+		</article>
+	</section>
+
+	<div class="resume-section-space"></div>
+
+	<section class="resume-section" aria-labelledby="resume-education-title">
+		<h2 id="resume-education-title">Education</h2>
+
+		<div class="resume-section-line"></div>
+
+		<article class="resume-education-item">
+			<div class="resume-education-heading">
+				<strong>Education X</strong>
+				<span>2024 - 2026 | Europe</span>
+			</div>
+			<p>
+				Short description of education, program focus, practical projects, and technical
+				specialization.
+			</p>
+			<p><strong>Additional text:</strong> Placeholder</p>
+		</article>
+	</section>
+</section>

@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    paths:
+      - apps/api/**
+      - apps/web/**
+      - packages/api-client/**
+      - packages/contracts/**
+      - scripts/**
+      - pyproject.toml
+      - uv.lock
+      - .python-version
+      - .github/workflows/ci.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  api-contract:
+    runs-on: ubuntu-latest
+
+    env:
+      CURIE_DATABASE_URL: postgresql+psycopg://curie:curie@localhost:5432/curie
+      CURIE_PASSWORD_PEPPER: ci-password-pepper
+      CURIE_JWT_SECRET_KEY: ci-jwt-secret-key
+      CURIE_ADMIN_API_KEYS: ci-admin-key
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: .python-version
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install Python dependencies
+        run: uv sync --locked
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: apps/web
+        run: npm ci --legacy-peer-deps
+
+      - name: Regenerate OpenAPI contract and TypeScript client
+        run: |
+          bash scripts/export-openapi.sh
+          bash scripts/generate-api-client.sh
+
+      - name: Check generated API artifacts are committed
+        run: |
+          git diff --exit-code -- \
+            packages/contracts/openapi.json \
+            packages/api-client/src/schema.ts || {
+              echo "Generated API artifacts are stale."
+              echo "Run scripts/export-openapi.sh and scripts/generate-api-client.sh, then commit the changes."
+              exit 1
+            }
+
+      - name: Check Svelte TypeScript
+        working-directory: apps/web
+        run: npm run check

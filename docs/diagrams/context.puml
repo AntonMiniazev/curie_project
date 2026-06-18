@@ -1,0 +1,24 @@
+@startuml CurieContext
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+LAYOUT_WITH_LEGEND()
+HIDE_STEREOTYPE()
+
+Person(visitor, "Website Visitor", "Explores project pages and signs in to Curie reports")
+Person(dev, "Developer", "Builds, deploys, and operates Curie")
+
+System_Ext(github, "GitHub + GHCR", "Source control, GitHub Actions, and container registry")
+System_Ext(keyvault, "Azure Key Vault", "KMS used by SOPS encrypted production environment files")
+System_Ext(ampere, "Ampere Gold Layer", "Unity Catalog OSS metadata and MinIO-backed Delta/Parquet data")
+
+System_Boundary(curieServer, "Hetzner Curie Server") {
+    System(curieRuntime, "Curie Docker Runtime", "Docker Compose runtime for API, PostgreSQL, cache refresh jobs, and future web/Streamlit services")
+}
+
+Rel(visitor, curieRuntime, "Uses public website and Curie reporting UI", "HTTPS")
+Rel(dev, github, "Pushes code and triggers deploys", "Git")
+Rel(github, curieRuntime, "Publishes and deploys images", "GitHub Actions")
+Rel(curieRuntime, keyvault, "Uses decrypted SOPS env values prepared by CI", "SOPS")
+Rel(curieRuntime, ampere, "Builds local report cache from governed Gold tables", "UC API + MinIO")
+
+SHOW_LEGEND()
+@enduml

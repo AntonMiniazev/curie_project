@@ -1,0 +1,34 @@
+@startuml CurieContainers
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+LAYOUT_WITH_LEGEND()
+HIDE_STEREOTYPE()
+
+Person(visitor, "Website Visitor", "Authenticates and opens report pages")
+Person(dev, "Developer", "Runs local development and production deployment")
+
+System_Ext(ghcr, "GHCR", "Stores Curie container images")
+System_Ext(ampereGold, "Ampere Gold Layer", "Unity Catalog OSS and MinIO data")
+
+System_Boundary(curie, "Curie") {
+    Container(web, "SvelteKit Web", "SvelteKit", "Project hub, Curie auth screens, and report page templates")
+    Container(api, "FastAPI API", "Python/FastAPI", "Auth, report metadata, cache status, and cache job trigger endpoints")
+    Container(db, "PostgreSQL", "PostgreSQL", "Users, roles, reports, refresh tokens, and API metadata")
+    Container(cacheWorker, "Cache Refresh Worker", "Python/Polars", "Reads UC metadata and Gold Delta data, writes local Parquet cache releases")
+    Container(cacheFiles, "Local Cache", "Parquet + JSON", "Current report extract files and cache manifest")
+    Container(streamlit, "Streamlit Reports", "Streamlit", "Future interactive report applications embedded from Curie pages")
+}
+
+Rel(visitor, web, "Uses", "Browser")
+Rel(web, api, "Calls", "HTTP + secure cookies")
+Rel(web, streamlit, "Embeds report apps", "iframe")
+Rel(api, db, "Reads/writes", "SQLAlchemy")
+Rel(api, cacheWorker, "Starts refresh job", "Docker")
+Rel(cacheWorker, ampereGold, "Reads table metadata and data", "UC API + MinIO")
+Rel(cacheWorker, cacheFiles, "Writes new release and manifest", "Parquet/JSON")
+Rel(api, cacheFiles, "Reads cache status", "Filesystem")
+Rel(dev, ghcr, "Publishes images", "GitHub Actions")
+Rel(ghcr, api, "Provides image", "Docker pull")
+Rel(ghcr, cacheWorker, "Provides image", "Docker pull")
+
+SHOW_LEGEND()
+@enduml

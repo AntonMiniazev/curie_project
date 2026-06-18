@@ -1,0 +1,42 @@
+name: Render PlantUML Diagrams
+
+on:
+  push:
+    paths:
+      - "docs/diagrams/**/*.puml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  render-diagrams:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Java and Graphviz
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y default-jre graphviz curl
+
+      - name: Download PlantUML
+        run: |
+          curl -L -o plantuml.jar https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar
+
+      - name: Render SVG diagrams
+        run: |
+          mkdir -p docs/images
+          rm -f docs/images/*.svg
+          java -jar plantuml.jar \
+            -tsvg \
+            -o "$GITHUB_WORKSPACE/docs/images" \
+            docs/diagrams/*.puml
+
+      - name: Commit rendered diagrams
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: render PlantUML diagrams"
+          file_pattern: "docs/images/*.svg"

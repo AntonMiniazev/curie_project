@@ -33,10 +33,21 @@ class Settings(BaseSettings):
     jwt_algorithm: str = Field(default="HS256", alias="CURIE_JWT_ALGORITHM")
     access_token_minutes: int = Field(default=60, alias="CURIE_ACCESS_TOKEN_MINUTES")
     refresh_token_days: int = Field(default=14, alias="CURIE_REFRESH_TOKEN_DAYS")
+    auth_access_cookie_name: str = Field(
+        default="curie_access_token",
+        alias="CURIE_AUTH_ACCESS_COOKIE_NAME",
+    )
+    auth_refresh_cookie_name: str = Field(
+        default="curie_refresh_token",
+        alias="CURIE_AUTH_REFRESH_COOKIE_NAME",
+    )
+    auth_cookie_secure: bool = Field(default=False, alias="CURIE_AUTH_COOKIE_SECURE")
+    auth_cookie_samesite: str = Field(default="lax", alias="CURIE_AUTH_COOKIE_SAMESITE")
     admin_api_keys_csv: SecretStr | None = Field(
         default=None,
         alias="CURIE_ADMIN_API_KEYS",
     )
+    cors_origins_csv: str = Field(default="", alias="CURIE_CORS_ORIGINS")
 
     uc_base_url: str = Field(default="http://ucatalog.local", alias="CURIE_UC_BASE_URL")
     uc_timeout_seconds: int = Field(default=10, alias="CURIE_UC_TIMEOUT_SECONDS")
@@ -134,6 +145,14 @@ class Settings(BaseSettings):
         return [
             item.strip()
             for item in self.admin_api_keys_csv.get_secret_value().split(",")
+            if item.strip()
+        ]
+
+    @property
+    def cors_origins(self) -> list[str]:
+        return [
+            item.strip()
+            for item in self.cors_origins_csv.split(",")
             if item.strip()
         ]
 

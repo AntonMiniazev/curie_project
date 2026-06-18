@@ -6,7 +6,7 @@ from typing import Any
 from uuid import UUID, uuid4
 
 import pytest
-from fastapi import HTTPException, status
+from fastapi import HTTPException, Request, Response, status
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -140,6 +140,22 @@ def session_with_roles() -> FakeSession:
     )
 
 
+def make_response() -> Response:
+    return Response()
+
+
+def make_request(cookies: dict[str, str] | None = None) -> Request:
+    cookie_header = ""
+    if cookies:
+        cookie_header = "; ".join(f"{key}={value}" for key, value in cookies.items())
+
+    headers = []
+    if cookie_header:
+        headers.append((b"cookie", cookie_header.encode()))
+
+    return Request({"type": "http", "headers": headers})
+
+
 def test_get_available_roles_returns_seeded_roles() -> None:
     response = get_available_roles(session_with_roles())
 
@@ -166,6 +182,7 @@ def test_register_login_me_refresh_and_logout_flow() -> None:
             display_name="Demo User",
         ),
         db,  # type: ignore[arg-type]
+        make_response(),
     )
 
     assert registered.token_type == "bearer"
@@ -181,7 +198,7 @@ def test_register_login_me_refresh_and_logout_flow() -> None:
         scheme="Bearer",
         credentials=registered.access_token,
     )
-    current_user = get_current_user(credentials, db)  # type: ignore[arg-type]
+    current_user = get_current_user(credentials, db, make_request())  # type: ignore[arg-type]
 
     assert current_user.email == "demo@example.com"
     assert current_user.roles == ["store_fontaine"]
@@ -189,6 +206,7 @@ def test_register_login_me_refresh_and_logout_flow() -> None:
     logged_in = login_user(
         UserLoginRequest(email="demo@example.com", password="ChangeMe123!"),
         db,  # type: ignore[arg-type]
+        make_response(),
     )
 
     assert logged_in.access_token
@@ -196,6 +214,8 @@ def test_register_login_me_refresh_and_logout_flow() -> None:
     assert len(db.refresh_tokens) == 2
 
     refreshed = refresh_access_token(
+        make_response(),
+        make_request(),
         RefreshTokenRequest(refresh_token=logged_in.refresh_token),
         db,  # type: ignore[arg-type]
     )
@@ -205,6 +225,8 @@ def test_register_login_me_refresh_and_logout_flow() -> None:
 
     with pytest.raises(HTTPException) as reused_token_error:
         refresh_access_token(
+            make_response(),
+            make_request(),
             RefreshTokenRequest(refresh_token=logged_in.refresh_token),
             db,  # type: ignore[arg-type]
         )
@@ -212,12 +234,16 @@ def test_register_login_me_refresh_and_logout_flow() -> None:
     assert reused_token_error.value.status_code == status.HTTP_401_UNAUTHORIZED
 
     logout_user(
+        make_response(),
+        make_request(),
         LogoutRequest(refresh_token=refreshed.refresh_token),
         db,  # type: ignore[arg-type]
     )
 
     with pytest.raises(HTTPException) as revoked_token_error:
         refresh_access_token(
+            make_response(),
+            make_request(),
             RefreshTokenRequest(refresh_token=refreshed.refresh_token),
             db,  # type: ignore[arg-type]
         )
@@ -232,10 +258,10 @@ def test_register_rejects_duplicate_email() -> None:
         password="ChangeMe123!",
         role="store_fontaine",
     )
-    register_user(request, db)  # type: ignore[arg-type]
+    register_user(request, db, make_response())  # type: ignore[arg-type]
 
     with pytest.raises(HTTPException) as exc_info:
-        register_user(request, db)  # type: ignore[arg-type]
+        register_user(request, db, make_response())  # type: ignore[arg-type]
 
     assert exc_info.value.status_code == status.HTTP_409_CONFLICT
 
@@ -251,6 +277,7 @@ def test_register_rejects_unknown_role() -> None:
                 role="missing_role",
             ),
             db,  # type: ignore[arg-type]
+            make_response(),
         )
 
     assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
@@ -265,12 +292,14 @@ def test_login_rejects_wrong_password() -> None:
             role="store_fontaine",
         ),
         db,  # type: ignore[arg-type]
+        make_response(),
     )
 
     with pytest.raises(HTTPException) as exc_info:
         login_user(
             UserLoginRequest(email="demo@example.com", password="wrong-password"),
             db,  # type: ignore[arg-type]
+            make_response(),
         )
 
     assert exc_info.value.status_code == status.HTTP_401_UNAUTHORIZED
@@ -285,11 +314,14 @@ def test_refresh_rejects_expired_token() -> None:
             role="store_fontaine",
         ),
         db,  # type: ignore[arg-type]
+        make_response(),
     )
     db.refresh_tokens[0].expires_at = datetime.now(timezone.utc)
 
     with pytest.raises(HTTPException) as exc_info:
         refresh_access_token(
+            make_response(),
+            make_request(),
             RefreshTokenRequest(refresh_token=registered.refresh_token),
             db,  # type: ignore[arg-type]
         )
