@@ -42,6 +42,27 @@ def create_access_token(user_id: str, email: str, roles: list[str]) -> str:
     )
 
 
+def create_streamlit_embed_token(user_id: str, email: str, roles: list[str]) -> str:
+    """Create a signed short-lived JWT that Streamlit can use for report scoping."""
+    settings = get_settings()
+    now = datetime.now(timezone.utc)
+    expires_at = now + timedelta(minutes=settings.access_token_minutes)
+    payload = {
+        "sub": user_id,
+        "email": email,
+        "roles": roles,
+        "type": "streamlit_embed",
+        "iat": now,
+        "exp": expires_at,
+    }
+
+    return jwt.encode(
+        payload,
+        settings.jwt_secret_key.get_secret_value(),
+        algorithm=settings.jwt_algorithm,
+    )
+
+
 def decode_access_token(token: str) -> dict:
     """Validate a JWT access token and return its decoded claims."""
     settings = get_settings()

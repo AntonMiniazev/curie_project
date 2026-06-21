@@ -47,6 +47,24 @@ services:
       postgres:
         condition: service_healthy
 
+  streamlit:
+    image: ${CURIE_STREAMLIT_IMAGE:-ghcr.io/OWNER/curie-streamlit:latest}
+    container_name: curie-streamlit-prod
+    restart: unless-stopped
+    env_file:
+      - ${CURIE_ENV_FILE:-./env/curie-prod.env}
+    environment:
+      CURIE_CACHE_CURRENT: /app/data/cache/current
+      CURIE_JWT_SECRET_KEY: ${CURIE_JWT_SECRET_KEY}
+      CURIE_JWT_ALGORITHM: ${CURIE_JWT_ALGORITHM:-HS256}
+    ports:
+      - "${CURIE_STREAMLIT_PORT:-100.65.42.72:8501}:8501"
+    volumes:
+      - ${CURIE_HOST_CACHE_DIR:-/var/lib/curie/cache}:/app/data/cache:ro
+    depends_on:
+      api:
+        condition: service_started
+
   cache-refresh:
     image: ${CURIE_IMAGE:-ghcr.io/OWNER/curie-api:latest}
     profiles: ["cache"]

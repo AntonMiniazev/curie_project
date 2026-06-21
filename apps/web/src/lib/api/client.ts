@@ -55,6 +55,10 @@ export function buildApiUrl(path: string): string {
 	const cleanBaseUrl = (env.PUBLIC_API_BASE_URL ?? '/api').replace(/\/$/, '');
 	const cleanPath = path.startsWith('/') ? path : `/${path}`;
 
+	if (cleanPath.startsWith(`${cleanBaseUrl}/`) || cleanPath === cleanBaseUrl) {
+		return cleanPath;
+	}
+
 	return `${cleanBaseUrl}${cleanPath}`;
 }
 

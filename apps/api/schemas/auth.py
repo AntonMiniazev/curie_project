@@ -30,6 +30,13 @@ class TokenResponse(BaseModel):
     expires_in_seconds: int
 
 
+class StreamlitEmbedTokenResponse(BaseModel):
+    """Short-lived signed token used to scope embedded Streamlit report data."""
+
+    embed_token: str
+    expires_in_seconds: int
+
+
 class CurrentUserResponse(BaseModel):
     """Response body describing the authenticated user resolved from a valid access token."""
 

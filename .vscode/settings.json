@@ -14,7 +14,8 @@
         "reportMissingImports": "none"
     },
     "python.analysis.extraPaths": [
-        "${workspaceFolder}/src"
+        "${workspaceFolder}",
+        "${workspaceFolder}/apps/streamlit"
     ],
     "python.envFile": "${workspaceFolder}/.env",
     "python.terminal.activateEnvInCurrentTerminal": false,

@@ -10,6 +10,7 @@ export type AvailableRoleResponse = components['schemas']['AvailableRoleResponse
 export type AvailableRolesResponse = components['schemas']['AvailableRolesResponse'];
 export type RefreshTokenRequest = components['schemas']['RefreshTokenRequest'];
 export type LogoutRequest = components['schemas']['LogoutRequest'];
+export type StreamlitEmbedTokenResponse = components['schemas']['StreamlitEmbedTokenResponse'];
 
 export function getAvailableRoles(): Promise<AvailableRolesResponse> {
 	return apiFetch<AvailableRolesResponse>('/api/auth/roles');
@@ -33,6 +34,10 @@ export function getCurrentUser(accessToken?: string): Promise<CurrentUserRespons
 	return apiFetch<CurrentUserResponse>('/api/auth/me', {
 		token: accessToken
 	});
+}
+
+export function getStreamlitEmbedToken(): Promise<StreamlitEmbedTokenResponse> {
+	return apiFetch<StreamlitEmbedTokenResponse>('/api/auth/streamlit-token');
 }
 
 export function refreshToken(request?: RefreshTokenRequest): Promise<TokenResponse> {

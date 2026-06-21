@@ -1,5 +1,5 @@
 name: Deploy API
-run-name: ${{ github.event_name == 'workflow_dispatch' && 'Deploy API manual' || 'Deploy API after API Image' }}
+run-name: ${{ github.event_name == 'workflow_dispatch' && 'Deploy Curie services manual' || 'Deploy Curie services after API Image' }}
 
 on:
   workflow_run:
@@ -19,7 +19,7 @@ env:
 
 jobs:
   deploy:
-    name: ${{ github.event_name == 'workflow_dispatch' && 'Deploy API manual' || 'Deploy API after image build' }}
+    name: ${{ github.event_name == 'workflow_dispatch' && 'Deploy Curie services manual' || 'Deploy Curie services after image build' }}
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
 
@@ -75,15 +75,16 @@ jobs:
             "chmod 600 $CURIE_DEPLOY_DIR/env/curie-prod.env"
           rm -f .deploy/curie-prod.env
 
-      - name: Deploy API
+      - name: Deploy API and Streamlit
         run: |
           ssh -i ~/.ssh/curie_deploy_key "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST" \
             "cd $CURIE_DEPLOY_DIR \
-            && docker compose --env-file env/curie-prod.env -f compose.yml pull api \
+            && docker compose --env-file env/curie-prod.env -f compose.yml pull api streamlit \
             && docker compose --env-file env/curie-prod.env -f compose.yml run --rm api sh -c 'cd apps/api && uv run alembic upgrade head' \
-            && docker compose --env-file env/curie-prod.env -f compose.yml up -d --force-recreate api \
+            && docker compose --env-file env/curie-prod.env -f compose.yml up -d --force-recreate api streamlit \
             && docker image prune -f \
-            && docker port curie-api-prod"
+            && docker port curie-api-prod \
+            && docker port curie-streamlit-prod"
 
       - name: Verify API on server
         run: |
@@ -97,6 +98,18 @@ jobs:
               sleep 2; \
             done"
 
+      - name: Verify Streamlit on server
+        run: |
+          ssh -i ~/.ssh/curie_deploy_key "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST" \
+            "for attempt in \$(seq 1 30); do \
+              if docker exec curie-streamlit-prod curl --fail --silent --output /tmp/curie-streamlit.html http://127.0.0.1:8501; then \
+                echo 'Streamlit responded inside container'; \
+                exit 0; \
+              fi; \
+              if [ \"\$attempt\" -eq 30 ]; then echo 'Streamlit did not become ready in time'; exit 1; fi; \
+              sleep 2; \
+            done"
+
       - name: Verify public API port stays closed
         run: |
           if curl --fail --silent --output /dev/null --connect-timeout 5 "http://$CURIE_DEPLOY_HOST:8000/api/health"; then
@@ -104,3 +117,11 @@ jobs:
             exit 1
           fi
           echo "Public API port 8000 is not reachable, as expected."
+
+      - name: Verify public Streamlit port stays closed
+        run: |
+          if curl --fail --silent --output /dev/null --connect-timeout 5 "http://$CURIE_DEPLOY_HOST:8501/"; then
+            echo "Public Streamlit port 8501 is reachable; expected it to stay closed."
+            exit 1
+          fi
+          echo "Public Streamlit port 8501 is not reachable, as expected."

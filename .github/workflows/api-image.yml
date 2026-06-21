@@ -13,7 +13,8 @@ permissions:
   packages: write
 
 env:
-  IMAGE_NAME: ghcr.io/antonminiazev/curie-api
+  API_IMAGE_NAME: ghcr.io/antonminiazev/curie-api
+  STREAMLIT_IMAGE_NAME: ghcr.io/antonminiazev/curie-streamlit
   IMAGE_TAG: ${{ github.event.workflow_run.head_sha || github.sha }}
 
 jobs:
@@ -49,7 +50,19 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-            ${{ env.IMAGE_NAME }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+            ${{ env.API_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ env.API_IMAGE_NAME }}:latest
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,scope=api,mode=max
+
+      - name: Build and push Streamlit image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/streamlit/Dockerfile
+          push: true
+          tags: |
+            ${{ env.STREAMLIT_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ env.STREAMLIT_IMAGE_NAME }}:latest
+          cache-from: type=gha,scope=streamlit
+          cache-to: type=gha,scope=streamlit,mode=max

@@ -269,6 +269,33 @@
         ]
       }
     },
+    "/api/auth/streamlit-token": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Get Streamlit Embed Token",
+        "description": "Return a short-lived signed token for embedded Streamlit report scoping.",
+        "operationId": "get_streamlit_embed_token_api_auth_streamlit_token_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StreamlitEmbedTokenResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/auth/refresh": {
       "post": {
         "tags": [
@@ -710,6 +737,25 @@
           "count"
         ],
         "title": "ReportsResponse"
+      },
+      "StreamlitEmbedTokenResponse": {
+        "properties": {
+          "embed_token": {
+            "type": "string",
+            "title": "Embed Token"
+          },
+          "expires_in_seconds": {
+            "type": "integer",
+            "title": "Expires In Seconds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "embed_token",
+          "expires_in_seconds"
+        ],
+        "title": "StreamlitEmbedTokenResponse",
+        "description": "Short-lived signed token used to scope embedded Streamlit report data."
       },
       "TokenResponse": {
         "properties": {

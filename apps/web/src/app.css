@@ -210,6 +210,31 @@ body.project-hub-page::-webkit-scrollbar {
 	background: var(--curie-surface);
 }
 
+.curie-report-frame {
+	display: block;
+	width: 100%;
+	min-height: 760px;
+	border: 0;
+	border-radius: 0 0 var(--curie-radius-xm) var(--curie-radius-xm);
+	background: var(--curie-surface);
+}
+
+.curie-report-expanded {
+	position: fixed;
+	inset: 0;
+	z-index: 80;
+	display: flex;
+	flex-direction: column;
+	border-radius: 0;
+	box-shadow: none;
+}
+
+.curie-report-expanded .curie-report-frame {
+	flex: 1;
+	min-height: 0;
+	border-radius: 0;
+}
+
 .curie-input {
 	width: 100%;
 	border: 1px solid var(--curie-border);

@@ -7,14 +7,20 @@ on:
       - main
     paths:
       - apps/api/**
+      - apps/streamlit/**
       - apps/web/**
       - packages/api-client/**
       - packages/contracts/**
       - scripts/**
+      - Dockerfile
+      - infra/compose.dev.yml
+      - infra/compose.prod.yml
       - pyproject.toml
       - uv.lock
       - .python-version
       - .github/workflows/ci.yml
+      - .github/workflows/api-image.yml
+      - .github/workflows/deploy-api.yml
   workflow_dispatch:
 
 permissions:
@@ -72,6 +78,12 @@ jobs:
               echo "Run scripts/export-openapi.sh and scripts/generate-api-client.sh, then commit the changes."
               exit 1
             }
+
+      - name: Check Python syntax
+        run: uv run python -m compileall apps/api apps/streamlit
+
+      - name: Build Streamlit image
+        run: docker build -f apps/streamlit/Dockerfile -t curie-streamlit:ci .
 
       - name: Check Svelte TypeScript
         working-directory: apps/web

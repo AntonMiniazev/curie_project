@@ -1,6 +1,6 @@
 import { derived, get, writable } from 'svelte/store';
 
-import { getCurrentUser } from '$lib/api/auth';
+import { getCurrentUser, refreshToken } from '$lib/api/auth';
 import type { CurrentUserResponse } from '$lib/api/auth';
 
 export type AuthSessionStatus = 'checking' | 'authenticated' | 'anonymous';
@@ -37,10 +37,19 @@ function createSessionStore() {
 					currentUser
 				});
 			} catch {
-				set({
-					status: 'anonymous',
-					currentUser: null
-				});
+				try {
+					const tokenResponse = await refreshToken();
+					const currentUser = await getCurrentUser(tokenResponse.access_token);
+					set({
+						status: 'authenticated',
+						currentUser
+					});
+				} catch {
+					set({
+						status: 'anonymous',
+						currentUser: null
+					});
+				}
 			}
 		},
 		setCurrentUser: (currentUser: CurrentUserResponse | null) => {

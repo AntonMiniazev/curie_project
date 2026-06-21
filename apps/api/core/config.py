@@ -64,7 +64,9 @@ class Settings(BaseSettings):
             "dim_stores,"
             "fct_deliveries,"
             "fct_order_margin,"
-            "fct_orders_sales"
+            "fct_orders_sales,"
+            "budget_orders_sales,"
+            "fct_order_product"
         ),
         alias="CURIE_SOURCE_TABLES",
     )
@@ -119,7 +121,9 @@ class Settings(BaseSettings):
 
     @property
     def source_tables(self) -> list[str]:
-        return [item.strip() for item in self.source_tables_csv.split(",") if item.strip()]
+        return [
+            item.strip() for item in self.source_tables_csv.split(",") if item.strip()
+        ]
 
     @property
     def cache_refresh_extra_hosts(self) -> list[str]:
@@ -151,9 +155,7 @@ class Settings(BaseSettings):
     @property
     def cors_origins(self) -> list[str]:
         return [
-            item.strip()
-            for item in self.cors_origins_csv.split(",")
-            if item.strip()
+            item.strip() for item in self.cors_origins_csv.split(",") if item.strip()
         ]
 
     @property

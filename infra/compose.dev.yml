@@ -70,5 +70,22 @@ services:
       - "s3.minio.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
       - "minio.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
 
+  streamlit:
+    build:
+      context: ..
+      dockerfile: apps/streamlit/Dockerfile
+    image: ${CURIE_STREAMLIT_IMAGE:-curie-streamlit:dev}
+    container_name: curie-streamlit-dev
+    profiles: ["streamlit"]
+    restart: unless-stopped
+    environment:
+      CURIE_CACHE_CURRENT: /app/data/cache/current
+      CURIE_JWT_SECRET_KEY: ${CURIE_JWT_SECRET_KEY}
+      CURIE_JWT_ALGORITHM: ${CURIE_JWT_ALGORITHM:-HS256}
+    ports:
+      - "8501:8501"
+    volumes:
+      - ../data/dev-cache:/app/data/cache:ro
+
 volumes:
   curie-postgres-dev-data:
