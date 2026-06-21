@@ -14,6 +14,7 @@ permissions:
 
 env:
   API_IMAGE_NAME: ghcr.io/antonminiazev/curie-api
+  WEB_IMAGE_NAME: ghcr.io/antonminiazev/curie-web
   STREAMLIT_IMAGE_NAME: ghcr.io/antonminiazev/curie-streamlit
   IMAGE_TAG: ${{ github.event.workflow_run.head_sha || github.sha }}
 
@@ -54,6 +55,21 @@ jobs:
             ${{ env.API_IMAGE_NAME }}:latest
           cache-from: type=gha,scope=api
           cache-to: type=gha,scope=api,mode=max
+
+      - name: Build and push web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          push: true
+          build-args: |
+            PUBLIC_API_BASE_URL=/api
+            PUBLIC_STREAMLIT_BASE_URL=/streamlit
+          tags: |
+            ${{ env.WEB_IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ env.WEB_IMAGE_NAME }}:latest
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,scope=web,mode=max
 
       - name: Build and push Streamlit image
         uses: docker/build-push-action@v6

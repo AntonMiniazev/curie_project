@@ -1,6 +1,21 @@
 name: curie-prod
 
 services:
+  web:
+    image: ${CURIE_WEB_IMAGE:-ghcr.io/OWNER/curie-web:latest}
+    container_name: curie-web-prod
+    restart: unless-stopped
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-/api}
+      PUBLIC_STREAMLIT_BASE_URL: ${PUBLIC_STREAMLIT_BASE_URL:-/streamlit}
+    ports:
+      - "${CURIE_WEB_PORT:-127.0.0.1:3000}:3000"
+    depends_on:
+      api:
+        condition: service_started
+
   postgres:
     image: postgres:16
     container_name: curie-postgres-prod
@@ -57,6 +72,7 @@ services:
       CURIE_CACHE_CURRENT: /app/data/cache/current
       CURIE_JWT_SECRET_KEY: ${CURIE_JWT_SECRET_KEY}
       CURIE_JWT_ALGORITHM: ${CURIE_JWT_ALGORITHM:-HS256}
+      STREAMLIT_SERVER_BASE_URL_PATH: ${STREAMLIT_SERVER_BASE_URL_PATH:-streamlit}
     ports:
       - "${CURIE_STREAMLIT_PORT:-100.65.42.72:8501}:8501"
     volumes:

@@ -13,8 +13,10 @@ on:
       - packages/contracts/**
       - scripts/**
       - Dockerfile
+      - apps/web/Dockerfile
       - infra/compose.dev.yml
       - infra/compose.prod.yml
+      - infra/nginx/**
       - pyproject.toml
       - uv.lock
       - .python-version
@@ -84,6 +86,9 @@ jobs:
 
       - name: Build Streamlit image
         run: docker build -f apps/streamlit/Dockerfile -t curie-streamlit:ci .
+
+      - name: Build web image
+        run: docker build -f apps/web/Dockerfile -t curie-web:ci .
 
       - name: Check Svelte TypeScript
         working-directory: apps/web
