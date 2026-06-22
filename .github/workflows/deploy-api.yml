@@ -14,6 +14,7 @@ permissions:
 
 env:
   CURIE_DEPLOY_HOST: 46.62.243.229
+  CURIE_PUBLIC_DOMAIN: ampere-data.work
   CURIE_DEPLOY_USER: root
   CURIE_DEPLOY_DIR: /opt/curie
 
@@ -127,18 +128,19 @@ jobs:
         run: |
           ssh -i ~/.ssh/curie_deploy_key "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST" \
             "for attempt in \$(seq 1 30); do \
-              if curl --fail --silent --output /tmp/curie-web.html http://127.0.0.1/; then \
+              if curl --fail --silent --location --output /tmp/curie-web.html --header 'Host: $CURIE_PUBLIC_DOMAIN' http://127.0.0.1/; then \
                 echo 'Web responded through Nginx'; \
                 exit 0; \
               fi; \
               if [ \"\$attempt\" -eq 30 ]; then echo 'Web did not become ready through Nginx'; exit 1; fi; \
               sleep 2; \
             done"
-          curl --fail --silent --output /tmp/curie-public-web.html "http://$CURIE_DEPLOY_HOST/"
+          curl --fail --silent --location --output /tmp/curie-public-web.html "https://$CURIE_PUBLIC_DOMAIN/"
+          curl --fail --silent --output /dev/null "http://$CURIE_PUBLIC_DOMAIN/"
 
       - name: Verify API through Nginx
         run: |
-          curl --fail --silent --output /tmp/curie-public-health.json "http://$CURIE_DEPLOY_HOST/api/health"
+          curl --fail --silent --output /tmp/curie-public-health.json "https://$CURIE_PUBLIC_DOMAIN/api/health"
           cat /tmp/curie-public-health.json
 
       - name: Verify public API port stays closed
