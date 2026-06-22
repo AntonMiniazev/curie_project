@@ -35,7 +35,7 @@
 	});
 
 	async function initializePage() {
-		await authSession.check();
+		await authSession.check({ force: true });
 
 		if (get(isAuthenticated)) {
 			await loadReport();

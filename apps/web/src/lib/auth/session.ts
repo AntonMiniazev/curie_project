@@ -10,6 +10,10 @@ export type AuthSession = {
 	currentUser: CurrentUserResponse | null;
 };
 
+type CheckOptions = {
+	force?: boolean;
+};
+
 const initialSession: AuthSession = {
 	status: 'checking',
 	currentUser: null
@@ -20,8 +24,8 @@ function createSessionStore() {
 
 	return {
 		subscribe,
-		check: async () => {
-			if (get({ subscribe }).status === 'authenticated') {
+		check: async (options: CheckOptions = {}) => {
+			if (!options.force && get({ subscribe }).status === 'authenticated') {
 				return;
 			}
 
