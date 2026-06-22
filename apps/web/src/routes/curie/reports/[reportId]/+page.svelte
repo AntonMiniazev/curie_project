@@ -118,26 +118,38 @@
 			<header class="mb-6 border-b border-[var(--curie-border)] pb-6">
 				<p class="curie-eyebrow mb-2">{report.category}</p>
 				<h1 class="text-3xl font-semibold text-[var(--curie-text)]">{report.title}</h1>
-				<p class="mt-2 max-w-3xl text-[var(--curie-text-muted)]">
-					{report.description || 'Report workspace template is ready for a Streamlit app.'}
-				</p>
+				<div class="mt-2 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+					<p class="max-w-3xl text-[var(--curie-text-muted)]">
+						{report.description || 'Report workspace template is ready for a Streamlit app.'}
+					</p>
+					{#if streamlitUrl && !isFrameExpanded}
+						<button
+							class="curie-report-inline-button"
+							type="button"
+							aria-label="Expand report frame"
+							aria-pressed={isFrameExpanded}
+							onclick={toggleFrameExpanded}
+						>
+							<Maximize2 class="h-4 w-4" aria-hidden="true" />
+							<span>Expand</span>
+						</button>
+					{/if}
+				</div>
 			</header>
 
 			<section class="curie-card curie-report-shell" class:curie-report-expanded={isFrameExpanded}>
 				{#if streamlitUrl}
-					<button
-						class="curie-report-expand-button"
-						type="button"
-						aria-label={isFrameExpanded ? 'Collapse report frame' : 'Expand report frame'}
-						aria-pressed={isFrameExpanded}
-						onclick={toggleFrameExpanded}
-					>
-						{#if isFrameExpanded}
+					{#if isFrameExpanded}
+						<button
+							class="curie-report-collapse-button"
+							type="button"
+							aria-label="Collapse report frame"
+							aria-pressed={isFrameExpanded}
+							onclick={toggleFrameExpanded}
+						>
 							<Minimize2 class="h-4 w-4" aria-hidden="true" />
-						{:else}
-							<Maximize2 class="h-4 w-4" aria-hidden="true" />
-						{/if}
-					</button>
+						</button>
+					{/if}
 					<iframe
 						class="curie-report-frame"
 						title={report.title}
@@ -160,14 +172,54 @@
 		overflow: hidden;
 	}
 
+	.curie-report-shell.curie-report-expanded {
+		position: fixed;
+		inset: 0;
+		z-index: 80;
+		display: flex;
+		flex-direction: column;
+		border-radius: 0;
+	}
+
 	.curie-report-shell :global(.curie-report-frame) {
 		border-radius: var(--curie-radius-xm);
 	}
 
-	.curie-report-expand-button {
+	.curie-report-shell.curie-report-expanded :global(.curie-report-frame) {
+		flex: 1;
+		min-height: 0;
+		border-radius: 0;
+	}
+
+	.curie-report-inline-button {
+		display: inline-flex;
+		width: fit-content;
+		flex-shrink: 0;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		border: 1px solid var(--curie-border);
+		border-radius: 0.5rem;
+		background: var(--curie-surface);
+		padding: 0.5rem 0.75rem;
+		color: var(--curie-text);
+		font-size: 0.875rem;
+		font-weight: 600;
+		transition:
+			background-color 0.15s ease,
+			color 0.15s ease,
+			border-color 0.15s ease;
+	}
+
+	.curie-report-inline-button:hover {
+		border-color: var(--curie-blue-l2);
+		color: var(--curie-blue-l3);
+	}
+
+	.curie-report-collapse-button {
 		position: absolute;
-		right: 1rem;
-		top: 1rem;
+		right: 1.25rem;
+		bottom: 1.25rem;
 		z-index: 2;
 		display: inline-flex;
 		height: 2.25rem;
@@ -185,7 +237,7 @@
 			border-color 0.15s ease;
 	}
 
-	.curie-report-expand-button:hover {
+	.curie-report-collapse-button:hover {
 		border-color: var(--curie-blue-l2);
 		color: var(--curie-blue-l3);
 	}
