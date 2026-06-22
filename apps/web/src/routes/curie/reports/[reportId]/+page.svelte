@@ -123,42 +123,21 @@
 				</p>
 			</header>
 
-			<section class="curie-card" class:curie-report-expanded={isFrameExpanded}>
-				<div
-					class="flex flex-col gap-3 border-b border-[var(--curie-border)] p-4 md:flex-row md:items-center md:justify-between"
-				>
-					<div>
-						<h2 class="font-semibold text-[var(--curie-text)]">Streamlit workspace</h2>
-						<p class="text-sm text-[var(--curie-text-muted)]">
-							{streamlitUrl}
-						</p>
-					</div>
-					<div class="flex flex-wrap items-center gap-2">
-						{#if streamlitUrl}
-							<button
-								class="curie-button flex items-center gap-2 px-3 py-2 text-sm hover:text-[var(--curie-blue-l3)]"
-								type="button"
-								aria-pressed={isFrameExpanded}
-								onclick={toggleFrameExpanded}
-							>
-								{#if isFrameExpanded}
-									<Minimize2 class="h-4 w-4" aria-hidden="true" />
-									<span>Collapse</span>
-								{:else}
-									<Maximize2 class="h-4 w-4" aria-hidden="true" />
-									<span>Expand</span>
-								{/if}
-							</button>
-						{/if}
-						<span
-							class="rounded-full bg-[var(--curie-surface-muted)] px-3 py-1 text-sm text-[var(--curie-text-muted)]"
-						>
-							{report.required_role}
-						</span>
-					</div>
-				</div>
-
+			<section class="curie-card curie-report-shell" class:curie-report-expanded={isFrameExpanded}>
 				{#if streamlitUrl}
+					<button
+						class="curie-report-expand-button"
+						type="button"
+						aria-label={isFrameExpanded ? 'Collapse report frame' : 'Expand report frame'}
+						aria-pressed={isFrameExpanded}
+						onclick={toggleFrameExpanded}
+					>
+						{#if isFrameExpanded}
+							<Minimize2 class="h-4 w-4" aria-hidden="true" />
+						{:else}
+							<Maximize2 class="h-4 w-4" aria-hidden="true" />
+						{/if}
+					</button>
 					<iframe
 						class="curie-report-frame"
 						title={report.title}
@@ -174,3 +153,40 @@
 		{/if}
 	</section>
 </main>
+
+<style>
+	.curie-report-shell {
+		position: relative;
+		overflow: hidden;
+	}
+
+	.curie-report-shell :global(.curie-report-frame) {
+		border-radius: var(--curie-radius-xm);
+	}
+
+	.curie-report-expand-button {
+		position: absolute;
+		right: 1rem;
+		top: 1rem;
+		z-index: 2;
+		display: inline-flex;
+		height: 2.25rem;
+		width: 2.25rem;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid var(--curie-border);
+		border-radius: 0.5rem;
+		background: color-mix(in srgb, var(--curie-surface) 92%, transparent);
+		color: var(--curie-text);
+		box-shadow: 0 8px 24px rgba(29, 53, 87, 0.16);
+		transition:
+			background-color 0.15s ease,
+			color 0.15s ease,
+			border-color 0.15s ease;
+	}
+
+	.curie-report-expand-button:hover {
+		border-color: var(--curie-blue-l2);
+		color: var(--curie-blue-l3);
+	}
+</style>
