@@ -3,6 +3,10 @@ toolbarMode = "viewer"
 
 [server]
 headless = true
+corsAllowedOrigins = [
+  "https://ampere-data.work",
+  "https://www.ampere-data.work",
+]
 
 [browser]
 gatherUsageStats = false

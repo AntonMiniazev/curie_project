@@ -81,17 +81,15 @@
 				class="mb-8 flex flex-col gap-5 border-b border-[var(--curie-border)] pb-6 md:flex-row md:items-end md:justify-between"
 			>
 				<div>
-					<a class="curie-eyebrow mb-2 inline-block" href={resolve('/curie')}>Curie</a>
 					<h1 class="text-3xl font-semibold text-[var(--curie-text)]">Reporting workspace</h1>
-					<p class="mt-2 max-w-2xl text-[var(--curie-text-muted)]">
-						Select a report to open its workspace. Streamlit embeds will be attached to these report
-						pages later.
+					<p class="mt-2 max-w-2x2 text-[var(--curie-text-muted)]">
+						Select a report to open its workspace. Streamlit embeds will be attached to these report pages later.
 					</p>
 				</div>
 
 				<div class="flex flex-wrap items-center gap-3">
 					{#if $authSession.currentUser}
-						<div class="curie-card-flat px-3 py-2 text-sm">
+						<div class="curie-card-flat px-4 py-2 text-sm">
 							<p class="font-medium text-[var(--curie-text)]">
 								{$authSession.currentUser.display_name || $authSession.currentUser.email}
 							</p>
@@ -101,7 +99,7 @@
 						</div>
 					{/if}
 
-					<button class="curie-button px-4 py-2 text-sm" type="button" onclick={handleLogout}>
+					<button class="curie-button px-4 py-4 text-sm" type="button" onclick={handleLogout}>
 						Logout
 					</button>
 				</div>
@@ -154,16 +152,15 @@
 			class="mx-auto grid min-h-[calc(100vh-4rem)] max-w-5xl gap-8 lg:grid-cols-[1fr_380px] lg:items-center"
 		>
 			<div>
-				<p class="curie-eyebrow mb-3">Curie</p>
 				<h1 class="mb-4 text-4xl font-semibold text-[var(--curie-text)]">Reports require login</h1>
 				<p class="text-lg leading-8 text-[var(--curie-text-muted)]">
 					Create an account or sign in to access the reporting workspace.
 				</p>
 			</div>
 
-			<nav class="curie-card p-6">
+			<nav class="curie-card-flat p-6">
 				<a
-					class="curie-button-primary mb-3 block px-4 py-2 text-center"
+					class="curie-button-primary mb-4 block px-4 py-2 text-center"
 					href={resolve('/curie/login')}
 				>
 					Sign in

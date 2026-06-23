@@ -12,7 +12,7 @@ from ..core.config import get_settings
 from ..core.security import (
     create_access_token,
     create_random_token,
-    create_streamlit_embed_token,
+    create_streamlit_scope_token,
     decode_access_token,
     hash_password,
     hash_token,
@@ -26,7 +26,6 @@ from ..schemas.auth import (
     CurrentUserResponse,
     LogoutRequest,
     RefreshTokenRequest,
-    StreamlitEmbedTokenResponse,
     TokenResponse,
     UserCreateRequest,
     UserLoginRequest,
@@ -367,26 +366,25 @@ def get_current_user(
 
 
 @router.get(
-    "/streamlit-token",
-    response_model=StreamlitEmbedTokenResponse,
-    status_code=status.HTTP_200_OK,
+    "/nginx-streamlit",
+    status_code=status.HTTP_204_NO_CONTENT,
 )
-def get_streamlit_embed_token(
+def nginx_streamlit_auth(
+    response: Response,
     credentials: bearer_dependency,
     db: db_dependency,
     request: Request,
-) -> StreamlitEmbedTokenResponse:
-    """Return a short-lived signed token for embedded Streamlit report scoping."""
+) -> Response:
+    """Validate a browser session for Nginx `auth_request` and return signed Streamlit scope."""
     access_token = cookie_token(request, get_settings().auth_access_cookie_name)
     user = resolve_current_user(credentials, db, access_token=access_token)
-    return StreamlitEmbedTokenResponse(
-        embed_token=create_streamlit_embed_token(
-            user_id=str(user.id),
-            email=user.email,
-            roles=user_roles(user),
-        ),
-        expires_in_seconds=get_settings().access_token_minutes * 60,
+    response.status_code = status.HTTP_204_NO_CONTENT
+    response.headers["X-Curie-Streamlit-Scope"] = create_streamlit_scope_token(
+        user_id=str(user.id),
+        email=user.email,
+        roles=user_roles(user),
     )
+    return response
 
 
 @router.post(

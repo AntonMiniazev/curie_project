@@ -42,8 +42,23 @@ def create_access_token(user_id: str, email: str, roles: list[str]) -> str:
     )
 
 
-def create_streamlit_embed_token(user_id: str, email: str, roles: list[str]) -> str:
-    """Create a signed short-lived JWT that Streamlit can use for report scoping."""
+def create_streamlit_scope_token(user_id: str, email: str, roles: list[str]) -> str:
+    """Create a signed short-lived JWT for Nginx to pass to Streamlit as a trusted header."""
+    return _create_streamlit_token(
+        user_id=user_id,
+        email=email,
+        roles=roles,
+        token_type="streamlit_scope",
+    )
+
+
+def _create_streamlit_token(
+    user_id: str,
+    email: str,
+    roles: list[str],
+    token_type: str,
+) -> str:
+    """Create a signed short-lived JWT that contains Streamlit report scope."""
     settings = get_settings()
     now = datetime.now(timezone.utc)
     expires_at = now + timedelta(minutes=settings.access_token_minutes)
@@ -51,7 +66,7 @@ def create_streamlit_embed_token(user_id: str, email: str, roles: list[str]) -> 
         "sub": user_id,
         "email": email,
         "roles": roles,
-        "type": "streamlit_embed",
+        "type": token_type,
         "iat": now,
         "exp": expires_at,
     }

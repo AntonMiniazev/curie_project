@@ -57,7 +57,7 @@
 			</p>
 		</div>
 
-		<form class="curie-card p-6" onsubmit={handleSubmit}>
+		<form class="curie-card-flat p-6" onsubmit={handleSubmit}>
 			<div class="mb-6">
 				<h2 class="text-xl font-semibold text-[var(--curie-text)]">Login</h2>
 				<p class="mt-2 text-sm text-[var(--curie-text-muted)]">
@@ -89,7 +89,7 @@
 			<p class="mt-5 text-center text-sm text-[var(--curie-text-muted)]">
 				Need an account?
 				<a
-					class="font-medium text-[var(--curie-blue-l1)] hover:underline"
+					class="font-medium text-[var(--curie-blue-l3)] hover:underline"
 					href={resolve('/curie/register')}
 				>
 					Create one

@@ -32,8 +32,13 @@ class StreamlitSettings(BaseSettings):
         default_factory=_default_cache_current,
         validation_alias="CURIE_CACHE_CURRENT",
     )
+    app_env: str = Field(default="prod", validation_alias="APP_ENV")
     jwt_secret_key: SecretStr = Field(validation_alias="CURIE_JWT_SECRET_KEY")
     jwt_algorithm: str = Field(default="HS256", validation_alias="CURIE_JWT_ALGORITHM")
+    auth_access_cookie_name: str = Field(
+        default="curie_access_token",
+        validation_alias="CURIE_AUTH_ACCESS_COOKIE_NAME",
+    )
 
     @computed_field
     @property

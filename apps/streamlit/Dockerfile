@@ -17,6 +17,7 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev --no-install-project
 
 COPY apps/streamlit ./apps/streamlit
+COPY apps/streamlit/.streamlit ./.streamlit
 
 EXPOSE 8501
 

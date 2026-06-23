@@ -60,7 +60,6 @@
 			<p
 				class="max-w-[16rem] truncate text-sm font-medium text-[var(--curie-text-muted)] md:max-w-[24rem]"
 			>
-				{pageName}
 			</p>
 		</div>
 

@@ -14,6 +14,8 @@ from typing import Iterable
 import polars as pl
 import streamlit as st
 
+from shared.reporting_ui import apply_shared_css
+
 
 CURIE_COLORS = {
     "bg": "#f5f7fb",
@@ -41,32 +43,7 @@ class ColumnSpec:
 
 def apply_reporting_theme() -> None:
     """Apply light-touch Streamlit styling shared by all reporting dashboards."""
-    st.markdown(
-        f"""
-        <style>
-          :root {{
-            --curie-bg: {CURIE_COLORS["bg"]};
-            --curie-surface: {CURIE_COLORS["surface"]};
-            --curie-text: {CURIE_COLORS["text"]};
-            --curie-text-muted: {CURIE_COLORS["muted"]};
-            --curie-border: {CURIE_COLORS["border"]};
-            --curie-blue-l1: {CURIE_COLORS["blue_l1"]};
-            --curie-blue-l3: {CURIE_COLORS["blue_l3"]};
-            --curie-red-l1: {CURIE_COLORS["red_l1"]};
-          }}
-          [data-testid="stVegaLiteChart"] {{
-            border: 1px solid var(--curie-border);
-            border-radius: 8px;
-            padding: 0.5rem;
-          }}
-          [data-testid="stDataFrame"] {{
-            border-radius: 8px;
-            overflow: hidden;
-          }}
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
+    apply_shared_css()
 
 
 def data_freshness(created_at_utc: str) -> str:

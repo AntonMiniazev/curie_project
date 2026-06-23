@@ -23,10 +23,11 @@
 	--curie-text-bright: #eef3f8;
 	--curie-border-hard: #b8c0ca;
 	--curie-border: #d8e0eb;
+	--curie-blue-primary: #b8c0ca;
 	--curie-blue-l1: #1d3557ff;
 	--curie-blue-l2: #455874ff;
 	--curie-blue-l3: #457b9dff;
-	--curie-blue-l4: rgb(112, 190, 239);
+	--curie-blue-l4: #63a7d4;
 	--curie-red-l1: #e63946ff;
 	--curie-red-l2: #ec9a9aff;
 	--curie-radius-xs: 4px;
@@ -56,6 +57,7 @@
 	--curie-text-bright: #f8fbff;
 	--curie-border-hard: #53647a;
 	--curie-border: #33445a;
+	--curie-blue-primary: #33445a;
 	--curie-blue-l1: #8fc7ed;
 	--curie-blue-l2: #b8c7da;
 	--curie-blue-l3: #63a7d4;
@@ -197,19 +199,6 @@ body.project-hub-page::-webkit-scrollbar {
 	white-space: pre-line;
 }
 
-.curie-card {
-	border: 1px solid var(--curie-border);
-	border-radius: var(--curie-radius-xm);
-	background: var(--curie-surface);
-	box-shadow: 0 1px 2px rgba(29, 53, 87, 0.06);
-}
-
-.curie-card-flat {
-	border: 1px solid var(--curie-border);
-	border-radius: var(--curie-radius-xm);
-	background: var(--curie-surface);
-}
-
 .curie-report-frame {
 	display: block;
 	width: 100%;
@@ -235,6 +224,30 @@ body.project-hub-page::-webkit-scrollbar {
 	border-radius: 0;
 }
 
+.curie-report-shell {
+	position: relative;
+	overflow: hidden;
+}
+
+.curie-report-shell.curie-report-expanded {
+	position: fixed;
+	inset: 0;
+	z-index: 80;
+	display: flex;
+	flex-direction: column;
+	border-radius: 0;
+}
+
+.curie-report-shell :global(.curie-report-frame) {
+	border-radius: var(--curie-radius-xm);
+}
+
+.curie-report-shell.curie-report-expanded :global(.curie-report-frame) {
+	flex: 1;
+	min-height: 0;
+	border-radius: 0;
+}
+
 .curie-input {
 	width: 100%;
 	border: 1px solid var(--curie-border);
@@ -247,6 +260,20 @@ body.project-hub-page::-webkit-scrollbar {
 
 .curie-input:focus {
 	border-color: var(--curie-blue-l1);
+}
+
+.curie-card {
+	border: 1px solid var(--curie-border);
+	border-radius: var(--curie-radius-xm);
+	background: var(--curie-surface);
+	box-shadow: 0 1px 2px var(--curie-border-hard);
+}
+
+.curie-card:hover,
+.curie-card:focus-visible {
+	border-color: var(--curie-blue-l1);
+	background-color: var(--curie-control-bg-hover);
+	color: var(--curie-blue-l1);
 }
 
 .curie-select {
@@ -262,8 +289,11 @@ body.project-hub-page::-webkit-scrollbar {
 	outline: none;
 }
 
-.curie-select:focus {
+.curie-select:hover,
+.curie-select:focus-visible {
 	border-color: var(--curie-blue-l1);
+	background-color: var(--curie-control-bg-hover);
+	color: var(--curie-blue-l1);
 }
 
 .curie-select option {
@@ -272,16 +302,82 @@ body.project-hub-page::-webkit-scrollbar {
 	font: inherit;
 }
 
+.curie-report-inline-button {
+	display: inline-flex;
+	width: fit-content;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	border: 1px solid var(--curie-border);
+	border-radius: 0.5rem;
+	background: var(--curie-surface);
+	padding: 0.5rem 0.75rem;
+	color: var(--curie-text);
+	font-size: 0.875rem;
+	font-weight: 600;
+	box-shadow: 0 1px 2px var(--curie-border-hard);
+	transition:
+		background-color 0.15s ease,
+		color 0.15s ease,
+		border-color 0.15s ease;
+}
+
+.curie-report-inline-button:hover,
+.curie-report-inline-button:focus-visible {
+	border-color: var(--curie-blue-l1);
+	background-color: var(--curie-control-bg-hover);
+	color: var(--curie-blue-l1);
+}
+
+.curie-report-collapse-button {
+	position: absolute;
+	right: 3.25rem;
+	top: 0.75rem;
+	z-index: 2;
+	display: inline-flex;
+	height: 2.25rem;
+	width: 2.25rem;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid var(--curie-border);
+	border-radius: 0.5rem;
+	background: color-mix(in srgb, var(--curie-surface) 92%, transparent);
+	color: var(--curie-text);
+	box-shadow: 0 1px 2px var(--curie-border-hard);
+	transition:
+		background-color 0.15s ease,
+		color 0.15s ease,
+		border-color 0.15s ease;
+}
+
+.curie-report-collapse-button:hover,
+.curie-report-collapse-button:focus-visible {
+	border-color: var(--curie-blue-l1);
+	background-color: var(--curie-control-bg-hover);
+	color: var(--curie-blue-l1);
+}
+
 .curie-button {
 	border: 1px solid var(--curie-border);
 	border-radius: var(--curie-radius-xm);
 	background: var(--curie-control-bg);
 	color: var(--curie-text);
 	font-weight: 500;
+	box-shadow: 0 1px 2px var(--curie-border-hard);
 	transition:
 		border-color 150ms ease,
 		color 150ms ease,
 		background-color 150ms ease;
+}
+
+.curie-card-flat {
+	border: 1px solid var(--curie-border);
+	border-radius: var(--curie-radius-xm);
+	background: var(--curie-control-bg);
+	color: var(--curie-text);
+	font-weight: 500;
+	box-shadow: 0 1px 2px var(--curie-border-hard);
 }
 
 .curie-button:hover {
@@ -290,10 +386,19 @@ body.project-hub-page::-webkit-scrollbar {
 
 .curie-button-primary {
 	border-radius: var(--curie-radius-xm);
-	background: var(--curie-blue-l1);
-	color: var(--curie-primary-text);
+	border: 1px solid var(--curie-border);
+	border-radius: var(--curie-radius-xm);	
+	background: var(--curie-blue-primary);
+	color: var(--curie-text);
+	box-shadow: 0 1px 2px var(--curie-border-hard);
 	font-weight: 500;
 }
+
+.curie-button-primary:hover,
+.curie-button-primary:focus-visible {
+	border-color: var(--curie-blue-l1);
+}
+
 
 .curie-alert-danger {
 	border-radius: var(--curie-radius-xm);

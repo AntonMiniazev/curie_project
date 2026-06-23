@@ -16,10 +16,13 @@ from apps.api.routers.auth import (
     get_current_user,
     login_user,
     logout_user,
+    nginx_streamlit_auth,
     refresh_access_token,
     register_user,
 )
 from apps.api.schemas.auth import LogoutRequest, RefreshTokenRequest, UserCreateRequest, UserLoginRequest
+from apps.api.core.config import get_settings
+from apps.api.core.security import decode_access_token
 
 
 @dataclass
@@ -249,6 +252,45 @@ def test_register_login_me_refresh_and_logout_flow() -> None:
         )
 
     assert revoked_token_error.value.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+def test_nginx_streamlit_auth_returns_signed_scope_header_from_cookie() -> None:
+    db = session_with_roles()
+    registered = register_user(
+        UserCreateRequest(
+            email="demo@example.com",
+            password="ChangeMe123!",
+            role="store_fontaine",
+        ),
+        db,  # type: ignore[arg-type]
+        make_response(),
+    )
+    settings = get_settings()
+
+    response = nginx_streamlit_auth(
+        make_response(),
+        None,
+        db,  # type: ignore[arg-type]
+        make_request({settings.auth_access_cookie_name: registered.access_token}),
+    )
+
+    token = response.headers["X-Curie-Streamlit-Scope"]
+    claims = decode_access_token(token)
+    assert claims["email"] == "demo@example.com"
+    assert claims["roles"] == ["store_fontaine"]
+    assert claims["type"] == "streamlit_scope"
+
+
+def test_nginx_streamlit_auth_rejects_missing_session_cookie() -> None:
+    with pytest.raises(HTTPException) as exc_info:
+        nginx_streamlit_auth(
+            make_response(),
+            None,
+            session_with_roles(),  # type: ignore[arg-type]
+            make_request(),
+        )
+
+    assert exc_info.value.status_code == status.HTTP_401_UNAUTHORIZED
 
 
 def test_register_rejects_duplicate_email() -> None:

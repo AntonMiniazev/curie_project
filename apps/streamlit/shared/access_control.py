@@ -12,6 +12,7 @@ from shared.settings import get_settings
 
 
 REGION_ROLE = "region_directory"
+SCOPE_HEADER = "X-Curie-Streamlit-Scope"
 STORE_ROLE_TO_STORE_NAME = {
     "store_fontaine": "Fontaine",
     "store_honeybee": "Honeybee",
@@ -45,29 +46,34 @@ class ReportAccess:
 
 
 def current_report_access() -> ReportAccess:
-    """Decode the signed iframe token and return the user's reporting scope."""
+    """Resolve signed report scope from Nginx headers, with a local-dev cookie fallback."""
     cached_claims = st.session_state.get("curie_embed_claims")
     claims = cached_claims if isinstance(cached_claims, dict) else None
 
     if claims is None:
-        token = _query_token()
+        settings = get_settings()
+        token = _scope_header()
+        expected_type = "streamlit_scope"
+        if token is None and settings.app_env == "dev":
+            token = _access_cookie(settings.auth_access_cookie_name)
+            expected_type = "access"
+
         if token is None:
             return _denied(
-                "Open this report from the Curie website so Streamlit receives an authenticated report token."
+                "Open this report from the Curie website so Streamlit receives an authenticated report scope."
             )
 
         try:
-            settings = get_settings()
             claims = jwt.decode(
                 token,
                 settings.jwt_secret_key.get_secret_value(),
                 algorithms=[settings.jwt_algorithm],
             )
         except PyJWTError:
-            return _denied("The Streamlit report token is invalid or expired.")
+            return _denied("The Streamlit report scope is invalid or expired.")
 
-        if claims.get("type") != "streamlit_embed":
-            return _denied("The Streamlit report token has an unexpected token type.")
+        if claims.get("type") != expected_type:
+            return _denied("The Streamlit report scope has an unexpected token type.")
 
         st.session_state.curie_embed_claims = claims
 
@@ -101,8 +107,14 @@ def restrict_store_options(
     ]
 
 
-def _query_token() -> str | None:
-    token = st.query_params.get("curie_token")
+def _scope_header() -> str | None:
+    headers = st.context.headers
+    token = headers.get(SCOPE_HEADER) or headers.get(SCOPE_HEADER.lower())
+    return token or None
+
+
+def _access_cookie(cookie_name: str) -> str | None:
+    token = st.context.cookies.get(cookie_name)
     if isinstance(token, list):
         return token[0] if token else None
     return token or None

@@ -1,7 +1,7 @@
 from apps.api.core.security import (
     create_access_token,
     create_random_token,
-    create_streamlit_embed_token,
+    create_streamlit_scope_token,
     decode_access_token,
     hash_password,
     hash_token,
@@ -34,8 +34,8 @@ def test_access_token_contains_expected_claims() -> None:
     assert "exp" in claims
 
 
-def test_streamlit_embed_token_contains_expected_scope_claims() -> None:
-    token = create_streamlit_embed_token(
+def test_streamlit_scope_token_contains_expected_scope_claims() -> None:
+    token = create_streamlit_scope_token(
         user_id="11111111-1111-4111-8111-111111111111",
         email="demo@example.com",
         roles=["store_fontaine"],
@@ -46,7 +46,7 @@ def test_streamlit_embed_token_contains_expected_scope_claims() -> None:
     assert claims["sub"] == "11111111-1111-4111-8111-111111111111"
     assert claims["email"] == "demo@example.com"
     assert claims["roles"] == ["store_fontaine"]
-    assert claims["type"] == "streamlit_embed"
+    assert claims["type"] == "streamlit_scope"
     assert "iat" in claims
     assert "exp" in claims
 

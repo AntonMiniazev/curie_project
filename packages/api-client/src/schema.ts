@@ -169,7 +169,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/auth/streamlit-token": {
+    "/api/auth/nginx-streamlit": {
         parameters: {
             query?: never;
             header?: never;
@@ -177,10 +177,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get Streamlit Embed Token
-         * @description Return a short-lived signed token for embedded Streamlit report scoping.
+         * Nginx Streamlit Auth
+         * @description Validate a browser session for Nginx `auth_request` and return signed Streamlit scope.
          */
-        get: operations["get_streamlit_embed_token_api_auth_streamlit_token_get"];
+        get: operations["nginx_streamlit_auth_api_auth_nginx_streamlit_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -364,16 +364,6 @@ export interface components {
             items: components["schemas"]["ReportItem"][];
             /** Count */
             count: number;
-        };
-        /**
-         * StreamlitEmbedTokenResponse
-         * @description Short-lived signed token used to scope embedded Streamlit report data.
-         */
-        StreamlitEmbedTokenResponse: {
-            /** Embed Token */
-            embed_token: string;
-            /** Expires In Seconds */
-            expires_in_seconds: number;
         };
         /**
          * TokenResponse
@@ -661,7 +651,7 @@ export interface operations {
             };
         };
     };
-    get_streamlit_embed_token_api_auth_streamlit_token_get: {
+    nginx_streamlit_auth_api_auth_nginx_streamlit_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -671,13 +661,11 @@ export interface operations {
         requestBody?: never;
         responses: {
             /** @description Successful Response */
-            200: {
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": components["schemas"]["StreamlitEmbedTokenResponse"];
-                };
+                content?: never;
             };
         };
     };

@@ -269,24 +269,17 @@
         ]
       }
     },
-    "/api/auth/streamlit-token": {
+    "/api/auth/nginx-streamlit": {
       "get": {
         "tags": [
           "auth"
         ],
-        "summary": "Get Streamlit Embed Token",
-        "description": "Return a short-lived signed token for embedded Streamlit report scoping.",
-        "operationId": "get_streamlit_embed_token_api_auth_streamlit_token_get",
+        "summary": "Nginx Streamlit Auth",
+        "description": "Validate a browser session for Nginx `auth_request` and return signed Streamlit scope.",
+        "operationId": "nginx_streamlit_auth_api_auth_nginx_streamlit_get",
         "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StreamlitEmbedTokenResponse"
-                }
-              }
-            }
+          "204": {
+            "description": "Successful Response"
           }
         },
         "security": [
@@ -737,25 +730,6 @@
           "count"
         ],
         "title": "ReportsResponse"
-      },
-      "StreamlitEmbedTokenResponse": {
-        "properties": {
-          "embed_token": {
-            "type": "string",
-            "title": "Embed Token"
-          },
-          "expires_in_seconds": {
-            "type": "integer",
-            "title": "Expires In Seconds"
-          }
-        },
-        "type": "object",
-        "required": [
-          "embed_token",
-          "expires_in_seconds"
-        ],
-        "title": "StreamlitEmbedTokenResponse",
-        "description": "Short-lived signed token used to scope embedded Streamlit report data."
       },
       "TokenResponse": {
         "properties": {

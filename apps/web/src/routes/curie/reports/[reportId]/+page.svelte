@@ -7,7 +7,6 @@
 	import { get } from 'svelte/store';
 
 	import { ApiError } from '$lib/api/client';
-	import { getStreamlitEmbedToken } from '$lib/api/auth';
 	import { getReports, type ReportItem } from '$lib/api/reports';
 	import { authSession, isAuthenticated, isCheckingAuth } from '$lib/auth/session';
 	import AppHeader from '$lib/components/AppHeader.svelte';
@@ -15,7 +14,6 @@
 	import { mainNavigationItems } from '$lib/navigation';
 
 	let report = $state<ReportItem | null>(null);
-	let streamlitToken = $state<string | null>(null);
 	let errorMessage = $state<string | null>(null);
 	let isLoading = $state(false);
 	let isFrameExpanded = $state(false);
@@ -25,9 +23,7 @@
 		(env.PUBLIC_STREAMLIT_BASE_URL ?? '/streamlit').replace(/\/$/, '')
 	);
 	const streamlitUrl = $derived(
-		report && streamlitToken
-			? withStreamlitToken(`${streamlitBaseUrl}${report.streamlit_path}`, streamlitToken)
-			: null
+		report ? `${streamlitBaseUrl}${report.streamlit_path}` : null
 	);
 
 	onMount(() => {
@@ -47,12 +43,8 @@
 		isLoading = true;
 
 		try {
-			const [response, tokenResponse] = await Promise.all([
-				getReports(),
-				getStreamlitEmbedToken()
-			]);
+			const response = await getReports();
 			report = response.items.find((item) => item.id === reportId) ?? null;
-			streamlitToken = tokenResponse.embed_token;
 
 			if (!report) {
 				errorMessage = 'Report was not found in the API response.';
@@ -74,11 +66,6 @@
 
 	function toggleFrameExpanded() {
 		isFrameExpanded = !isFrameExpanded;
-	}
-
-	function withStreamlitToken(url: string, token: string): string {
-		const separator = url.includes('?') ? '&' : '?';
-		return `${url}${separator}curie_token=${encodeURIComponent(token)}`;
 	}
 </script>
 
@@ -147,7 +134,7 @@
 							aria-pressed={isFrameExpanded}
 							onclick={toggleFrameExpanded}
 						>
-							<Minimize2 class="h-4 w-4" aria-hidden="true" />
+							<Minimize2 class="h-4 w-4" aria-hidden="false" />
 						</button>
 					{/if}
 					<iframe
@@ -165,80 +152,3 @@
 		{/if}
 	</section>
 </main>
-
-<style>
-	.curie-report-shell {
-		position: relative;
-		overflow: hidden;
-	}
-
-	.curie-report-shell.curie-report-expanded {
-		position: fixed;
-		inset: 0;
-		z-index: 80;
-		display: flex;
-		flex-direction: column;
-		border-radius: 0;
-	}
-
-	.curie-report-shell :global(.curie-report-frame) {
-		border-radius: var(--curie-radius-xm);
-	}
-
-	.curie-report-shell.curie-report-expanded :global(.curie-report-frame) {
-		flex: 1;
-		min-height: 0;
-		border-radius: 0;
-	}
-
-	.curie-report-inline-button {
-		display: inline-flex;
-		width: fit-content;
-		flex-shrink: 0;
-		align-items: center;
-		justify-content: center;
-		gap: 0.5rem;
-		border: 1px solid var(--curie-border);
-		border-radius: 0.5rem;
-		background: var(--curie-surface);
-		padding: 0.5rem 0.75rem;
-		color: var(--curie-text);
-		font-size: 0.875rem;
-		font-weight: 600;
-		transition:
-			background-color 0.15s ease,
-			color 0.15s ease,
-			border-color 0.15s ease;
-	}
-
-	.curie-report-inline-button:hover {
-		border-color: var(--curie-blue-l2);
-		color: var(--curie-blue-l3);
-	}
-
-	.curie-report-collapse-button {
-		position: absolute;
-		right: 1.25rem;
-		bottom: 1.25rem;
-		z-index: 2;
-		display: inline-flex;
-		height: 2.25rem;
-		width: 2.25rem;
-		align-items: center;
-		justify-content: center;
-		border: 1px solid var(--curie-border);
-		border-radius: 0.5rem;
-		background: color-mix(in srgb, var(--curie-surface) 92%, transparent);
-		color: var(--curie-text);
-		box-shadow: 0 8px 24px rgba(29, 53, 87, 0.16);
-		transition:
-			background-color 0.15s ease,
-			color 0.15s ease,
-			border-color 0.15s ease;
-	}
-
-	.curie-report-collapse-button:hover {
-		border-color: var(--curie-blue-l2);
-		color: var(--curie-blue-l3);
-	}
-</style>

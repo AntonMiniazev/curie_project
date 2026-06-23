@@ -47,6 +47,7 @@ from shared.reporting_format import (
     format_number,
     format_percent,
 )
+from shared.reporting_ui import kpi_grid
 
 
 st.set_page_config(page_title="Marketing Reporting", layout="wide")
@@ -272,26 +273,17 @@ manifest = _manifest()
 cache_key = manifest.get("release_id") or manifest["created_at_utc"]
 all_store_sales_vs_budget = _store_monthly_sales_vs_budget(None, cache_key)
 access = current_report_access()
-store_options = restrict_store_options(_store_options(all_store_sales_vs_budget), access)
-
-st.markdown(
-    """
-    <style>
-    /* Remove padding from the top of the main block container */
-    div[data-testid="stMainBlockContainer"] {
-        padding-top: 0rem;
-        padding-bottom: 0rem;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
+store_options = restrict_store_options(
+    _store_options(all_store_sales_vs_budget), access
 )
 
 st.title("Marketing Reporting")
 st.caption(data_freshness(manifest["created_at_utc"]))
 
 if not access.is_allowed or not store_options:
-    st.error(access.error or "Your Curie role does not allow access to this report data.")
+    st.error(
+        access.error or "Your Curie role does not allow access to this report data."
+    )
     st.stop()
 
 st.caption(f"Data access: {access.label}")
@@ -421,34 +413,16 @@ period_budget_variance = _sum_column(sales_vs_budget, "sales_variance_amount")
 period_variance_pct = _period_variance_pct(sales_vs_budget)
 period_churn_pct = _period_churn_pct(client_churn)
 
-kpi_columns = st.columns(7)
-kpi_columns[0].metric(
-    "Sales",
-    format_money_k(period_sales_amount),
-)
-kpi_columns[1].metric(
-    "Orders",
-    format_number(period_order_count),
-)
-kpi_columns[2].metric(
-    "Average bill",
-    format_money(period_average_bill),
-)
-kpi_columns[3].metric(
-    "Active clients",
-    format_number(period_active_clients),
-)
-kpi_columns[4].metric(
-    "Budget variance",
-    format_money_k(period_budget_variance),
-)
-kpi_columns[5].metric(
-    "Variance %",
-    format_percent(period_variance_pct),
-)
-kpi_columns[6].metric(
-    "Churn %",
-    format_percent(period_churn_pct, already_percent=True),
+kpi_grid(
+    [
+        ("Sales", format_money_k(period_sales_amount)),
+        ("Orders", format_number(period_order_count)),
+        ("Average bill", format_money(period_average_bill)),
+        ("Active clients", format_number(period_active_clients)),
+        ("Budget variance", format_money_k(period_budget_variance)),
+        ("Variance %", format_percent(period_variance_pct)),
+        ("Churn %", format_percent(period_churn_pct, already_percent=True)),
+    ]
 )
 
 sales_tab, clients_tab, products_tab = st.tabs(["Sales", "Clients", "Products"])
