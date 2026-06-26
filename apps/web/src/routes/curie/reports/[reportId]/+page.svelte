@@ -17,17 +17,28 @@
 	let errorMessage = $state<string | null>(null);
 	let isLoading = $state(false);
 	let isFrameExpanded = $state(false);
+	let curieTheme = $state<'day' | 'night'>('day');
 
 	const reportId = $derived(page.params.reportId);
 	const streamlitBaseUrl = $derived(
 		(env.PUBLIC_STREAMLIT_BASE_URL ?? '/streamlit').replace(/\/$/, '')
 	);
 	const streamlitUrl = $derived(
-		report ? `${streamlitBaseUrl}${report.streamlit_path}` : null
+		report ? appendReportTheme(`${streamlitBaseUrl}${report.streamlit_path}`) : null
 	);
 
 	onMount(() => {
+		syncTheme();
+		const themeObserver = new MutationObserver(syncTheme);
+		themeObserver.observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ['data-theme']
+		});
 		void initializePage();
+
+		return () => {
+			themeObserver.disconnect();
+		};
 	});
 
 	async function initializePage() {
@@ -66,6 +77,15 @@
 
 	function toggleFrameExpanded() {
 		isFrameExpanded = !isFrameExpanded;
+	}
+
+	function syncTheme() {
+		curieTheme = document.documentElement.dataset.theme === 'night' ? 'night' : 'day';
+	}
+
+	function appendReportTheme(url: string): string {
+		const separator = url.includes('?') ? '&' : '?';
+		return `${url}${separator}curie_theme=${encodeURIComponent(curieTheme)}`;
 	}
 </script>
 
@@ -141,7 +161,6 @@
 						class="curie-report-frame"
 						title={report.title}
 						src={streamlitUrl}
-						loading="lazy"
 					></iframe>
 				{:else}
 					<div class="grid min-h-[560px] place-items-center p-6">

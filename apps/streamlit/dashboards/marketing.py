@@ -15,8 +15,8 @@ import streamlit as st
 
 import shared.reporting_charts as reporting_charts
 from shared.access_control import current_report_access, restrict_store_options
-from shared.cache_reader import load_manifest
-from shared.marketing_queries import (
+from data.cache_reader import load_manifest
+from data.marketing_queries import (
     marketing_active_clients,
     marketing_average_bill_by_month,
     marketing_client_churn_by_month,
@@ -32,26 +32,28 @@ from shared.reporting_charts import (
     clients_chart,
     sales_and_average_bill_chart,
 )
+from shared.reporting_controls import (
+    dataframe_with_download,
+)
 from shared.reporting_format import (
-    ColumnSpec,
-    apply_reporting_theme,
     available_months,
     available_years,
     data_freshness,
-    display_table,
     default_timeframe,
     filter_month_range,
     filter_years,
-    format_money,
-    format_money_k,
-    format_number,
-    format_percent,
+    format_table_column,
+    format_value,
 )
-from shared.reporting_ui import kpi_grid
+from shared.reporting_ui import kpi_grid, apply_shared_css
 
 
-st.set_page_config(page_title="Marketing Reporting", layout="wide")
-apply_reporting_theme()
+st.set_page_config(
+    page_title="Marketing Reporting",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+apply_shared_css()
 
 
 def _manifest() -> dict:
@@ -165,39 +167,10 @@ def _store_options(store_sales_vs_budget: pl.DataFrame) -> list[tuple[str, int |
     return options
 
 
-def _table_key(name: str) -> str:
-    """Return a remountable key so users can reset manual table layout changes."""
-    return f"{name}_{st.session_state.get('report_layout_version', 0)}"
-
-
 def _chart_key(name: str) -> str:
     """Return a remountable key so chart frontend state can be reset."""
     charts_version = Path(reporting_charts.__file__).stat().st_mtime_ns
     return f"{name}_{st.session_state.get('report_layout_version', 0)}_{charts_version}"
-
-
-def _dataframe(name: str, df: pl.DataFrame, columns: list[ColumnSpec]) -> None:
-    """Render one report table with typed formatting and a CSV export button."""
-    display_df, column_config = display_table(df, columns)
-    _, download_column = st.columns([0.96, 0.04])
-    download_column.download_button(
-        "",
-        data=display_df.write_csv().encode("utf-8"),
-        file_name=f"{name}.csv",
-        mime="text/csv",
-        key=f"{_table_key(name)}_download",
-        help="Download CSV",
-        icon=":material/download:",
-        on_click="ignore",
-        width="content",
-    )
-    st.dataframe(
-        display_df,
-        width="stretch",
-        hide_index=True,
-        column_config=column_config,
-        key=_table_key(name),
-    )
 
 
 def _empty_frame_like(df: pl.DataFrame) -> pl.DataFrame:
@@ -243,29 +216,90 @@ def _period_churn_pct(client_churn: pl.DataFrame) -> float | None:
 
 # Table column contracts stay near the dashboard because they are report-specific
 # labels, while `display_table` remains reusable across future dashboard blocks.
+
 STORE_SALES_VS_BUDGET_COLUMNS = [
-    ColumnSpec("month", "Month", "month"),
-    ColumnSpec("store_name", "Store"),
-    ColumnSpec("city", "City"),
-    ColumnSpec("actual_sales_amount", "Actual Sales", "money"),
-    ColumnSpec("budget_sales_amount", "Budget Sales", "money"),
-    ColumnSpec("sales_variance_amount", "Variance", "money"),
-    ColumnSpec("sales_variance_pct", "Variance %", "percent_ratio"),
-    ColumnSpec("actual_order_count", "Actual Orders", "number"),
-    ColumnSpec("budget_order_count", "Budget Orders", "number"),
+    format_table_column(source="month", label="Month", kind="month"),
+    format_table_column(
+        source="store_name",
+        label="Store",
+    ),
+    format_table_column(
+        source="city",
+        label="City",
+    ),
+    format_table_column(
+        source="actual_sales_amount",
+        label="Actual Sales",
+        kind="money",
+        decimals=0,
+    ),
+    format_table_column(
+        source="budget_sales_amount",
+        label="Budget Sales",
+        kind="money",
+        decimals=0,
+    ),
+    format_table_column(
+        source="sales_variance_amount",
+        label="Variance",
+        kind="money",
+        decimals=0,
+    ),
+    format_table_column(
+        source="sales_variance_pct",
+        label="Variance %",
+        kind="percent",
+    ),
+    format_table_column(
+        source="actual_order_count",
+        label="Actual Orders",
+        kind="integer",
+    ),
+    format_table_column(
+        source="budget_order_count",
+        label="Budget Orders",
+        kind="integer",
+    ),
 ]
 
 TOP_PRODUCT_COLUMNS = [
-    ColumnSpec("product_name", "Product"),
-    ColumnSpec("category_name", "Category"),
-    ColumnSpec("sales_amount", "Sales", "money"),
-    ColumnSpec("order_count", "Orders", "number"),
+    format_table_column(
+        source="product_name",
+        label="Product",
+    ),
+    format_table_column(
+        source="category_name",
+        label="Category",
+    ),
+    format_table_column(
+        source="sales_amount",
+        label="Sales",
+        kind="money",
+        decimals=2,
+    ),
+    format_table_column(
+        source="order_count",
+        label="Orders",
+        kind="integer",
+    ),
 ]
 
 TOP_CATEGORY_COLUMNS = [
-    ColumnSpec("category_name", "Category"),
-    ColumnSpec("sales_amount", "Sales", "money"),
-    ColumnSpec("order_count", "Orders", "number"),
+    format_table_column(
+        source="category_name",
+        label="Category",
+    ),
+    format_table_column(
+        source="sales_amount",
+        label="Sales",
+        kind="money",
+        decimals=0,
+    ),
+    format_table_column(
+        source="order_count",
+        label="Orders",
+        kind="integer",
+    ),
 ]
 
 
@@ -415,13 +449,16 @@ period_churn_pct = _period_churn_pct(client_churn)
 
 kpi_grid(
     [
-        ("Sales", format_money_k(period_sales_amount)),
-        ("Orders", format_number(period_order_count)),
-        ("Average bill", format_money(period_average_bill)),
-        ("Active clients", format_number(period_active_clients)),
-        ("Budget variance", format_money_k(period_budget_variance)),
-        ("Variance %", format_percent(period_variance_pct)),
-        ("Churn %", format_percent(period_churn_pct, already_percent=True)),
+        ("Sales", format_value(period_sales_amount, "money_k", decimals=0)),
+        ("Orders", format_value(period_order_count, "number", decimals=0)),
+        ("Average bill", format_value(period_average_bill, "money", decimals=0)),
+        ("Active clients", format_value(period_active_clients, "number", decimals=0)),
+        (
+            "Budget variance",
+            format_value(period_budget_variance, "money_k", decimals=0),
+        ),
+        ("Variance %", format_value(period_variance_pct, "percent")),
+        ("Churn %", format_value(period_churn_pct, "percent")),
     ]
 )
 
@@ -436,11 +473,11 @@ with sales_tab:
         key=_chart_key("sales_average_bill"),
     )
 
-    st.subheader("Store Sales vs Budget")
-    _dataframe(
-        "store_sales_vs_budget",
-        store_sales_vs_budget,
-        STORE_SALES_VS_BUDGET_COLUMNS,
+    dataframe_with_download(
+        name="store_sales_vs_budget",
+        title="Store Sales vs Budget",
+        df=store_sales_vs_budget,
+        columns=STORE_SALES_VS_BUDGET_COLUMNS,
     )
 
 with clients_tab:
@@ -487,8 +524,16 @@ with products_tab:
             _top_categories((), ranking_metric, 1, selected_store_id, cache_key)
         )
 
-    st.subheader("Top Products")
-    _dataframe("top_products", top_products, TOP_PRODUCT_COLUMNS)
+    dataframe_with_download(
+        name="top_products",
+        title="Top Products",
+        df=top_products,
+        columns=TOP_PRODUCT_COLUMNS,
+    )
 
-    st.subheader("Top Categories")
-    _dataframe("top_categories", top_categories, TOP_CATEGORY_COLUMNS)
+    dataframe_with_download(
+        name="top_categories",
+        title="Top Categories",
+        df=top_categories,
+        columns=TOP_CATEGORY_COLUMNS,
+    )

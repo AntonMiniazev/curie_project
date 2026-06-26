@@ -7,63 +7,17 @@ not materialize large fact tables or know cache file paths.
 
 from __future__ import annotations
 
-from datetime import date
-from typing import Sequence
-
 import polars as pl
 
-from shared.cache_reader import connect, table_path
-
-
-def _query(sql: str, params: list[object]) -> pl.DataFrame:
-    """Execute parameterized DuckDB SQL and convert the reduced result to Polars."""
-    with connect() as con:
-        return pl.from_arrow(con.execute(sql, params).fetch_arrow_table())
-
-
-MonthSelection = str | date | Sequence[str | date] | None
-
-
-def _normalize_months(months: MonthSelection) -> list[str | date]:
-    if months is None:
-        return []
-    if isinstance(months, str | date):
-        return [months]
-    return list(months)
-
-
-def _filter_sql(
-    *,
-    month_column: str | None = None,
-    months: MonthSelection = None,
-    store_column: str | None = None,
-    store_id: int | None = None,
-) -> tuple[str, list[object]]:
-    """Build shared month/store WHERE clauses for marketing facts."""
-    conditions: list[str] = []
-    params: list[object] = []
-    month_values = _normalize_months(months)
-
-    if month_column and month_values:
-        placeholders = ", ".join(["date_trunc('month', ?::DATE)"] * len(month_values))
-        conditions.append(f"date_trunc('month', {month_column}) IN ({placeholders})")
-        params.extend(month_values)
-
-    if store_column and store_id is not None:
-        conditions.append(f"{store_column} = ?")
-        params.append(store_id)
-
-    if not conditions:
-        return "", []
-
-    return "WHERE " + " AND ".join(conditions), params
+from data.cache_reader import table_path
+from data.query_utils import MonthSelection, filter_sql, query
 
 
 def marketing_monthly_sales(store_id: int | None = None) -> pl.DataFrame:
     """Return monthly sales amount and order count from `fct_orders_sales`."""
     orders_path = str(table_path("fct_orders_sales"))
-    where_sql, where_params = _filter_sql(store_column="store_id", store_id=store_id)
-    return _query(
+    where_sql, where_params = filter_sql(store_column="store_id", store_id=store_id)
+    return query(
         f"""
         SELECT
           date_trunc('month', order_date) AS month,
@@ -81,8 +35,8 @@ def marketing_monthly_sales(store_id: int | None = None) -> pl.DataFrame:
 def marketing_average_bill_by_month(store_id: int | None = None) -> pl.DataFrame:
     """Return monthly average bill as sales divided by distinct order count."""
     orders_path = str(table_path("fct_orders_sales"))
-    where_sql, where_params = _filter_sql(store_column="store_id", store_id=store_id)
-    return _query(
+    where_sql, where_params = filter_sql(store_column="store_id", store_id=store_id)
+    return query(
         f"""
         SELECT
           date_trunc('month', order_date) AS month,
@@ -101,8 +55,8 @@ def marketing_average_bill_by_month(store_id: int | None = None) -> pl.DataFrame
 def marketing_monthly_clients(store_id: int | None = None) -> pl.DataFrame:
     """Return active clients by month based on clients with at least one order."""
     orders_path = str(table_path("fct_orders_sales"))
-    where_sql, where_params = _filter_sql(store_column="store_id", store_id=store_id)
-    return _query(
+    where_sql, where_params = filter_sql(store_column="store_id", store_id=store_id)
+    return query(
         f"""
         SELECT
           date_trunc('month', order_date) AS month,
@@ -122,14 +76,14 @@ def marketing_active_clients(
 ) -> pl.DataFrame:
     """Return distinct active clients across the selected reporting period."""
     orders_path = str(table_path("fct_orders_sales"))
-    where_sql, where_params = _filter_sql(
+    where_sql, where_params = filter_sql(
         month_column="order_date",
         months=months,
         store_column="store_id",
         store_id=store_id,
     )
     client_condition = f"{'AND' if where_sql else 'WHERE'} client_id IS NOT NULL"
-    return _query(
+    return query(
         f"""
         SELECT
           count(DISTINCT client_id) AS active_client_count
@@ -145,9 +99,7 @@ def marketing_client_churn_by_month(store_id: int | None = None) -> pl.DataFrame
     """Return churn numerator, starting client base, and churn percent by month."""
     orders_path = str(table_path("fct_orders_sales"))
     clients_path = str(table_path("dim_clients"))
-    client_store_filter = (
-        "AND c.preferred_store_id = ?" if store_id is not None else ""
-    )
+    client_store_filter = "AND c.preferred_store_id = ?" if store_id is not None else ""
     churn_store_filter = "AND preferred_store_id = ?" if store_id is not None else ""
     params: list[object] = [orders_path, clients_path, clients_path]
     if store_id is not None:
@@ -158,7 +110,7 @@ def marketing_client_churn_by_month(store_id: int | None = None) -> pl.DataFrame
 
     # Churn is defined as churn events during the month divided by the client
     # base at the start of the month. `updated_at` is the churn event timestamp.
-    return _query(
+    return query(
         f"""
         WITH months AS (
           SELECT DISTINCT date_trunc('month', order_date) AS month_start
@@ -209,8 +161,8 @@ def marketing_client_churn_by_month(store_id: int | None = None) -> pl.DataFrame
 def marketing_monthly_budget(store_id: int | None = None) -> pl.DataFrame:
     """Return daily budget rows rolled up to monthly sales and order budgets."""
     budget_path = str(table_path("budget_orders_sales"))
-    where_sql, where_params = _filter_sql(store_column="store_id", store_id=store_id)
-    return _query(
+    where_sql, where_params = filter_sql(store_column="store_id", store_id=store_id)
+    return query(
         f"""
         SELECT
           date_trunc('month', budget_date) AS month,
@@ -229,9 +181,9 @@ def marketing_monthly_sales_vs_budget(store_id: int | None = None) -> pl.DataFra
     """Return total monthly actuals, budgets, variance amount, and variance pct."""
     orders_path = str(table_path("fct_orders_sales"))
     budget_path = str(table_path("budget_orders_sales"))
-    actual_where, actual_params = _filter_sql(store_column="store_id", store_id=store_id)
-    budget_where, budget_params = _filter_sql(store_column="store_id", store_id=store_id)
-    return _query(
+    actual_where, actual_params = filter_sql(store_column="store_id", store_id=store_id)
+    budget_where, budget_params = filter_sql(store_column="store_id", store_id=store_id)
+    return query(
         f"""
         WITH actual AS (
           SELECT
@@ -288,7 +240,7 @@ def marketing_store_monthly_sales_vs_budget(
 
     # `dim_stores` can contain repeated rows per store in the cache, so labels
     # are deduped before joining to store-level actual-vs-budget metrics.
-    return _query(
+    return query(
         f"""
         WITH actual AS (
           SELECT
@@ -366,14 +318,14 @@ def marketing_top_products(
     order_column = "sales_amount" if metric == "sales" else "order_count"
     order_product_path = str(table_path("fct_order_product"))
     products_path = str(table_path("dim_products"))
-    where_sql, where_params = _filter_sql(
+    where_sql, where_params = filter_sql(
         month_column="op.order_date",
         months=months,
         store_column="op.store_id",
         store_id=store_id,
     )
 
-    return _query(
+    return query(
         f"""
         SELECT
           p.product_name,
@@ -404,14 +356,14 @@ def marketing_top_categories(
     order_column = "sales_amount" if metric == "sales" else "order_count"
     order_product_path = str(table_path("fct_order_product"))
     products_path = str(table_path("dim_products"))
-    where_sql, where_params = _filter_sql(
+    where_sql, where_params = filter_sql(
         month_column="op.order_date",
         months=months,
         store_column="op.store_id",
         store_id=store_id,
     )
 
-    return _query(
+    return query(
         f"""
         SELECT
           p.category_name,
@@ -431,11 +383,11 @@ def marketing_top_categories(
 def marketing_new_clients_by_month(store_id: int | None = None) -> pl.DataFrame:
     """Return new clients grouped by registration month."""
     clients_path = str(table_path("dim_clients"))
-    where_sql, where_params = _filter_sql(
+    where_sql, where_params = filter_sql(
         store_column="preferred_store_id",
         store_id=store_id,
     )
-    return _query(
+    return query(
         f"""
         SELECT
           date_trunc('month', registration_date) AS month,

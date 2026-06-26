@@ -21,4 +21,4 @@ COPY apps/streamlit/.streamlit ./.streamlit
 
 EXPOSE 8501
 
-CMD ["uv", "run", "streamlit", "run", "apps/streamlit/dashboards/marketing.py", "--server.address", "0.0.0.0", "--server.port", "8501", "--server.headless", "true", "--client.toolbarMode", "viewer", "--browser.gatherUsageStats", "false"]
+CMD ["uv", "run", "streamlit", "run", "apps/streamlit/app.py", "--server.address", "0.0.0.0", "--server.port", "8501", "--server.headless", "true", "--client.toolbarMode", "minimal", "--browser.gatherUsageStats", "false", "--theme.base", "light"]

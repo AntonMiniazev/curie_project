@@ -238,11 +238,11 @@ body.project-hub-page::-webkit-scrollbar {
 	border-radius: 0;
 }
 
-.curie-report-shell :global(.curie-report-frame) {
+.curie-report-shell .curie-report-frame {
 	border-radius: var(--curie-radius-xm);
 }
 
-.curie-report-shell.curie-report-expanded :global(.curie-report-frame) {
+.curie-report-shell.curie-report-expanded .curie-report-frame {
 	flex: 1;
 	min-height: 0;
 	border-radius: 0;

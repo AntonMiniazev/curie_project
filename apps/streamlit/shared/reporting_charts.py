@@ -10,7 +10,7 @@ from __future__ import annotations
 import altair as alt
 import polars as pl
 
-from shared.reporting_format import CURIE_COLORS
+from shared.reporting_ui import current_report_colors as curie_colors
 
 
 def sales_and_average_bill_chart(
@@ -19,6 +19,7 @@ def sales_and_average_bill_chart(
     sales_vs_budget: pl.DataFrame,
 ) -> alt.LayerChart:
     """Render monthly sales/budget performance with average bill as a line."""
+    colors = curie_colors()
     measure_data = (
         monthly_sales.join(
             average_bill.select(["month", "average_bill_amount"]),
@@ -138,9 +139,9 @@ def sales_and_average_bill_chart(
                 scale=alt.Scale(
                     domain=["Sales covered", "Gap to budget", "Over budget"],
                     range=[
-                        CURIE_COLORS["blue_l3"],
-                        CURIE_COLORS["red_l1"],
-                        CURIE_COLORS["green_l1"],
+                        colors["blue_l3"],
+                        colors["red_l1"],
+                        colors["green_l1"],
                     ],
                 ),
                 legend=alt.Legend(orient="top", direction="horizontal"),
@@ -164,7 +165,7 @@ def sales_and_average_bill_chart(
         .transform_calculate(metric="'Average bill $'")
         .mark_line(
             point=alt.OverlayMarkDef(filled=False, fill="white"),
-            color=CURIE_COLORS["muted"],
+            color=colors["muted"],
             interpolate="monotone",
         )
         .encode(
@@ -194,6 +195,7 @@ def sales_and_average_bill_chart(
 
 def sales_vs_budget_chart(sales_vs_budget: pl.DataFrame) -> alt.Chart:
     """Render actual sales and budget sales as monthly comparison lines."""
+    colors = curie_colors()
     chart_data = (
         sales_vs_budget.pipe(
             _money_k_columns,
@@ -238,7 +240,7 @@ def sales_vs_budget_chart(sales_vs_budget: pl.DataFrame) -> alt.Chart:
                 title=None,
                 scale=alt.Scale(
                     domain=["Actual sales", "Budget sales"],
-                    range=[CURIE_COLORS["blue_l3"], CURIE_COLORS["blue_l4"]],
+                    range=[colors["blue_l3"], colors["blue_l4"]],
                 ),
                 legend=alt.Legend(orient="top", direction="horizontal"),
             ),
@@ -257,6 +259,7 @@ def clients_chart(
     client_churn: pl.DataFrame,
 ) -> alt.LayerChart:
     """Render active/new client bars with churn percentage as a line."""
+    colors = curie_colors()
     client_bars = (
         monthly_clients.join(new_clients, on="month", how="full", coalesce=True)
         .fill_null(0)
@@ -308,9 +311,9 @@ def clients_chart(
                 scale=alt.Scale(
                     domain=["Active clients", "New clients", "Churn %"],
                     range=[
-                        CURIE_COLORS["blue_l3"],
-                        CURIE_COLORS["blue_l4"],
-                        CURIE_COLORS["red_l1"],
+                        colors["blue_l3"],
+                        colors["blue_l4"],
+                        colors["red_l1"],
                     ],
                 ),
                 legend=alt.Legend(orient="top", direction="horizontal"),
@@ -338,9 +341,9 @@ def clients_chart(
                 scale=alt.Scale(
                     domain=["Active clients", "New clients", "Churn %"],
                     range=[
-                        CURIE_COLORS["blue_l3"],
-                        CURIE_COLORS["blue_l4"],
-                        CURIE_COLORS["red_l1"],
+                        colors["blue_l3"],
+                        colors["blue_l4"],
+                        colors["red_l1"],
                     ],
                 ),
                 legend=alt.Legend(orient="top", direction="horizontal"),
@@ -349,6 +352,226 @@ def clients_chart(
         )
     )
     return _style_chart(alt.layer(bars, churn_line).resolve_scale(y="independent"))
+
+
+def finance_performance_chart(monthly_finance: pl.DataFrame) -> alt.LayerChart:
+    """Render revenue/budget bars with gross margin percent as a line."""
+    colors = curie_colors()
+    measure_data = (
+        monthly_finance.pipe(
+            _money_k_columns,
+            ["revenue_amount", "budget_revenue_amount", "gross_profit_amount"],
+        )
+        .pipe(_float_columns, ["gross_margin_pct"])
+        .with_columns(pl.col("month").dt.strftime("%b %Y").alias("month_label"))
+        .with_columns(pl.col("month").dt.strftime("%Y-%m-%d").alias("month_date"))
+    )
+    bars_data = (
+        measure_data.select(
+            [
+                "month_date",
+                "month_label",
+                "revenue_amount_k",
+                "budget_revenue_amount_k",
+                "gross_profit_amount_k",
+            ]
+        )
+        .unpivot(
+            index=["month_date", "month_label"],
+            variable_name="metric",
+            value_name="amount_k",
+        )
+        .with_columns(
+            pl.col("metric")
+            .replace(
+                {
+                    "revenue_amount_k": "Revenue",
+                    "budget_revenue_amount_k": "Budget revenue",
+                    "gross_profit_amount_k": "Gross profit",
+                }
+            )
+            .alias("metric")
+        )
+        .to_dicts()
+    )
+    margin_data = measure_data.select(
+        ["month_date", "month_label", "gross_margin_pct"]
+    ).to_dicts()
+    month_order = _month_order([*bars_data, *margin_data])
+
+    bars = (
+        alt.Chart(alt.Data(values=bars_data))
+        .mark_bar()
+        .encode(
+            x=_month_axis(month_order),
+            y=alt.Y("amount_k:Q", title="$K"),
+            xOffset=alt.XOffset("metric:N"),
+            color=_metric_color(
+                ["Revenue", "Budget revenue", "Gross profit"],
+                [colors["blue_l3"], colors["blue_l4"], colors["green_l1"]],
+            ),
+            tooltip=[
+                alt.Tooltip("month_label:N", title="Month"),
+                alt.Tooltip("metric:N", title="Metric"),
+                alt.Tooltip("amount_k:Q", title="$K", format=",.0f"),
+            ],
+        )
+    )
+    margin_line = (
+        alt.Chart(alt.Data(values=margin_data))
+        .transform_calculate(metric="'Gross margin %'")
+        .mark_line(
+            color=colors["red_l1"],
+            point=alt.OverlayMarkDef(filled=False, fill="white"),
+            interpolate="monotone",
+        )
+        .encode(
+            x=_month_axis(month_order),
+            y=alt.Y(
+                "gross_margin_pct:Q",
+                title="Gross margin %",
+                axis=alt.Axis(format=".1%"),
+                scale=alt.Scale(zero=False),
+            ),
+            tooltip=[
+                alt.Tooltip("month_label:N", title="Month"),
+                alt.Tooltip("gross_margin_pct:Q", title="Gross margin %", format=".1%"),
+            ],
+        )
+    )
+    return _style_chart(alt.layer(bars, margin_line).resolve_scale(y="independent"))
+
+
+def delivery_workload_chart(monthly_delivery: pl.DataFrame) -> alt.LayerChart:
+    """Render delivered orders with average orders per courier as a line."""
+    colors = curie_colors()
+    chart_data = (
+        monthly_delivery.pipe(_float_columns, ["avg_orders_per_courier"])
+        .with_columns(pl.col("month").dt.strftime("%b %Y").alias("month_label"))
+        .with_columns(pl.col("month").dt.strftime("%Y-%m-%d").alias("month_date"))
+    )
+    bar_data = chart_data.select(
+        ["month_date", "month_label", "delivered_order_count", "active_courier_count"]
+    ).to_dicts()
+    line_data = chart_data.select(
+        ["month_date", "month_label", "avg_orders_per_courier"]
+    ).to_dicts()
+    month_order = _month_order([*bar_data, *line_data])
+
+    bars = (
+        alt.Chart(alt.Data(values=bar_data))
+        .mark_bar(color=colors["blue_l3"])
+        .encode(
+            x=_month_axis(month_order),
+            y=alt.Y("delivered_order_count:Q", title="Delivered orders"),
+            tooltip=[
+                alt.Tooltip("month_label:N", title="Month"),
+                alt.Tooltip(
+                    "delivered_order_count:Q",
+                    title="Delivered orders",
+                    format=",.0f",
+                ),
+                alt.Tooltip(
+                    "active_courier_count:Q", title="Active couriers", format=",.0f"
+                ),
+            ],
+        )
+    )
+    line = (
+        alt.Chart(alt.Data(values=line_data))
+        .mark_line(
+            color=colors["red_l1"],
+            point=alt.OverlayMarkDef(filled=False, fill="white"),
+            interpolate="monotone",
+        )
+        .encode(
+            x=_month_axis(month_order),
+            y=alt.Y(
+                "avg_orders_per_courier:Q",
+                title="Orders per courier",
+                scale=alt.Scale(zero=False),
+            ),
+            tooltip=[
+                alt.Tooltip("month_label:N", title="Month"),
+                alt.Tooltip(
+                    "avg_orders_per_courier:Q",
+                    title="Orders per courier",
+                    format=",.1f",
+                ),
+            ],
+        )
+    )
+    return _style_chart(alt.layer(bars, line).resolve_scale(y="independent"))
+
+
+def delivery_tariff_donut_chart(tariff_by_type: pl.DataFrame) -> alt.Chart:
+    """Render delivery cost split by courier type as a donut chart."""
+    colors = curie_colors()
+    prepared_data = tariff_by_type.pipe(
+        _float_columns,
+        ["total_delivery_cost", "avg_delivery_cost_per_order"],
+    ).sort("total_delivery_cost", descending=True)
+    chart_data = prepared_data.to_dicts()
+    courier_types = prepared_data.get_column("courier_type").to_list()
+    segment_colors = [
+        colors["blue_l3"],
+        colors["green_l1"],
+        colors["red_l1"],
+        colors["blue_l4"],
+        colors["blue_l1"],
+    ][: len(courier_types)]
+    base = (
+        alt.Chart(alt.Data(values=chart_data))
+        .encode(
+            theta=alt.Theta("total_delivery_cost:Q", title="Delivery cost"),
+            color=alt.Color(
+                "courier_type:N",
+                title=None,
+                scale=alt.Scale(domain=courier_types, range=segment_colors),
+                legend=alt.Legend(orient="right"),
+            ),
+            order=alt.Order("total_delivery_cost:Q", sort="descending"),
+        )
+    )
+    arc = (
+        base
+        .mark_arc(innerRadius=72, outerRadius=132)
+        .encode(
+            tooltip=[
+                alt.Tooltip("courier_type:N", title="Courier type"),
+                alt.Tooltip(
+                    "total_delivery_cost:Q",
+                    title="Delivery cost",
+                    format="$,.0f",
+                ),
+                alt.Tooltip(
+                    "avg_delivery_cost_per_order:Q",
+                    title="Avg tariff / order",
+                    format="$,.2f",
+                ),
+                alt.Tooltip(
+                    "delivered_order_count:Q",
+                    title="Delivered orders",
+                    format=",.0f",
+                ),
+                alt.Tooltip(
+                    "active_courier_count:Q",
+                    title="Active couriers",
+                    format=",.0f",
+                ),
+            ],
+        )
+    )
+    labels = (
+        alt.Chart(alt.Data(values=chart_data))
+        .mark_text(radius=156, color=colors["text"], size=12)
+        .encode(
+            theta=alt.Theta("total_delivery_cost:Q", stack=True),
+            order=alt.Order("total_delivery_cost:Q", sort="descending"),
+            text=alt.Text("total_delivery_cost:Q", format="$,.0f"),
+        )
+    )
+    return _style_chart(alt.layer(arc, labels))
 
 
 def _float_columns(df: pl.DataFrame, columns: list[str]) -> pl.DataFrame:
@@ -371,11 +594,23 @@ def _money_k_columns(df: pl.DataFrame, columns: list[str]) -> pl.DataFrame:
 
 def _style_chart(chart: alt.Chart | alt.LayerChart) -> alt.Chart | alt.LayerChart:
     """Apply shared chart padding/theme without forcing light-mode backgrounds."""
+    colors = curie_colors()
     return (
         chart.properties(padding={"left": 12, "right": 18, "top": 12, "bottom": 12})
         .configure(background="transparent")
-        .configure_axis(labelPadding=6, titlePadding=14)
-        .configure_legend(orient="top", direction="horizontal", title=None)
+        .configure_axis(
+            labelColor=colors["text"],
+            labelPadding=6,
+            titleColor=colors["text"],
+            titlePadding=14,
+            gridColor=colors["border"],
+        )
+        .configure_legend(
+            labelColor=colors["text"],
+            orient="top",
+            direction="horizontal",
+            title=None,
+        )
         .configure_view(
             fill="transparent",
             stroke=None,

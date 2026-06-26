@@ -1,4 +1,5 @@
-:root {
+:root,
+:root[data-curie-report-theme="day"] {
   --curie-bg: #f5f7fb;
   --curie-surface: #ffffff;
   --curie-surface-muted: #fbfbfb;
@@ -6,26 +7,83 @@
   --curie-text-muted: #455874;
   --curie-border: #d8e0eb;
   --curie-blue-l1: #1d3557;
+  --curie-blue-l2: #455874;
   --curie-blue-l3: #457b9d;
+  --curie-blue-l4: #70beef;
   --curie-red-l1: #e63946;
+  --curie-green-l1: #2a9d8f;
+  --curie-color-scheme: light;
+  color-scheme: var(--curie-color-scheme);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --curie-bg: #101723;
-    --curie-surface: #172232;
-    --curie-surface-muted: #1d2a3c;
-    --curie-text: #eef3f8;
-    --curie-text-muted: #b8c7da;
-    --curie-border: #33445a;
-    --curie-blue-l1: #8fc7ed;
-    --curie-blue-l3: #63a7d4;
-    --curie-red-l1: #ff8f9b;
-  }
+:root[data-curie-report-theme="night"] {
+  --curie-bg: #101723;
+  --curie-surface: #172232;
+  --curie-surface-muted: #1d2a3c;
+  --curie-text: #eef3f8;
+  --curie-text-muted: #b8c7da;
+  --curie-border: #33445a;
+  --curie-blue-l1: #8fc7ed;
+  --curie-blue-l2: #b8c7da;
+  --curie-blue-l3: #63a7d4;
+  --curie-blue-l4: #8fc7ed;
+  --curie-red-l1: #ff8f9b;
+  --curie-green-l1: #6fd6c8;
+  --curie-color-scheme: dark;
+}
+
+body,
+.stApp,
+[data-testid="stAppViewContainer"] {
+  background: var(--curie-bg);
+  color: var(--curie-text);
+}
+
+header[data-testid="stHeader"],
+[data-testid="stHeader"] {
+  background: transparent;
+  box-shadow: none;
+}
+
+header[data-testid="stHeader"] button,
+[data-testid="stHeader"] button {
+  border: 1px solid var(--curie-border);
+  background: var(--curie-surface);
+  color: var(--curie-text);
+}
+
+[data-testid="stToolbar"] {
+  background: transparent;
+}
+
+[data-testid="stSidebar"] {
+  background: var(--curie-surface-muted);
+  border: 1px solid var(--curie-border);
+  border-radius: 8px;
+}
+
+[data-testid="stSidebar"] [data-testid="stWidgetLabel"] {
+  color: var(--curie-text);
+}
+
+/* Always show the collapse button when the sidebar is expanded */
+[data-testid="stSidebar"][aria-expanded="true"]
+[data-testid="stSidebarCollapseButton"] {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+
+[data-testid="stToolbarActions"],
+[data-testid="stToolbarActionButton"],
+[data-testid="stDecoration"],
+#MainMenu {
+  display: none;
 }
 
 div[data-testid="stMainBlockContainer"] {
-  padding-top: 1.25rem;
+  padding-top: 2.75rem;
   padding-bottom: 1rem;
 }
 
@@ -36,42 +94,138 @@ div[data-testid="stMainBlockContainer"] {
 }
 
 [data-testid="stDataFrame"] {
+  border: 1px solid var(--curie-border);
   border-radius: 8px;
   overflow: hidden;
 }
 
+[data-testid="stDownloadButton"] button {
+  inline-size: 1.75rem;
+  min-inline-size: 1.75rem;
+  max-inline-size: 1.75rem;
+
+  block-size: 1.75rem;
+  min-block-size: 1.75rem;
+  max-block-size: 1.75rem;
+
+  padding: 0;
+  flex: 0 0 1.75rem;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid var(--curie-border);
+  background: var(--curie-surface);
+  color: var(--curie-text);
+}
+
+[data-testid="stElementContainer"][class*="st-key-"][class*="_download"] {
+  width: 100% !important;
+
+  display: flex;
+  justify-content: flex-end;
+
+  position: relative;
+  top: 0.5rem;
+}
+
+[data-testid="stElementContainer"][class*="st-key-"][class*="_download"]
+[data-testid="stDownloadButton"] {
+  width: fit-content;
+  margin-left: auto;
+}
+
+[data-testid="stButton"] button,
+[data-testid="stDownloadButton"] button {
+  border: 1px solid var(--curie-border);
+  background: var(--curie-surface);
+  color: var(--curie-text);
+}
+
+
+[data-testid="stButton"] button:hover,
+[data-testid="stButton"] button:focus-visible,
+[data-testid="stDownloadButton"] button:hover,
+[data-testid="stDownloadButton"] button:focus-visible {
+  border-color: var(--curie-blue-l3);
+  color: var(--curie-blue-l3);
+}
+
+[data-testid="stSidebarCollapseButton"] button,
+[data-testid="stExpandSidebarButton"] button {
+  border: 1px solid var(--curie-border);
+  background: var(--curie-surface);
+  color: var(--curie-text);
+}
+
+:is(
+  [data-testid="stSidebarCollapseButton"] button,
+  button[data-testid="stExpandSidebarButton"]
+) [data-testid="stIconMaterial"] {
+  color: inherit !important;
+}
+
+[data-testid="stSidebarCollapseButton"] button:hover,
+[data-testid="stSidebarCollapseButton"] button:focus-visible,
+[data-testid="stExpandSidebarButton"]button:hover,
+[data-testid="stExpandSidebarButton"]button:focus-visible {
+  border-color: var(--curie-blue-l3);
+  color: var(--curie-blue-l3);
+}
+
 .curie-kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(2.5rem, 100%), 1fr));
-  gap: 0.625rem;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+
+  gap: clamp(0.25rem, 0.7vw, 0.625rem);
   margin: 0.875rem 0 1rem;
+
+  width: 100%;
+  min-width: 0;
 }
 
 .curie-kpi {
   min-width: 0;
   min-height: clamp(4.75rem, 8vw, 6.25rem);
+
   border: 1px solid var(--curie-border);
   border-radius: 8px;
   background: var(--curie-surface);
-  padding: clamp(0.625rem, 1vw, 0.875rem) clamp(0.7rem, 1.2vw, 1rem);
+
+  padding:
+    clamp(0.5rem, 1vw, 0.875rem)
+    clamp(0.4rem, 1vw, 1rem);
+
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 0.375rem;
+  gap: 0.25rem;
+
+  overflow: hidden;
 }
 
-.curie-kpi-label {
-  color: var(--curie-text-muted);
-  font-size: clamp(0.7rem, 0.85vw, 0.8125rem);
-  font-weight: 600;
-  line-height: 1rem;
-  overflow-wrap: anywhere;
-}
-
+.curie-kpi-label,
 .curie-kpi-value {
-  color: var(--curie-text);
-  font-size: clamp(0.95rem, 1.55vw, 1.375rem);
-  font-weight: 700;
-  line-height: 1.25;
-  overflow-wrap: anywhere;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Inactive tabs */
+[data-testid="stTabs"] button[role="tab"][aria-selected="false"] {
+  color: var(--curie-text-muted);
+}
+
+/* Active tab */
+[data-testid="stTabs"] button[role="tab"][aria-selected="true"] {
+  color: var(--curie-blue-l1);
+  font-weight: 600;
+}
+
+/* Hover for inactive tabs */
+[data-testid="stTabs"] button[role="tab"][aria-selected="false"]:hover {
+  color: var(--curie-blue-l3);
 }

@@ -1,5 +1,5 @@
 [client]
-toolbarMode = "viewer"
+toolbarMode = "minimal"
 
 [server]
 headless = true
@@ -10,3 +10,6 @@ corsAllowedOrigins = [
 
 [browser]
 gatherUsageStats = false
+
+[theme]
+base = "light"

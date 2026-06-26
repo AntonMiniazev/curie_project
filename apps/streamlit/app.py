@@ -1,10 +1,24 @@
-"""Streamlit entrypoint for the Curie Marketing report.
-
-Docker runs this file at the Streamlit service root. The dashboard code is kept
-in `dashboards.marketing` so direct local development can still run the same
-report module if needed.
-"""
+"""Streamlit entrypoint that routes Curie report metadata to dashboard modules."""
 
 from __future__ import annotations
 
-from dashboards import marketing as _marketing  # noqa: F401
+import runpy
+
+import streamlit as st
+
+
+REPORT_MODULES = {
+    "marketing": "dashboards.marketing",
+    "finance": "dashboards.finance",
+    "delivery": "dashboards.delivery",
+}
+
+
+def _selected_report() -> str:
+    report = st.query_params.get("report", "marketing")
+    if isinstance(report, list):
+        report = report[-1] if report else "marketing"
+    return report if report in REPORT_MODULES else "marketing"
+
+
+runpy.run_module(REPORT_MODULES[_selected_report()], run_name="__main__")
