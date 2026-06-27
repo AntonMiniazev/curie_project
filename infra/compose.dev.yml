@@ -38,6 +38,7 @@ services:
       CURIE_CACHE_REFRESH_IMAGE: ${CURIE_IMAGE:-curie-api:dev}
       CURIE_CACHE_REFRESH_VOLUMES_FROM: curie-api-dev
       CURIE_CACHE_REFRESH_NETWORK: curie-dev_default
+      CURIE_UPSTREAM_HOST_IP: ${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}
     ports:
       - "8000:8000"
     volumes:

@@ -28,7 +28,7 @@ services:
       - curie-postgres-prod-data:/var/lib/postgresql/data
       - ./postgres/initdb:/docker-entrypoint-initdb.d:ro
     ports:
-      - "${CURIE_POSTGRES_PORT:-100.65.42.72:5432}:5432"
+      - "${CURIE_POSTGRES_PORT:-replace_me_with_address:5432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
@@ -45,19 +45,20 @@ services:
       CURIE_CACHE_ROOT: /app/data/cache
       CURIE_CACHE_CURRENT: /app/data/cache/current
       CURIE_CACHE_REFRESH_ENABLED: "true"
-      CURIE_CACHE_REFRESH_IMAGE: ${CURIE_IMAGE:-ghcr.io/antonminiazev/curie-api:latest}
+      CURIE_CACHE_REFRESH_IMAGE: ${CURIE_IMAGE:-ghcr.io/username/curie-api:latest}
       CURIE_CACHE_REFRESH_HOST_CACHE_DIR: ${CURIE_HOST_CACHE_DIR:-/var/lib/curie/cache}
       CURIE_CACHE_REFRESH_VOLUMES_FROM: curie-api-prod
       CURIE_CACHE_REFRESH_NETWORK: curie-prod_default
+      CURIE_UPSTREAM_HOST_IP: ${CURIE_UPSTREAM_HOST_IP:replace_me_with_address}
     ports:
       - "${CURIE_API_PORT:-8000}:8000"
     volumes:
       - ${CURIE_HOST_CACHE_DIR:-/var/lib/curie/cache}:/app/data/cache
       - /var/run/docker.sock:/var/run/docker.sock
     extra_hosts:
-      - "ucatalog.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
-      - "s3.minio.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
-      - "minio.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
+      - "ucatalog.local:${CURIE_UPSTREAM_HOST_IP:replace_me_with_address}"
+      - "s3.minio.local:${CURIE_UPSTREAM_HOST_IP:replace_me_with_address}"
+      - "minio.local:${CURIE_UPSTREAM_HOST_IP:replace_me_with_address}"
     depends_on:
       postgres:
         condition: service_healthy
@@ -78,7 +79,7 @@ services:
       STREAMLIT_SERVER_HEADLESS: "true"
       STREAMLIT_THEME_BASE: light
     ports:
-      - "${CURIE_STREAMLIT_PORT:-100.65.42.72:8501}:8501"
+      - "${CURIE_STREAMLIT_PORT:-replace_me_with_address:8501}:8501"
     volumes:
       - ${CURIE_HOST_CACHE_DIR:-/var/lib/curie/cache}:/app/data/cache:ro
     depends_on:
@@ -97,9 +98,9 @@ services:
     volumes:
       - ${CURIE_HOST_CACHE_DIR:-/var/lib/curie/cache}:/app/data/cache
     extra_hosts:
-      - "ucatalog.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
-      - "s3.minio.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
-      - "minio.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
+      - "ucatalog.local:${CURIE_UPSTREAM_HOST_IP:replace_me_with_address}"
+      - "s3.minio.local:${CURIE_UPSTREAM_HOST_IP:replace_me_with_address}"
+      - "minio.local:${CURIE_UPSTREAM_HOST_IP:replace_me_with_address}"
 
 volumes:
   curie-postgres-prod-data:

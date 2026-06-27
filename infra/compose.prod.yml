@@ -49,6 +49,7 @@ services:
       CURIE_CACHE_REFRESH_HOST_CACHE_DIR: ${CURIE_HOST_CACHE_DIR:-/var/lib/curie/cache}
       CURIE_CACHE_REFRESH_VOLUMES_FROM: curie-api-prod
       CURIE_CACHE_REFRESH_NETWORK: curie-prod_default
+      CURIE_UPSTREAM_HOST_IP: ${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}
     ports:
       - "${CURIE_API_PORT:-8000}:8000"
     volumes:
