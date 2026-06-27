@@ -153,23 +153,24 @@ div[data-testid="stMainBlockContainer"] {
 }
 
 [data-testid="stSidebarCollapseButton"] button,
-[data-testid="stExpandSidebarButton"] button {
+button[data-testid="stExpandSidebarButton"] {
   border: 1px solid var(--curie-border);
   background: var(--curie-surface);
   color: var(--curie-text);
 }
 
-:is(
-  [data-testid="stSidebarCollapseButton"] button,
-  button[data-testid="stExpandSidebarButton"]
-) [data-testid="stIconMaterial"] {
+[data-testid="stSidebarCollapseButton"] button [data-testid="stIconMaterial"] {
+  color: inherit !important;
+}
+
+button[data-testid="stExpandSidebarButton"] [data-testid="stIconMaterial"] {
   color: inherit !important;
 }
 
 [data-testid="stSidebarCollapseButton"] button:hover,
 [data-testid="stSidebarCollapseButton"] button:focus-visible,
-[data-testid="stExpandSidebarButton"]button:hover,
-[data-testid="stExpandSidebarButton"]button:focus-visible {
+button[data-testid="stExpandSidebarButton"]:hover,
+button[data-testid="stExpandSidebarButton"]:focus-visible {
   border-color: var(--curie-blue-l3);
   color: var(--curie-blue-l3);
 }
@@ -228,4 +229,31 @@ div[data-testid="stMainBlockContainer"] {
 /* Hover for inactive tabs */
 [data-testid="stTabs"] button[role="tab"][aria-selected="false"]:hover {
   color: var(--curie-blue-l3);
+}
+
+button[data-testid="stBaseButton-segmented_control"] {
+  border: 1px solid var(--curie-border) !important;
+  background: var(--curie-surface-muted) !important;
+  color: var(--curie-text-muted) !important;
+}
+
+button[data-testid="stBaseButton-segmented_control"] p {
+  color: inherit !important;
+}
+
+button[data-testid="stBaseButton-segmented_control"]:hover,
+button[data-testid="stBaseButton-segmented_control"]:focus-visible {
+  border-color: var(--curie-blue-l3) !important;
+  background: var(--curie-surface) !important;
+  color: var(--curie-blue-l3) !important;
+}
+
+button[data-testid="stBaseButton-segmented_controlActive"] {
+  border: 1px solid var(--curie-blue-l3) !important;
+  background: var(--curie-surface) !important;
+  color: var(--curie-blue-l1) !important;
+}
+
+button[data-testid="stBaseButton-segmented_controlActive"] p {
+  color: inherit !important;
 }
