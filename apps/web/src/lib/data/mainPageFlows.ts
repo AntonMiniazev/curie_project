@@ -749,10 +749,12 @@ export const projectFlows: ProjectFlow[] = [
 					label: 'SvelteKit frontend',
 					secondaryLabel: 'Main site + Streamlit',
 					handles: {
-						sources: [{ id: 'to-api', position: Position.Right }],
+						sources: [
+							{ id: 'to-api', position: Position.Right },
+							{ id: 'to-cache-storage-web', position: Position.Bottom }
+						],
 						targets: [
-							{ id: 'from-user', position: Position.Left },
-							{ id: 'from-cache-storage', position: Position.Bottom }
+							{ id: 'from-user', position: Position.Left }
 						]
 					}
 				},
@@ -814,8 +816,11 @@ export const projectFlows: ProjectFlow[] = [
 					label: 'Cache storage',
 					secondaryLabel: 'Parquet files',
 					handles: {
-						sources: [{ id: 'to-web', position: Position.Left }],
-						targets: [{ id: 'from-cache-refresh', position: Position.Right }]
+						sources: [],
+						targets: [
+							{ id: 'from-cache-refresh', position: Position.Right },
+							{ id: 'from-web', position: Position.Left }
+						]
 					}
 				},
 				position: { x: 650, y: 300 },
@@ -876,10 +881,10 @@ export const projectFlows: ProjectFlow[] = [
 			},
 			{
 				id: 'curie-cache-storage-web',
-				source: 'curie-cache-storage',
-				sourceHandle: 'to-web',
-				target: 'curie-web',
-				targetHandle: 'from-cache-storage',
+				source: 'curie-web',
+				sourceHandle: 'to-cache-storage-web',
+				target: 'curie-cache-storage',
+				targetHandle: 'from-web',
 				label: 'reads cache',
 				...defaultEdgeOptions
 			}

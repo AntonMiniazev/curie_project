@@ -507,6 +507,23 @@ def delivery_workload_chart(monthly_delivery: pl.DataFrame) -> alt.LayerChart:
 def delivery_tariff_donut_chart(tariff_by_type: pl.DataFrame) -> alt.Chart:
     """Render delivery cost split by courier type as a donut chart."""
     colors = curie_colors()
+    required_columns = {
+        "courier_type",
+        "total_delivery_cost",
+        "avg_delivery_cost_per_order",
+        "delivered_order_count",
+        "active_courier_count",
+    }
+    if tariff_by_type.is_empty() or not required_columns.issubset(
+        set(tariff_by_type.columns)
+    ):
+        return _style_chart(
+            alt.Chart(alt.Data(values=[]))
+            .mark_arc(innerRadius=72, outerRadius=132)
+            .encode(theta=alt.Theta("total_delivery_cost:Q"))
+            .properties(height=320)
+        )
+
     prepared_data = tariff_by_type.pipe(
         _float_columns,
         ["total_delivery_cost", "avg_delivery_cost_per_order"],

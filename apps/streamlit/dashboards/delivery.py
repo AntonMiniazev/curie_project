@@ -204,6 +204,30 @@ TARIFF_COLUMNS = [
 ]
 
 
+def _empty_tariff_frame() -> pl.DataFrame:
+    """Return an empty tariff dataframe with the schema expected by charts/tables."""
+    return pl.DataFrame(
+        schema={
+            "courier_type": pl.String,
+            "total_delivery_cost": pl.Float64,
+            "avg_delivery_cost_per_order": pl.Float64,
+            "delivered_order_count": pl.Int64,
+            "active_courier_count": pl.Int64,
+        }
+    )
+
+
+def _empty_courier_workload_frame() -> pl.DataFrame:
+    """Return an empty courier workload dataframe with the schema expected by tables."""
+    return pl.DataFrame(
+        schema={
+            "fullname": pl.String,
+            "courier_type": pl.String,
+            "delivered_order_count": pl.Int64,
+        }
+    )
+
+
 manifest = load_manifest()
 cache_key = manifest.get("release_id") or manifest["created_at_utc"]
 access = current_report_access()
@@ -256,12 +280,12 @@ monthly = filter_month_range(monthly, timeframe_start, timeframe_end)
 tariff_by_type = (
     _courier_type_tariff(months, store_id, courier_types, cache_key)
     if months
-    else pl.DataFrame()
+    else _empty_tariff_frame()
 )
 courier_workload = (
     _courier_workload(months, store_id, courier_types, cache_key)
     if months
-    else pl.DataFrame()
+    else _empty_courier_workload_frame()
 )
 
 delivered_orders = sum_column(monthly, "delivered_order_count")
