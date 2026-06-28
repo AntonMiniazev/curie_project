@@ -84,7 +84,7 @@
 
 <section
 	{id}
-	class="grid h-full min-h-full snap-start snap-always grid-rows-[auto_minmax(0,1fr)] gap-5 py-[var(--curie-section-padding-y)]"
+	class="grid min-h-full snap-start snap-always grid-rows-[auto_minmax(22rem,1fr)] gap-5 py-[var(--curie-section-padding-y)]"
 	aria-labelledby={`${id}-title`}
 >
 	<header
@@ -99,7 +99,9 @@
 		</div>
 	</header>
 
-	<div class="curie-card curie-page-shell relative h-full min-h-0 overflow-hidden">
+	<div
+		class="curie-card curie-flow-card curie-page-shell relative h-full min-h-[22rem] overflow-hidden"
+	>
 		{#if showDetail}
 			<button
 				class="curie-button absolute right-14 top-3 z-40 grid h-9 w-9 place-items-center bg-[var(--curie-control-bg)]/90 shadow-sm backdrop-blur hover:text-[var(--curie-blue-l3)]"
@@ -147,7 +149,7 @@
 
 	{#if isExpanded}
 		<div
-			class="fixed inset-0 z-50 grid grid-rows-[auto_minmax(0,1fr)] gap-4 bg-[var(--curie-overlay-bg)] px-5 py-5 backdrop-blur-md"
+			class="curie-overlay-backdrop fixed inset-0 z-50 grid grid-rows-[auto_minmax(0,1fr)] gap-4 bg-[var(--curie-overlay-bg)] px-5 py-5"
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby={`${id}-expanded-title`}
@@ -192,7 +194,7 @@
 			</header>
 
 			<div
-				class="curie-card mx-auto min-h-0 w-full max-w-[94rem] overflow-hidden shadow-xl"
+				class="curie-card curie-flow-card mx-auto min-h-0 w-full max-w-[94rem] overflow-hidden shadow-xl"
 				transition:scale={{ duration: 240, start: 0.96 }}
 			>
 				{#key flowViewKey}

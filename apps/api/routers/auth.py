@@ -68,6 +68,16 @@ def user_roles(user: User) -> list[str]:
     return [role.name for role in user.roles]
 
 
+def user_role_descriptions(user: User) -> list[str]:
+    """Return display-ready role descriptions attached to a user."""
+    return [role.description for role in user.roles if role.description]
+
+
+def user_role_short_descriptions(user: User) -> list[str]:
+    """Return compact role labels attached to a user."""
+    return [role.short_description or role.name for role in user.roles]
+
+
 def token_response_for_user(user: User, refresh_token: str) -> TokenResponse:
     """Build the standard token response for a user and refresh token."""
     settings = get_settings()
@@ -197,6 +207,7 @@ def get_available_roles(db: db_dependency) -> AvailableRolesResponse:
             name=role.name,
             label=(role.description or role.name).split(":", 1)[0],
             description=role.description,
+            short_description=role.short_description,
         )
         for role in roles
     )
@@ -359,7 +370,10 @@ def get_current_user(
         id=str(user.id),
         email=user.email,
         display_name=user.display_name,
+        created_at=user.created_at.isoformat(),
         roles=user_roles(user),
+        role_descriptions=user_role_descriptions(user),
+        role_short_descriptions=user_role_short_descriptions(user),
         is_active=user.is_active,
         is_verified=user.is_verified,
     )

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { ApiError } from '$lib/api/client';
 	import { getCurrentUser, loginUser } from '$lib/api/auth';
@@ -12,6 +13,19 @@
 	let password = $state('');
 	let errorMessage = $state<string | null>(null);
 	let isSubmitting = $state(false);
+	let registeredMessage = $derived(
+		page.url.searchParams.get('registered') === 'true'
+			? 'Account created. Sign in with your new password to continue.'
+			: null
+	);
+
+	$effect(() => {
+		const emailParam = page.url.searchParams.get('email');
+
+		if (emailParam && !email) {
+			email = emailParam;
+		}
+	});
 
 	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
@@ -73,6 +87,14 @@
 				required
 				bind:value={password}
 			/>
+
+			{#if registeredMessage}
+				<p
+					class="mb-4 rounded-[var(--curie-radius-xm)] border border-[var(--curie-border)] bg-[var(--curie-control-bg)] px-3 py-2 text-sm text-[var(--curie-text)]"
+				>
+					{registeredMessage}
+				</p>
+			{/if}
 
 			{#if errorMessage}
 				<p class="curie-alert-danger mb-4 px-3 py-2 text-sm">{errorMessage}</p>

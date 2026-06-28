@@ -99,6 +99,7 @@ class Role(Base, TimestampMixin):
     )
     name: Mapped[str] = mapped_column(String(80), unique=True, nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
+    short_description: Mapped[str | None] = mapped_column(String(80))
 
     users: Mapped[list[User]] = relationship(secondary="curie.user_roles", back_populates="roles")
     permissions: Mapped[list["Permission"]] = relationship(

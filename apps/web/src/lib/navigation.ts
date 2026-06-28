@@ -1,4 +1,4 @@
 export const mainNavigationItems = [
-	{ label: 'Project hub', href: '/' },
-	{ label: 'Curie reports', href: '/curie' }
+	{ label: 'Home', href: '/' },
+	{ label: 'Curie Reporting', href: '/curie' }
 ];

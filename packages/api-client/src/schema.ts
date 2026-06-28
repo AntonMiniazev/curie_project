@@ -244,6 +244,8 @@ export interface components {
             label: string;
             /** Description */
             description: string | null;
+            /** Short Description */
+            short_description: string | null;
         };
         /**
          * AvailableRolesResponse
@@ -302,8 +304,14 @@ export interface components {
             email: string;
             /** Display Name */
             display_name: string | null;
+            /** Created At */
+            created_at: string;
             /** Roles */
             roles: string[];
+            /** Role Descriptions */
+            role_descriptions: string[];
+            /** Role Short Descriptions */
+            role_short_descriptions: string[];
             /** Is Active */
             is_active: boolean;
             /** Is Verified */

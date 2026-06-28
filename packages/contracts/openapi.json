@@ -403,13 +403,25 @@
               }
             ],
             "title": "Description"
+          },
+          "short_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Description"
           }
         },
         "type": "object",
         "required": [
           "name",
           "label",
-          "description"
+          "description",
+          "short_description"
         ],
         "title": "AvailableRoleResponse",
         "description": "Single public role option that the frontend can show during registration."
@@ -558,12 +570,30 @@
             ],
             "title": "Display Name"
           },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
           "roles": {
             "items": {
               "type": "string"
             },
             "type": "array",
             "title": "Roles"
+          },
+          "role_descriptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Role Descriptions"
+          },
+          "role_short_descriptions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Role Short Descriptions"
           },
           "is_active": {
             "type": "boolean",
@@ -579,7 +609,10 @@
           "id",
           "email",
           "display_name",
+          "created_at",
           "roles",
+          "role_descriptions",
+          "role_short_descriptions",
           "is_active",
           "is_verified"
         ],

@@ -56,10 +56,13 @@
 				display_name: displayName || null,
 				role: selectedRole
 			});
-			const currentUser = await getCurrentUser(tokenResponse.access_token);
-			authSession.setCurrentUser(currentUser);
-
-			await goto(resolve('/curie'));
+			try {
+				const currentUser = await getCurrentUser(tokenResponse.access_token);
+				authSession.setCurrentUser(currentUser);
+				await goto(resolve('/curie'));
+			} catch {
+				await goto(resolve(`/curie/login?email=${encodeURIComponent(email)}&registered=true`));
+			}
 		} catch (error) {
 			errorMessage = getErrorMessage(
 				error,

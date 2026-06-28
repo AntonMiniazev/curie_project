@@ -17,6 +17,7 @@
 	--curie-primary-text: #ffffff;
 	--curie-danger-bg: #fff1f2;
 	--curie-overlay-bg: rgba(245, 247, 251, 0.78);
+	--curie-overlay-blur: 6px;
 	--curie-text: #1d3557ff;
 	--curie-text-option: #1d3557ff;
 	--curie-text-muted: #455874ff;
@@ -33,10 +34,12 @@
 	--curie-radius-xs: 4px;
 	--curie-radius-xm: 8px;
 	--curie-radius-xl: 10px;
+	--curie-control-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 	--curie-page-max-width: 72rem;
 	--curie-page-gutter: 1.5rem;
 	--curie-scrollbar-width: 0px;
 	--curie-section-padding-y: 2.5rem;
+	--curie-navbar-menu-offset-y: 1.25rem;
 	color-scheme: light;
 }
 
@@ -283,6 +286,25 @@ body.project-hub-page::-webkit-scrollbar {
 	color: var(--curie-blue-l1);
 }
 
+.curie-flow-card:hover,
+.curie-flow-card:focus-visible {
+	border-color: var(--curie-border);
+	background-color: var(--curie-surface);
+	color: inherit;
+}
+
+.curie-static-card:hover,
+.curie-static-card:focus-visible {
+	border-color: var(--curie-border);
+	background-color: var(--curie-surface);
+	color: inherit;
+}
+
+.curie-overlay-backdrop {
+	backdrop-filter: blur(var(--curie-overlay-blur));
+	-webkit-backdrop-filter: blur(var(--curie-overlay-blur));
+}
+
 .curie-select {
 	max-width: 11rem;
 	border: 1px solid var(--curie-border);
@@ -309,6 +331,208 @@ body.project-hub-page::-webkit-scrollbar {
 	font: inherit;
 }
 
+.curie-app-header {
+	position: relative;
+	z-index: 40;
+	border-bottom: 1px solid var(--curie-border);
+	background: var(--curie-surface);
+}
+
+.curie-navbar-root {
+	background: var(--curie-surface) !important;
+	padding: 0 !important;
+	color: var(--curie-text) !important;
+}
+
+.curie-navbar-container {
+	display: flex;
+	flex-wrap: nowrap;
+	gap: 0.75rem;
+	padding-block: 1rem;
+}
+
+.curie-navbar-brand {
+	min-width: 0;
+	flex-shrink: 0;
+	gap: 0.75rem;
+	color: var(--curie-text) !important;
+	font-weight: 600;
+}
+
+.curie-navbar-brand:hover,
+.curie-navbar-brand:focus-visible {
+	color: var(--curie-blue-l3) !important;
+}
+
+.curie-navbar-logo {
+	width: 2.25rem;
+	height: 2.25rem;
+	flex-shrink: 0;
+}
+
+.curie-navbar-title {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.curie-navbar-spacer {
+	min-width: 0;
+	flex: 1 1 auto;
+}
+
+.curie-navbar-controls {
+	display: flex;
+	flex-shrink: 0;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.curie-icon-button {
+	display: grid;
+	width: 2.5rem;
+	min-width: 2.5rem;
+	height: 2.5rem;
+	flex-shrink: 0;
+	place-items: center;
+	border: 1px solid var(--curie-border);
+	border-radius: var(--curie-radius-xm);
+	background: var(--curie-control-bg);
+	padding: 0;
+	color: var(--curie-text);
+	box-shadow: var(--curie-control-shadow);
+	transition:
+		background-color 150ms ease,
+		border-color 150ms ease,
+		color 150ms ease;
+}
+
+.curie-icon-button:hover,
+.curie-icon-button:focus-visible {
+	border-color: var(--curie-blue-l3);
+	background: var(--curie-control-bg-hover);
+	color: var(--curie-blue-l3);
+}
+
+.curie-navbar-menu-button {
+	display: grid !important;
+}
+
+.curie-navbar-menu-anchor {
+	position: relative;
+	display: grid;
+	place-items: center;
+}
+
+.curie-navbar-menu {
+	position: absolute !important;
+	top: 100% !important;
+	right: 0 !important;
+	left: auto !important;
+	z-index: 60 !important;
+	width: min(22rem, calc(100vw - (var(--curie-page-gutter) * 2))) !important;
+	padding-top: var(--curie-navbar-menu-offset-y);
+	visibility: hidden;
+	opacity: 0;
+	pointer-events: none;
+	transform: translateY(-0.35rem) scaleY(0.96);
+	transform-origin: top right;
+	clip-path: inset(0 0 100% 0 round var(--curie-radius-xm));
+	transition:
+		opacity 160ms ease,
+		transform 180ms ease,
+		clip-path 180ms ease,
+		visibility 0s linear 180ms;
+}
+
+.curie-navbar-menu-open {
+	visibility: visible;
+	opacity: 1;
+	pointer-events: auto;
+	transform: translateY(0) scaleY(1);
+	clip-path: inset(0 0 0 0 round var(--curie-radius-xm));
+	transition:
+		opacity 160ms ease,
+		transform 180ms ease,
+		clip-path 180ms ease,
+		visibility 0s;
+}
+
+.curie-navbar-menu-list {
+	display: flex;
+	flex-direction: column;
+	gap: 0.125rem;
+	list-style: none;
+	border: 1px solid var(--curie-border) !important;
+	border-radius: var(--curie-radius-xm) !important;
+	background: var(--curie-surface) !important;
+	padding: 0.75rem !important;
+	box-shadow: 0 18px 45px color-mix(in srgb, var(--curie-border-hard) 55%, transparent) !important;
+}
+
+.curie-navbar-action,
+.curie-navbar-sub-link {
+	display: flex;
+	width: 100%;
+	align-items: center;
+	gap: 0.5rem;
+	border-radius: var(--curie-radius-xs);
+	border: 0;
+	background: transparent;
+	padding: 0.55rem 0.75rem;
+	color: var(--curie-text) !important;
+	font-size: 0.925rem;
+	font-weight: 600;
+	text-align: left;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.curie-navbar-action.selected,
+.curie-navbar-action:hover,
+.curie-navbar-action:focus-visible,
+.curie-navbar-sub-link:hover,
+.curie-navbar-sub-link:focus-visible {
+	background: var(--curie-control-bg-hover) !important;
+	color: var(--curie-blue-l1) !important;
+}
+
+.curie-navbar-section-line {
+	height: 1px;
+	margin: 0.5rem 0.75rem;
+	background: var(--curie-border);
+}
+
+.curie-navbar-sub-link {
+	padding-left: 1.25rem;
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: var(--curie-text-muted) !important;
+}
+
+.curie-navbar-social-row {
+	display: flex;
+	justify-content: center;
+	gap: 0.75rem;
+}
+
+.curie-navbar-social-link {
+	display: grid;
+	height: 2.25rem;
+	width: 2.25rem;
+	place-items: center;
+	border: 1px solid var(--curie-border);
+	border-radius: var(--curie-radius-xm);
+	background: var(--curie-control-bg);
+	color: var(--curie-text);
+}
+
+.curie-navbar-social-link:hover,
+.curie-navbar-social-link:focus-visible {
+	border-color: var(--curie-blue-l3);
+	color: var(--curie-blue-l3);
+}
+
 .curie-report-inline-button {
 	display: inline-flex;
 	width: fit-content;
@@ -323,7 +547,7 @@ body.project-hub-page::-webkit-scrollbar {
 	color: var(--curie-text);
 	font-size: 0.875rem;
 	font-weight: 600;
-	box-shadow: 0 1px 2px var(--curie-border-hard);
+	box-shadow: var(--curie-control-shadow);
 	transition:
 		background-color 0.15s ease,
 		color 0.15s ease,
@@ -351,7 +575,7 @@ body.project-hub-page::-webkit-scrollbar {
 	border-radius: 0.5rem;
 	background: color-mix(in srgb, var(--curie-surface) 92%, transparent);
 	color: var(--curie-text);
-	box-shadow: 0 1px 2px var(--curie-border-hard);
+	box-shadow: var(--curie-control-shadow);
 	transition:
 		background-color 0.15s ease,
 		color 0.15s ease,

@@ -38,7 +38,10 @@ class CurrentUserResponse(BaseModel):
     id: str
     email: EmailStr
     display_name: str | None
+    created_at: str
     roles: list[str]
+    role_descriptions: list[str]
+    role_short_descriptions: list[str]
     is_active: bool
     is_verified: bool
 
@@ -51,6 +54,7 @@ class AvailableRoleResponse(BaseModel):
     name: str
     label: str
     description: str | None
+    short_description: str | None
 
 
 class AvailableRolesResponse(BaseModel):

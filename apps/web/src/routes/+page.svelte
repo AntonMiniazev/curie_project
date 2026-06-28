@@ -1,8 +1,10 @@
 <script lang="ts">
 	import type { Component } from 'svelte';
+	import { resolve } from '$app/paths';
 	import { onMount, tick } from 'svelte';
 
 	import AppHeader from '$lib/components/AppHeader.svelte';
+	import BenchmarkOverlay from '$lib/components/BenchmarkOverlay.svelte';
 	import MainIntroSection from '$lib/components/MainIntroSection.svelte';
 	import ResumeOverlay from '$lib/components/ResumeOverlay.svelte';
 	import { projectFlowMeta } from '$lib/data/mainPageFlowMeta';
@@ -20,6 +22,7 @@
 	let scrollContainer = $state<HTMLElement | null>(null);
 	let activeSectionId = $state(sectionNavigation[0].id);
 	let isAnimatingScroll = $state(false);
+	let isBenchmarkOpen = $state(false);
 	let isResumeOpen = $state(false);
 	let hasMounted = $state(false);
 	let ProjectFlowsStage = $state<Component | null>(null);
@@ -31,6 +34,16 @@
 	onMount(() => {
 		if (!scrollContainer) {
 			return;
+		}
+
+		if (window.location.search.includes('resume=open')) {
+			isResumeOpen = true;
+			window.history.replaceState(null, '', resolve('/'));
+		}
+
+		if (window.location.search.includes('benchmark=open')) {
+			isBenchmarkOpen = true;
+			window.history.replaceState(null, '', resolve('/'));
 		}
 
 		document.documentElement.style.setProperty(
@@ -238,7 +251,7 @@
 	<title>Curie Project Hub</title>
 </svelte:head>
 
-<svelte:body class:overflow-hidden={isResumeOpen} />
+<svelte:body class:overflow-hidden={isResumeOpen || isBenchmarkOpen} />
 
 <div class="font-system h-screen overflow-hidden bg-[var(--curie-bg)]">
 	<AppHeader
@@ -246,6 +259,7 @@
 		navigationItems={mainNavigationItems}
 		selectedHref="/"
 		onResumeOpen={() => (isResumeOpen = true)}
+		onBenchmarkOpen={() => (isBenchmarkOpen = true)}
 	/>
 
 	<main
@@ -267,7 +281,7 @@
 			{#each projectFlowMeta as flow (flow.id)}
 				<section
 					id={flow.id}
-					class="grid h-full min-h-full snap-start snap-always grid-rows-[auto_minmax(0,1fr)] gap-5 py-[var(--curie-section-padding-y)]"
+					class="grid min-h-full snap-start snap-always grid-rows-[auto_minmax(22rem,1fr)] gap-5 py-[var(--curie-section-padding-y)]"
 					aria-labelledby={`${flow.id}-title`}
 				>
 					<header
@@ -285,7 +299,7 @@
 					</header>
 
 					<div
-						class="curie-card curie-page-shell grid h-full min-h-0 place-items-center overflow-hidden text-sm text-[var(--curie-text-muted)]"
+						class="curie-card curie-flow-card curie-page-shell grid h-full min-h-[22rem] place-items-center overflow-hidden text-sm text-[var(--curie-text-muted)]"
 					>
 						Loading {flow.name} diagram...
 					</div>
@@ -314,5 +328,9 @@
 
 	{#if isResumeOpen}
 		<ResumeOverlay onClose={() => (isResumeOpen = false)} />
+	{/if}
+
+	{#if isBenchmarkOpen}
+		<BenchmarkOverlay onClose={() => (isBenchmarkOpen = false)} />
 	{/if}
 </div>

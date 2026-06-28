@@ -40,6 +40,10 @@ class FakeSession:
         if isinstance(item, User):
             if item.id is None:
                 item.id = uuid4()
+            if item.created_at is None:
+                item.created_at = datetime.now(timezone.utc)
+            if item.updated_at is None:
+                item.updated_at = item.created_at
             if item.is_active is None:
                 item.is_active = True
             if item.is_verified is None:
@@ -130,15 +134,20 @@ class BrokenSession:
         raise SQLAlchemyError("database unavailable")
 
 
-def role(name: str, description: str) -> Role:
-    return Role(id=uuid4(), name=name, description=description)
+def role(name: str, description: str, short_description: str) -> Role:
+    return Role(
+        id=uuid4(),
+        name=name,
+        description=description,
+        short_description=short_description,
+    )
 
 
 def session_with_roles() -> FakeSession:
     return FakeSession(
         roles=[
-            role("store_honeybee", "Store - Honeybee: can see Honeybee store data."),
-            role("store_fontaine", "Store - Fontaine: can see Fontaine store data."),
+            role("store_honeybee", "Store - Honeybee: can see Honeybee store data.", "Honeybee store"),
+            role("store_fontaine", "Store - Fontaine: can see Fontaine store data.", "Fontaine store"),
         ]
     )
 
@@ -165,6 +174,7 @@ def test_get_available_roles_returns_seeded_roles() -> None:
     assert response.count == 2
     assert [item.name for item in response.items] == ["store_fontaine", "store_honeybee"]
     assert response.items[0].label == "Store - Fontaine"
+    assert response.items[0].short_description == "Fontaine store"
 
 
 def test_get_available_roles_returns_503_when_database_is_unavailable() -> None:
@@ -205,6 +215,8 @@ def test_register_login_me_refresh_and_logout_flow() -> None:
 
     assert current_user.email == "demo@example.com"
     assert current_user.roles == ["store_fontaine"]
+    assert current_user.role_short_descriptions == ["Fontaine store"]
+    assert current_user.created_at
 
     logged_in = login_user(
         UserLoginRequest(email="demo@example.com", password="ChangeMe123!"),

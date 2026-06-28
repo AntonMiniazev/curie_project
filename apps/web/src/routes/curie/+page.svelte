@@ -14,6 +14,7 @@
 	let reports = $state<ReportItem[]>([]);
 	let isLoadingReports = $state(false);
 	let errorMessage = $state<string | null>(null);
+	let isProfileOpen = $state(false);
 
 	onMount(() => {
 		void initializePage();
@@ -53,6 +54,36 @@
 
 		authSession.clear();
 		reports = [];
+		isProfileOpen = false;
+	}
+
+	function primaryRoleShortDescription() {
+		const user = $authSession.currentUser;
+		return user?.role_short_descriptions[0] ?? 'Reporting access';
+	}
+
+	function primaryRoleDescription() {
+		const user = $authSession.currentUser;
+		return user?.role_descriptions[0] ?? primaryRoleShortDescription();
+	}
+
+	function displayName() {
+		const user = $authSession.currentUser;
+		return user?.display_name || user?.email || 'Curie user';
+	}
+
+	function createdAtLabel() {
+		const createdAt = $authSession.currentUser?.created_at;
+
+		if (!createdAt) {
+			return 'Account date unavailable';
+		}
+
+		return new Intl.DateTimeFormat('en', {
+			year: 'numeric',
+			month: 'short',
+			day: '2-digit'
+		}).format(new Date(createdAt));
 	}
 
 	function getErrorMessage(error: unknown, fallback: string): string {
@@ -67,6 +98,8 @@
 <svelte:head>
 	<title>Curie Reports</title>
 </svelte:head>
+
+<svelte:body class:overflow-hidden={isProfileOpen} />
 
 <AppHeader pageName="Curie reports" navigationItems={mainNavigationItems} selectedHref="/curie" />
 
@@ -83,26 +116,25 @@
 				<div>
 					<h1 class="text-3xl font-semibold text-[var(--curie-text)]">Reporting workspace</h1>
 					<p class="mt-2 max-w-2x2 text-[var(--curie-text-muted)]">
-						Select a report to open its workspace. Streamlit embeds will be attached to these report pages later.
+						Select a report to open its workspace. Streamlit embeds will be attached to these report
+						pages later.
 					</p>
 				</div>
 
-				<div class="flex flex-wrap items-center gap-3">
-					{#if $authSession.currentUser}
-						<div class="curie-card-flat px-4 py-2 text-sm">
-							<p class="font-medium text-[var(--curie-text)]">
-								{$authSession.currentUser.display_name || $authSession.currentUser.email}
-							</p>
-							<p class="text-[var(--curie-text-muted)]">
-								{$authSession.currentUser.roles.join(', ')}
-							</p>
-						</div>
-					{/if}
-
-					<button class="curie-button px-4 py-4 text-sm" type="button" onclick={handleLogout}>
-						Logout
+				{#if $authSession.currentUser}
+					<button
+						class="curie-card block min-w-[14rem] p-4 text-left"
+						type="button"
+						aria-haspopup="dialog"
+						aria-expanded={isProfileOpen}
+						onclick={() => (isProfileOpen = true)}
+					>
+						<p class="font-semibold text-[var(--curie-text)]">{displayName()}</p>
+						<p class="mt-1 text-sm text-[var(--curie-text-muted)]">
+							{primaryRoleShortDescription()}
+						</p>
 					</button>
-				</div>
+				{/if}
 			</header>
 
 			{#if errorMessage}
@@ -122,10 +154,7 @@
 			{:else}
 				<section class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 					{#each reports as report (report.id)}
-						<a
-							class="curie-card block p-5 hover:border-[var(--curie-blue-l1)]"
-							href={resolve(`/curie/reports/${report.id}`)}
-						>
+						<a class="curie-card block p-5" href={resolve(`/curie/reports/${report.id}`)}>
 							<div class="mb-4 flex items-start justify-between gap-3">
 								<div>
 									<p class="curie-eyebrow text-xs">{report.category}</p>
@@ -133,11 +162,6 @@
 										{report.title}
 									</h2>
 								</div>
-								<span
-									class="rounded-full bg-[var(--curie-surface-muted)] px-2 py-1 text-xs text-[var(--curie-text-muted)]"
-								>
-									{report.required_role}
-								</span>
 							</div>
 							<p class="text-sm leading-6 text-[var(--curie-text-muted)]">
 								{report.description || 'Report workspace template is ready for a Streamlit app.'}
@@ -172,3 +196,45 @@
 		</section>
 	{/if}
 </main>
+
+{#if isProfileOpen && $authSession.currentUser}
+	<div
+		class="curie-overlay-backdrop fixed inset-0 z-50 grid place-items-center bg-[var(--curie-overlay-bg)] px-4"
+		role="presentation"
+	>
+		<button
+			class="absolute inset-0 cursor-default"
+			type="button"
+			aria-label="Close user details"
+			onclick={() => (isProfileOpen = false)}
+		></button>
+		<div
+			class="curie-card curie-static-card relative z-10 w-full max-w-[42rem] p-6"
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="curie-profile-title"
+		>
+			<h2 id="curie-profile-title" class="text-2xl font-semibold text-[var(--curie-text)]">
+				User: {displayName()}
+			</h2>
+			<p class="mt-2 text-base font-medium text-[var(--curie-text-muted)]">
+				Email: {$authSession.currentUser.email}
+			</p>
+
+			<p class="mt-6 whitespace-nowrap text-lg text-[var(--curie-text)]">
+				<span class="font-semibold">Access:</span>
+				{primaryRoleDescription()}
+			</p>
+			<p class="mt-4 text-sm text-[var(--curie-text-muted)]">
+				<span class="font-semibold">Registration date:</span>
+				{createdAtLabel()}
+			</p>
+
+			<div class="mt-6 flex justify-end gap-3">
+				<button class="curie-button px-4 py-2 text-sm" type="button" onclick={handleLogout}>
+					Logout
+				</button>
+			</div>
+		</div>
+	</div>
+{/if}

@@ -753,9 +753,7 @@ export const projectFlows: ProjectFlow[] = [
 							{ id: 'to-api', position: Position.Right },
 							{ id: 'to-cache-storage-web', position: Position.Bottom }
 						],
-						targets: [
-							{ id: 'from-user', position: Position.Left }
-						]
+						targets: [{ id: 'from-user', position: Position.Left }]
 					}
 				},
 				position: { x: 320, y: 150 },

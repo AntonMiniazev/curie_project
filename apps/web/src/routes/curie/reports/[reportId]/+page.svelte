@@ -4,7 +4,6 @@
 	import { resolve } from '$app/paths';
 	import { Maximize2, Minimize2 } from '@lucide/svelte';
 	import { onMount } from 'svelte';
-	import { get } from 'svelte/store';
 
 	import { ApiError } from '$lib/api/client';
 	import { getReports, type ReportItem } from '$lib/api/reports';
@@ -18,6 +17,8 @@
 	let isLoading = $state(false);
 	let isFrameExpanded = $state(false);
 	let curieTheme = $state<'day' | 'night'>('day');
+	let isAuthReady = $state(false);
+	let reportRequestId = 0;
 
 	const reportId = $derived(page.params.reportId);
 	const streamlitBaseUrl = $derived(
@@ -41,29 +42,51 @@
 		};
 	});
 
+	$effect(() => {
+		const nextReportId = reportId;
+
+		if (!nextReportId || !isAuthReady || !$isAuthenticated) {
+			return;
+		}
+
+		void loadReport(nextReportId);
+	});
+
 	async function initializePage() {
 		await authSession.check({ force: true });
-
-		if (get(isAuthenticated)) {
-			await loadReport();
-		}
+		isAuthReady = true;
 	}
 
-	async function loadReport() {
+	async function loadReport(nextReportId: string) {
+		const currentRequestId = ++reportRequestId;
+
 		errorMessage = null;
+		report = null;
 		isLoading = true;
 
 		try {
 			const response = await getReports();
-			report = response.items.find((item) => item.id === reportId) ?? null;
+			const nextReport = response.items.find((item) => item.id === nextReportId) ?? null;
+
+			if (currentRequestId !== reportRequestId) {
+				return;
+			}
+
+			report = nextReport;
 
 			if (!report) {
 				errorMessage = 'Report was not found in the API response.';
 			}
 		} catch (error) {
+			if (currentRequestId !== reportRequestId) {
+				return;
+			}
+
 			errorMessage = getErrorMessage(error);
 		} finally {
-			isLoading = false;
+			if (currentRequestId === reportRequestId) {
+				isLoading = false;
+			}
 		}
 	}
 
@@ -144,7 +167,10 @@
 				</div>
 			</header>
 
-			<section class="curie-card curie-report-shell" class:curie-report-expanded={isFrameExpanded}>
+			<section
+				class="curie-card curie-static-card curie-report-shell"
+				class:curie-report-expanded={isFrameExpanded}
+			>
 				{#if streamlitUrl}
 					{#if isFrameExpanded}
 						<button
@@ -157,11 +183,9 @@
 							<Minimize2 class="h-4 w-4" aria-hidden="false" />
 						</button>
 					{/if}
-					<iframe
-						class="curie-report-frame"
-						title={report.title}
-						src={streamlitUrl}
-					></iframe>
+					{#key report.id}
+						<iframe class="curie-report-frame" title={report.title} src={streamlitUrl}></iframe>
+					{/key}
 				{:else}
 					<div class="grid min-h-[560px] place-items-center p-6">
 						<p class="text-[var(--curie-text-muted)]">Report workspace URL is not configured.</p>

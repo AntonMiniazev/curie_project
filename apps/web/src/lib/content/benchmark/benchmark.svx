@@ -1,0 +1,202 @@
+<section class="resume-document benchmark-document">
+
+	<section class="resume-section" aria-labelledby="benchmark-runtime-title">
+		<h2 id="benchmark-runtime-title">Runtime</h2>
+		<p>
+			Curie runs as a compact deployment on a small Hetzner server. The public website,
+			API, embedded Streamlit reports, PostgreSQL, and local report cache share the same host.
+		</p>
+
+		<div class="benchmark-metric-grid">
+			<section>
+				<h3>Server</h3>
+				<p>Hetzner CX23, <br> 
+				2 vCPU, 4 GB RAM</p>
+			</section>
+			<section>
+				<h3>Frontend</h3>
+				<p>SvelteKit behind Nginx</p>
+			</section>
+			<section>
+				<h3>API</h3>
+				<p>FastAPI with PostgreSQL auth and report metadata</p>
+			</section>
+			<section>
+				<h3>Reports</h3>
+				<p>Streamlit reading from local serving cache</p>
+			</section>
+		</div>
+	</section>
+
+	<div class="resume-section-line"></div>
+
+	<section class="resume-section" aria-labelledby="benchmark-http-title">
+		<h2 id="benchmark-http-title">HTTP Smoke Load Test</h2>
+		<p>
+			The public web and API smoke path was tested with k6 ramping up to 100 virtual users over a 30-second run. <br>
+			The run covered the home page, API health, cache status, and report metadata
+			endpoints.
+		</p>
+
+		<div class="benchmark-table-wrap">
+			<table class="benchmark-table">
+				<tbody>
+					<tr>
+						<th>Max virtual users</th>
+						<td>100</td>
+					</tr>
+					<tr>
+						<th>Completed iterations</th>
+						<td>705</td>
+					</tr>
+					<tr>
+						<th>HTTP requests</th>
+						<td>2820</td>
+					</tr>
+					<tr>
+						<th>Request rate</th>
+						<td>87.38 requests/s</td>
+					</tr>
+					<tr>
+						<th>Checks passed</th>
+						<td>2820 / 2820</td>
+					</tr>
+					<tr>
+						<th>HTTP failures</th>
+						<td>0.00%</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div class="benchmark-table-wrap">
+			<table class="benchmark-table">
+				<thead>
+					<tr>
+						<th>Latency metric</th>
+						<th>Result</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Average</td>
+						<td>68.43 ms</td>
+					</tr>
+					<tr>
+						<td>Median</td>
+						<td>65.26 ms</td>
+					</tr>
+					<tr>
+						<td>p90</td>
+						<td>80.58 ms</td>
+					</tr>
+					<tr>
+						<td>p95</td>
+						<td>87.57 ms</td>
+					</tr>
+					<tr>
+						<td>Max</td>
+						<td>154.83 ms</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</section>
+
+	<div class="resume-section-line"></div>
+
+	<section class="resume-section" aria-labelledby="benchmark-streamlit-title">
+		<h2 id="benchmark-streamlit-title">Streamlit Report Load Test</h2>
+		<p>
+			The embedded report experience was tested with 10 concurrent authenticated browser workers
+			interacting with Marketing, Delivery, and Finance reports for about 3.4 minutes.
+		</p>
+
+		<div class="benchmark-table-wrap">
+			<table class="benchmark-table">
+				<tbody>
+					<tr>
+						<th>Concurrent browser workers</th>
+						<td>10</td>
+					</tr>
+					<tr>
+						<th>Runtime</th>
+						<td>3.4 minutes</td>
+					</tr>
+					<tr>
+						<th>Result</th>
+						<td>10 passed, 0 failed</td>
+					</tr>
+					<tr>
+						<th>Observed behavior</th>
+						<td>Successful login, report opening, and filter interaction across all workers</td>
+					</tr>
+					<tr>
+						<th>Failures found</th>
+						<td
+							>No Playwright failures, Streamlit tracebacks, CSS parser errors, or Delivery
+							empty-data errors</td
+						>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</section>
+
+	<div class="resume-section-line"></div>
+
+	<section class="resume-section" aria-labelledby="benchmark-resources-title">
+		<h2 id="benchmark-resources-title">Peak Sampled Resource Usage</h2>
+
+		<div class="benchmark-table-wrap">
+			<table class="benchmark-table">
+				<thead>
+					<tr>
+						<th>Service</th>
+						<th>Peak CPU</th>
+						<th>Peak RAM</th>
+						<th>RAM share</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Streamlit</td>
+						<td>197.01%</td>
+						<td>1.415 GiB / 3.726 GiB</td>
+						<td>37.97%</td>
+					</tr>
+					<tr>
+						<td>API</td>
+						<td>38.26%</td>
+						<td>104.4 MiB / 3.726 GiB</td>
+						<td>2.74%</td>
+					</tr>
+					<tr>
+						<td>PostgreSQL</td>
+						<td>11.56%</td>
+						<td>65.39 MiB / 3.726 GiB</td>
+						<td>1.71%</td>
+					</tr>
+					<tr>
+						<td>Web</td>
+						<td>0.58%</td>
+						<td>33.22 MiB / 3.726 GiB</td>
+						<td>0.87%</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</section>
+
+	<div class="resume-section-line"></div>
+
+	<section class="resume-section" aria-labelledby="benchmark-interpretation-title">
+		<h2 id="benchmark-interpretation-title">Interpretation</h2>
+		<ul>
+			<li>The web and API smoke endpoints handled the 100-VU k6 run with no failed checks.</li>
+			<li>The HTTP p95 latency was 87.57 ms, well below the 800 ms threshold.</li>
+			<li>The authenticated Streamlit report path is healthy at the tested 10-worker level.</li>
+			<li>API, web, and PostgreSQL stayed comparatively light in the sampled production run.</li>
+		</ul>
+	</section>
+</section>
