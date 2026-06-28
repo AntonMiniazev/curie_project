@@ -2,6 +2,7 @@
 @import 'tailwindcss';
 @import './lib/styles/resume.css';
 
+/* Global Curie theme tokens shared by SvelteKit pages, reusable components, and overlays. */
 :root {
 	--system-ui:
 		system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji',
@@ -29,6 +30,7 @@
 	--curie-blue-l2: #455874ff;
 	--curie-blue-l3: #457b9dff;
 	--curie-blue-l4: #63a7d4;
+	--curie-red-text: #e63946ff;
 	--curie-red-l1: #e63946ff;
 	--curie-red-l2: #ec9a9aff;
 	--curie-radius-xs: 4px;
@@ -64,20 +66,23 @@
 	--curie-blue-l1: #8fc7ed;
 	--curie-blue-l2: #b8c7da;
 	--curie-blue-l3: #63a7d4;
+	--curie-red-text: #e63946ff;
 	--curie-red-l1: #ff8f9b;
 	--curie-red-l2: #7b3442;
 	color-scheme: dark;
 }
-.font-system {
+
+/* curie-page: application-wide page shell, font family, and project-hub scrollbar compensation. */
+.curie-page {
 	font-family: var(--system-ui);
 }
 
-.curie-page-shell {
+.curie-page__shell {
 	width: min(calc(100% - (var(--curie-page-gutter) * 2)), var(--curie-page-max-width));
 	margin-inline: auto;
 }
 
-body.project-hub-page .curie-page-shell {
+body.project-hub .curie-page__shell {
 	width: min(
 		calc(100% - (var(--curie-page-gutter) * 2) - var(--curie-scrollbar-width)),
 		var(--curie-page-max-width)
@@ -92,15 +97,16 @@ body {
 	color: var(--curie-text);
 }
 
-body.project-hub-page {
+body.project-hub {
 	overflow: hidden;
 	scrollbar-width: none;
 }
 
-body.project-hub-page::-webkit-scrollbar {
+body.project-hub::-webkit-scrollbar {
 	display: none;
 }
 
+/* Svelte Flow vendor overrides plus project-flow elements used by custom diagram nodes and edges. */
 .svelte-flow {
 	--xy-attribution-background-color: transparent;
 	--xy-background-pattern-dots-color-default: var(--curie-border-hard);
@@ -153,7 +159,7 @@ body.project-hub-page::-webkit-scrollbar {
 	font-size: 0.875rem;
 }
 
-.curie-flow-node-text {
+.project-flow__node-text {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -163,14 +169,14 @@ body.project-hub-page::-webkit-scrollbar {
 	overflow-wrap: break-word;
 }
 
-.curie-flow-node-label {
+.project-flow__node-label {
 	display: block;
 	white-space: pre-line;
 	overflow-wrap: break-word;
 	line-height: 1rem;
 }
 
-.curie-flow-node-secondary-label {
+.project-flow__node-secondary-label {
 	display: block;
 	font-size: 0.625rem;
 	font-weight: 500;
@@ -178,7 +184,7 @@ body.project-hub-page::-webkit-scrollbar {
 	color: var(--curie-text-muted);
 }
 
-.curie-flow-group-title {
+.project-flow__group-title {
 	max-width: 85%;
 	border: 1px solid var(--curie-border-hard);
 	border-radius: var(--curie-radius-xl);
@@ -190,13 +196,13 @@ body.project-hub-page::-webkit-scrollbar {
 	line-height: 1.25rem;
 }
 
-.curie-flow-edge {
+.project-flow__edge {
 	stroke: var(--curie-flow-edge-color, var(--curie-blue-l2));
 	stroke-width: var(--curie-flow-edge-width, 2px);
 	fill: none;
 }
 
-.curie-flow-edge-label {
+.project-flow__edge-label {
 	border: var(--curie-flow-edge-label-border-width, 1px)
 		var(--curie-flow-edge-label-border-style, solid)
 		var(--curie-flow-edge-label-border-color, var(--curie-border));
@@ -209,7 +215,86 @@ body.project-hub-page::-webkit-scrollbar {
 	white-space: pre-line;
 }
 
-.curie-report-frame {
+/* project-intro: introduction cards that jump to each project section on the hub page. */
+.project-intro__project-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 1rem;
+	margin-top: 2rem;
+}
+
+.curie-card--surface,
+.curie-card--intro,
+.curie-card--clickable {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	border: 1px solid var(--curie-border);
+	border-radius: var(--curie-radius-xm);
+	background: var(--curie-surface);
+	padding: 1rem;
+	color: var(--curie-text);
+	text-align: left;
+	box-shadow: 0 1px 2px var(--curie-border-hard);
+	text-decoration: none;
+	transition:
+		transform 160ms ease,
+		border-color 160ms ease,
+		background-color 160ms ease,
+		color 160ms ease;
+}
+
+.curie-card--intro {
+	min-height: 10rem;
+}
+
+.curie-card--intro:hover,
+.curie-card--intro:focus-visible,
+.curie-card--clickable:hover,
+.curie-card--clickable:focus-visible {
+	transform: translateY(-0.25rem);
+	border-color: var(--curie-blue-l1);
+	background: var(--curie-control-bg-hover);
+	color: var(--curie-red-text);
+}
+
+.curie-card__title {
+	font-size: 1.125rem;
+}
+
+.curie-card__meta {
+	color: var(--curie-blue-l3);
+	font-size: 0.8rem;
+	font-weight: 600;
+	line-height: 1.35;
+}
+
+.curie-card__text {
+	color: var(--curie-text-muted);
+	font-size: 0.925rem;
+	line-height: 1.55;
+}
+
+.project-flow__title-link {
+	display: inline-block;
+	margin-left: 0.25rem;
+	border-radius: var(--curie-radius-xs);
+	color: inherit;
+	text-decoration: none;
+	transition:
+		background-color 160ms ease,
+		color 160ms ease,
+		transform 160ms ease;
+}
+
+.project-flow__title-link:hover,
+.project-flow__title-link:focus-visible {
+	transform: translateY(-0.1rem);
+	color: var(--curie-red-text);
+}
+
+/* report-page: protected report detail page, iframe loading cover, and expanded report state. */
+.report-page__frame {
 	display: block;
 	width: 100%;
 	min-height: 760px;
@@ -218,7 +303,7 @@ body.project-hub-page::-webkit-scrollbar {
 	background: var(--curie-surface);
 }
 
-.curie-report-expanded {
+.report-page__shell--expanded {
 	position: fixed;
 	inset: 0;
 	z-index: 80;
@@ -228,18 +313,38 @@ body.project-hub-page::-webkit-scrollbar {
 	box-shadow: none;
 }
 
-.curie-report-expanded .curie-report-frame {
+.report-page__shell--expanded .report-page__frame {
 	flex: 1;
 	min-height: 0;
 	border-radius: 0;
 }
 
-.curie-report-shell {
+.report-page__shell {
 	position: relative;
 	overflow: hidden;
 }
 
-.curie-report-shell.curie-report-expanded {
+.report-page__loading {
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	display: grid;
+	place-items: center;
+	background: var(--curie-surface);
+	color: var(--curie-text-muted);
+}
+
+.report-page__loading-panel {
+	width: min(24rem, calc(100% - 2rem));
+}
+
+.report-page__loading-text {
+	margin: 0.75rem 0 0;
+	text-align: center;
+	font-size: 0.875rem;
+}
+
+.report-page__shell.report-page__shell--expanded {
 	position: fixed;
 	inset: 0;
 	z-index: 80;
@@ -248,16 +353,73 @@ body.project-hub-page::-webkit-scrollbar {
 	border-radius: 0;
 }
 
-.curie-report-shell .curie-report-frame {
+.report-page__shell .report-page__frame {
 	border-radius: var(--curie-radius-xm);
 }
 
-.curie-report-shell.curie-report-expanded .curie-report-frame {
+.report-page__shell.report-page__shell--expanded .report-page__frame {
 	flex: 1;
 	min-height: 0;
 	border-radius: 0;
 }
 
+.report-page__inline-button {
+	display: inline-flex;
+	width: fit-content;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	border: 1px solid var(--curie-border);
+	border-radius: 0.5rem;
+	background: var(--curie-surface);
+	padding: 0.5rem 0.75rem;
+	color: var(--curie-text);
+	font-size: 0.875rem;
+	font-weight: 600;
+	box-shadow: var(--curie-control-shadow);
+	transition:
+		background-color 0.15s ease,
+		color 0.15s ease,
+		border-color 0.15s ease;
+}
+
+.report-page__inline-button:hover,
+.report-page__inline-button:focus-visible {
+	border-color: var(--curie-blue-l1);
+	background-color: var(--curie-control-bg-hover);
+	color: var(--curie-blue-l1);
+}
+
+.report-page__collapse-button {
+	position: absolute;
+	right: 3.25rem;
+	top: 0.75rem;
+	z-index: 2;
+	display: inline-flex;
+	height: 2.25rem;
+	width: 2.25rem;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid var(--curie-border);
+	border-radius: 0.5rem;
+	background: color-mix(in srgb, var(--curie-surface) 92%, transparent);
+	color: var(--curie-text);
+	box-shadow: var(--curie-control-shadow);
+	transition:
+		background-color 0.15s ease,
+		color 0.15s ease,
+		border-color 0.15s ease;
+}
+
+.report-page__collapse-button:hover,
+.report-page__collapse-button:focus-visible {
+	border-color: var(--curie-blue-l1);
+	background-color: var(--curie-control-bg-hover);
+	color: var(--curie-blue-l1);
+}
+
+/* curie-input, curie-card, and curie-overlay: shared form field, card, and modal backdrop blocks. */
 .curie-input {
 	width: 100%;
 	border: 1px solid var(--curie-border);
@@ -283,28 +445,30 @@ body.project-hub-page::-webkit-scrollbar {
 .curie-card:focus-visible {
 	border-color: var(--curie-blue-l1);
 	background-color: var(--curie-control-bg-hover);
-	color: var(--curie-blue-l1);
+	color: var(--curie-red-text);
 }
 
-.curie-flow-card:hover,
-.curie-flow-card:focus-visible {
+.curie-card--flow:hover,
+.curie-card--flow:focus-visible {
 	border-color: var(--curie-border);
 	background-color: var(--curie-surface);
 	color: inherit;
 }
 
-.curie-static-card:hover,
-.curie-static-card:focus-visible {
+.curie-card--static:hover,
+.curie-card--static:focus-visible {
+	transform: none;
 	border-color: var(--curie-border);
 	background-color: var(--curie-surface);
 	color: inherit;
 }
 
-.curie-overlay-backdrop {
+.curie-overlay {
 	backdrop-filter: blur(var(--curie-overlay-blur));
 	-webkit-backdrop-filter: blur(var(--curie-overlay-blur));
 }
 
+/* curie-select: shared select styling for SvelteKit controls that need native option rendering. */
 .curie-select {
 	max-width: 11rem;
 	border: 1px solid var(--curie-border);
@@ -325,33 +489,34 @@ body.project-hub-page::-webkit-scrollbar {
 	color: var(--curie-blue-l1);
 }
 
-.curie-select option {
+.curie-select__option {
 	background-color: var(--curie-control-bg-option);
 	color: var(--curie-text-option);
 	font: inherit;
 }
 
-.curie-app-header {
+/* curie-header: Flowbite Navbar wrapper, day/night action, menu positioning, and social links. */
+.curie-header {
 	position: relative;
 	z-index: 40;
 	border-bottom: 1px solid var(--curie-border);
 	background: var(--curie-surface);
 }
 
-.curie-navbar-root {
+.curie-header__navbar {
 	background: var(--curie-surface) !important;
 	padding: 0 !important;
 	color: var(--curie-text) !important;
 }
 
-.curie-navbar-container {
+.curie-header__container {
 	display: flex;
 	flex-wrap: nowrap;
 	gap: 0.75rem;
 	padding-block: 1rem;
 }
 
-.curie-navbar-brand {
+.curie-header__brand {
 	min-width: 0;
 	flex-shrink: 0;
 	gap: 0.75rem;
@@ -359,36 +524,36 @@ body.project-hub-page::-webkit-scrollbar {
 	font-weight: 600;
 }
 
-.curie-navbar-brand:hover,
-.curie-navbar-brand:focus-visible {
+.curie-header__brand:hover,
+.curie-header__brand:focus-visible {
 	color: var(--curie-blue-l3) !important;
 }
 
-.curie-navbar-logo {
+.curie-header__logo {
 	width: 2.25rem;
 	height: 2.25rem;
 	flex-shrink: 0;
 }
 
-.curie-navbar-title {
+.curie-header__title {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-.curie-navbar-spacer {
+.curie-header__spacer {
 	min-width: 0;
 	flex: 1 1 auto;
 }
 
-.curie-navbar-controls {
+.curie-header__controls {
 	display: flex;
 	flex-shrink: 0;
 	align-items: center;
 	gap: 0.5rem;
 }
 
-.curie-icon-button {
+.curie-button--icon {
 	display: grid;
 	width: 2.5rem;
 	min-width: 2.5rem;
@@ -407,24 +572,24 @@ body.project-hub-page::-webkit-scrollbar {
 		color 150ms ease;
 }
 
-.curie-icon-button:hover,
-.curie-icon-button:focus-visible {
+.curie-button--icon:hover,
+.curie-button--icon:focus-visible {
 	border-color: var(--curie-blue-l3);
 	background: var(--curie-control-bg-hover);
 	color: var(--curie-blue-l3);
 }
 
-.curie-navbar-menu-button {
+.curie-header__menu-button {
 	display: grid !important;
 }
 
-.curie-navbar-menu-anchor {
+.curie-header__menu-anchor {
 	position: relative;
 	display: grid;
 	place-items: center;
 }
 
-.curie-navbar-menu {
+.curie-header__menu {
 	position: absolute !important;
 	top: 100% !important;
 	right: 0 !important;
@@ -445,7 +610,7 @@ body.project-hub-page::-webkit-scrollbar {
 		visibility 0s linear 180ms;
 }
 
-.curie-navbar-menu-open {
+.curie-header__menu--open {
 	visibility: visible;
 	opacity: 1;
 	pointer-events: auto;
@@ -458,7 +623,7 @@ body.project-hub-page::-webkit-scrollbar {
 		visibility 0s;
 }
 
-.curie-navbar-menu-list {
+.curie-header__menu-list {
 	display: flex;
 	flex-direction: column;
 	gap: 0.125rem;
@@ -470,8 +635,8 @@ body.project-hub-page::-webkit-scrollbar {
 	box-shadow: 0 18px 45px color-mix(in srgb, var(--curie-border-hard) 55%, transparent) !important;
 }
 
-.curie-navbar-action,
-.curie-navbar-sub-link {
+.curie-header__menu-action,
+.curie-header__submenu-link {
 	display: flex;
 	width: 100%;
 	align-items: center;
@@ -488,35 +653,35 @@ body.project-hub-page::-webkit-scrollbar {
 	cursor: pointer;
 }
 
-.curie-navbar-action.selected,
-.curie-navbar-action:hover,
-.curie-navbar-action:focus-visible,
-.curie-navbar-sub-link:hover,
-.curie-navbar-sub-link:focus-visible {
+.curie-header__menu-action--selected,
+.curie-header__menu-action:hover,
+.curie-header__menu-action:focus-visible,
+.curie-header__submenu-link:hover,
+.curie-header__submenu-link:focus-visible {
 	background: var(--curie-control-bg-hover) !important;
 	color: var(--curie-blue-l1) !important;
 }
 
-.curie-navbar-section-line {
+.curie-header__divider {
 	height: 1px;
 	margin: 0.5rem 0.75rem;
 	background: var(--curie-border);
 }
 
-.curie-navbar-sub-link {
+.curie-header__submenu-link {
 	padding-left: 1.25rem;
 	font-size: 0.875rem;
 	font-weight: 500;
 	color: var(--curie-text-muted) !important;
 }
 
-.curie-navbar-social-row {
+.curie-header__social-row {
 	display: flex;
 	justify-content: center;
 	gap: 0.75rem;
 }
 
-.curie-navbar-social-link {
+.curie-header__social-link {
 	display: grid;
 	height: 2.25rem;
 	width: 2.25rem;
@@ -527,68 +692,13 @@ body.project-hub-page::-webkit-scrollbar {
 	color: var(--curie-text);
 }
 
-.curie-navbar-social-link:hover,
-.curie-navbar-social-link:focus-visible {
+.curie-header__social-link:hover,
+.curie-header__social-link:focus-visible {
 	border-color: var(--curie-blue-l3);
 	color: var(--curie-blue-l3);
 }
 
-.curie-report-inline-button {
-	display: inline-flex;
-	width: fit-content;
-	flex-shrink: 0;
-	align-items: center;
-	justify-content: center;
-	gap: 0.5rem;
-	border: 1px solid var(--curie-border);
-	border-radius: 0.5rem;
-	background: var(--curie-surface);
-	padding: 0.5rem 0.75rem;
-	color: var(--curie-text);
-	font-size: 0.875rem;
-	font-weight: 600;
-	box-shadow: var(--curie-control-shadow);
-	transition:
-		background-color 0.15s ease,
-		color 0.15s ease,
-		border-color 0.15s ease;
-}
-
-.curie-report-inline-button:hover,
-.curie-report-inline-button:focus-visible {
-	border-color: var(--curie-blue-l1);
-	background-color: var(--curie-control-bg-hover);
-	color: var(--curie-blue-l1);
-}
-
-.curie-report-collapse-button {
-	position: absolute;
-	right: 3.25rem;
-	top: 0.75rem;
-	z-index: 2;
-	display: inline-flex;
-	height: 2.25rem;
-	width: 2.25rem;
-	align-items: center;
-	justify-content: center;
-	border: 1px solid var(--curie-border);
-	border-radius: 0.5rem;
-	background: color-mix(in srgb, var(--curie-surface) 92%, transparent);
-	color: var(--curie-text);
-	box-shadow: var(--curie-control-shadow);
-	transition:
-		background-color 0.15s ease,
-		color 0.15s ease,
-		border-color 0.15s ease;
-}
-
-.curie-report-collapse-button:hover,
-.curie-report-collapse-button:focus-visible {
-	border-color: var(--curie-blue-l1);
-	background-color: var(--curie-control-bg-hover);
-	color: var(--curie-blue-l1);
-}
-
+/* curie-button, curie-alert, and curie-eyebrow: shared actions, validation feedback, and section labels. */
 .curie-button {
 	border: 1px solid var(--curie-border);
 	border-radius: var(--curie-radius-xm);
@@ -602,7 +712,7 @@ body.project-hub-page::-webkit-scrollbar {
 		background-color 150ms ease;
 }
 
-.curie-card-flat {
+.curie-card--flat {
 	border: 1px solid var(--curie-border);
 	border-radius: var(--curie-radius-xm);
 	background: var(--curie-control-bg);
@@ -615,7 +725,7 @@ body.project-hub-page::-webkit-scrollbar {
 	border-color: var(--curie-blue-l3);
 }
 
-.curie-button-primary {
+.curie-button--primary {
 	border-radius: var(--curie-radius-xm);
 	border: 1px solid var(--curie-border);
 	border-radius: var(--curie-radius-xm);
@@ -625,12 +735,12 @@ body.project-hub-page::-webkit-scrollbar {
 	font-weight: 500;
 }
 
-.curie-button-primary:hover,
-.curie-button-primary:focus-visible {
+.curie-button--primary:hover,
+.curie-button--primary:focus-visible {
 	border-color: var(--curie-blue-l1);
 }
 
-.curie-alert-danger {
+.curie-alert--danger {
 	border-radius: var(--curie-radius-xm);
 	background: var(--curie-danger-bg);
 	color: var(--curie-red-l1);
@@ -644,6 +754,18 @@ body.project-hub-page::-webkit-scrollbar {
 	color: var(--curie-blue-l3);
 }
 
+/* Responsive adjustments for narrow project-hub layouts and intro-card stacking. */
+@media (max-width: 760px) {
+	.project-intro__project-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.curie-card--intro {
+		min-height: auto;
+	}
+}
+
+/* Minimal element reset so native controls inherit the surrounding Curie typography. */
 button,
 input,
 select {

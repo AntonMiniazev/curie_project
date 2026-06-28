@@ -4,9 +4,10 @@
 	import { projectFlows } from '$lib/data/mainPageFlows';
 
 	const projectFlowsById = new Map(projectFlows.map((flow) => [flow.id, flow]));
-	const orderedProjectFlows = projectFlowMeta
-		.map((flow) => projectFlowsById.get(flow.id))
-		.filter((flow) => flow !== undefined);
+	const orderedProjectFlows = projectFlowMeta.flatMap((meta) => {
+		const flow = projectFlowsById.get(meta.id);
+		return flow ? [{ ...flow, repositoryUrl: meta.repositoryUrl }] : [];
+	});
 </script>
 
 {#each orderedProjectFlows as flow (flow.id)}
@@ -18,5 +19,6 @@
 		edges={flow.edges}
 		detailNodes={flow.detailNodes}
 		detailEdges={flow.detailEdges}
+		repositoryUrl={flow.repositoryUrl}
 	/>
 {/each}

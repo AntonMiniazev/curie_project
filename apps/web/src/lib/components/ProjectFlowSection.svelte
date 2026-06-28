@@ -9,11 +9,12 @@
 		type Node,
 		type NodeEventWithPointer
 	} from '@xyflow/svelte';
-	import { Expand, RotateCcw } from '@lucide/svelte';
 	import FlowEdge from '$lib/components/FlowEdge.svelte';
 	import FlowGroupNode from '$lib/components/FlowGroupNode.svelte';
 	import FlowNode from '$lib/components/FlowNode.svelte';
 	import type { FlowNodeData } from '$lib/flow/types';
+	import ExpandIcon from '~icons/lucide/expand';
+	import RotateCcwIcon from '~icons/lucide/rotate-ccw';
 
 	const nodeTypes = {
 		default: FlowNode,
@@ -37,9 +38,19 @@
 		edges: Edge[];
 		detailNodes?: Node<FlowNodeData>[];
 		detailEdges?: Edge[];
+		repositoryUrl?: string;
 	};
 
-	let { id, name, description, nodes, edges, detailNodes = [], detailEdges = [] }: Props = $props();
+	let {
+		id,
+		name,
+		description,
+		nodes,
+		edges,
+		detailNodes = [],
+		detailEdges = [],
+		repositoryUrl
+	}: Props = $props();
 
 	let showDetail = $state(false);
 	let isExpanded = $state(false);
@@ -88,19 +99,27 @@
 	aria-labelledby={`${id}-title`}
 >
 	<header
-		class="curie-page-shell flex flex-col gap-4 md:flex-row md:items-start md:justify-between"
+		class="curie-page__shell flex flex-col gap-4 md:flex-row md:items-start md:justify-between"
 	>
 		<div>
 			<h2 id={`${id}-title`} class="text-4xl font-semibold text-[var(--curie-text)]">
-				<span class="text-[var(--curie-blue-l3)]">Project</span>
-				{name}
+				{#if repositoryUrl}
+					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+					<a class="project-flow__title-link" href={repositoryUrl} target="_blank" rel="noreferrer">
+						<span class="text-[var(--curie-blue-l3)]">Project</span>
+						{name}
+					</a>
+				{:else}
+					<span class="text-[var(--curie-blue-l3)]">Project</span>
+					{name}
+				{/if}
 			</h2>
 			<p class="mt-2 max-w-3xl leading-7 text-[var(--curie-text-muted)]">{description}</p>
 		</div>
 	</header>
 
 	<div
-		class="curie-card curie-flow-card curie-page-shell relative h-full min-h-[22rem] overflow-hidden"
+		class="curie-card curie-card--flow curie-page__shell relative h-full min-h-[22rem] overflow-hidden"
 	>
 		{#if showDetail}
 			<button
@@ -110,7 +129,7 @@
 				title={`Reset ${name} diagram`}
 				onclick={resetFlowView}
 			>
-				<RotateCcw class="h-4 w-4" aria-hidden="true" />
+				<RotateCcwIcon class="h-4 w-4" aria-hidden="true" />
 			</button>
 		{/if}
 
@@ -121,7 +140,7 @@
 			title={`Expand ${name} diagram`}
 			onclick={() => (isExpanded = true)}
 		>
-			<Expand class="h-4 w-4" aria-hidden="true" />
+			<ExpandIcon class="h-4 w-4" aria-hidden="true" />
 		</button>
 
 		{#key flowViewKey}
@@ -149,7 +168,7 @@
 
 	{#if isExpanded}
 		<div
-			class="curie-overlay-backdrop fixed inset-0 z-50 grid grid-rows-[auto_minmax(0,1fr)] gap-4 bg-[var(--curie-overlay-bg)] px-5 py-5"
+			class="curie-overlay fixed inset-0 z-50 grid grid-rows-[auto_minmax(0,1fr)] gap-4 bg-[var(--curie-overlay-bg)] px-5 py-5"
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby={`${id}-expanded-title`}
@@ -179,7 +198,7 @@
 							title={`Reset ${name} diagram`}
 							onclick={resetFlowView}
 						>
-							<RotateCcw class="h-4 w-4" aria-hidden="true" />
+							<RotateCcwIcon class="h-4 w-4" aria-hidden="true" />
 						</button>
 					{/if}
 
@@ -194,7 +213,7 @@
 			</header>
 
 			<div
-				class="curie-card curie-flow-card mx-auto min-h-0 w-full max-w-[94rem] overflow-hidden shadow-xl"
+				class="curie-card curie-card--flow mx-auto min-h-0 w-full max-w-[94rem] overflow-hidden shadow-xl"
 				transition:scale={{ duration: 240, start: 0.96 }}
 			>
 				{#key flowViewKey}

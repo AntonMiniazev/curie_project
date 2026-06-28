@@ -1,42 +1,50 @@
-# sv
+# Curie Web
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+SvelteKit frontend for the Curie project hub, auth pages, report workspace, resume overlay, and benchmark overlay.
 
-## Creating a project
+## Main Routes
 
-If you're seeing this, you've probably already done this step. Congrats!
+- `/`: project hub with Ampere, Bohr, and Curie architecture sections.
+- `/curie`: authenticated reporting workspace and report cards.
+- `/curie/login`: sign-in page.
+- `/curie/register`: account creation page.
+- `/curie/reports/[reportId]`: protected report iframe shell.
 
-```sh
-# create a new project
-npx sv create my-app
-```
+## Development
 
-To recreate this project with the same configuration:
-
-```sh
-# recreate this project
-npx sv@0.16.1 create --template minimal --types ts --add eslint prettier --install npm apps/web
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
+```bash
+cd apps/web
+npm install
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
+Useful checks:
 
-To create a production version of your app:
-
-```sh
+```bash
+npm run format
+npm run check
+npm run lint
 npm run build
 ```
 
-You can preview the production build with `npm run preview`.
+## API Types
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+The app consumes generated types from `@curie/api-client`, backed by `packages/contracts/openapi.json`. Regenerate from the repository root after API schema changes:
+
+```bash
+bash scripts/export-openapi.sh
+bash scripts/generate-api-client.sh
+```
+
+## Styling
+
+Global SvelteKit styling lives in `src/app.css`. Project-owned CSS follows BEM:
+
+- `curie-page`: page shell and layout helpers.
+- `curie-card`: shared card block with modifiers such as `curie-card--clickable`.
+- `curie-button`: shared action block with modifiers such as `curie-button--primary`.
+- `curie-header`: Flowbite Navbar wrapper and menu elements.
+- `project-flow`: Svelte Flow custom node and edge elements.
+- `report-page`: report iframe and expanded report state.
+
+Third-party selectors such as `.svelte-flow__*` remain vendor selectors and are documented in the CSS comments.

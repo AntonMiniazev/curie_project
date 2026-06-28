@@ -2,8 +2,9 @@
 	import { page } from '$app/state';
 	import { env } from '$env/dynamic/public';
 	import { resolve } from '$app/paths';
-	import { Maximize2, Minimize2 } from '@lucide/svelte';
 	import { onMount } from 'svelte';
+	import MaximizeIcon from '~icons/lucide/maximize-2';
+	import MinimizeIcon from '~icons/lucide/minimize-2';
 
 	import { ApiError } from '$lib/api/client';
 	import { getReports, type ReportItem } from '$lib/api/reports';
@@ -15,6 +16,7 @@
 	let report = $state<ReportItem | null>(null);
 	let errorMessage = $state<string | null>(null);
 	let isLoading = $state(false);
+	let isFrameLoading = $state(false);
 	let isFrameExpanded = $state(false);
 	let curieTheme = $state<'day' | 'night'>('day');
 	let isAuthReady = $state(false);
@@ -50,6 +52,12 @@
 		}
 
 		void loadReport(nextReportId);
+	});
+
+	$effect(() => {
+		if (streamlitUrl) {
+			isFrameLoading = true;
+		}
 	});
 
 	async function initializePage() {
@@ -130,17 +138,20 @@
 		{#if $isCheckingAuth}
 			<LoadingLine />
 		{:else if !$isAuthenticated}
-			<section class="curie-card-flat p-6">
+			<section class="curie-card curie-card--flat p-6">
 				<h1 class="text-2xl font-semibold text-[var(--curie-text)]">Login required</h1>
 				<p class="mt-2 text-[var(--curie-text-muted)]">Sign in before opening report workspaces.</p>
-				<a class="curie-button-primary mt-5 inline-block px-4 py-2" href={resolve('/curie/login')}>
+				<a
+					class="curie-button curie-button--primary mt-5 inline-block px-4 py-2"
+					href={resolve('/curie/login')}
+				>
 					Sign in
 				</a>
 			</section>
 		{:else if isLoading}
 			<p class="text-[var(--curie-text-muted)]">Loading report...</p>
 		{:else if errorMessage}
-			<section class="curie-card-flat p-6">
+			<section class="curie-card curie-card--flat p-6">
 				<h1 class="text-2xl font-semibold text-[var(--curie-text)]">Report unavailable</h1>
 				<p class="mt-2 text-[var(--curie-red-l1)]">{errorMessage}</p>
 			</section>
@@ -154,13 +165,13 @@
 					</p>
 					{#if streamlitUrl && !isFrameExpanded}
 						<button
-							class="curie-report-inline-button"
+							class="report-page__inline-button"
 							type="button"
 							aria-label="Expand report frame"
 							aria-pressed={isFrameExpanded}
 							onclick={toggleFrameExpanded}
 						>
-							<Maximize2 class="h-4 w-4" aria-hidden="true" />
+							<MaximizeIcon class="h-4 w-4" aria-hidden="true" />
 							<span>Expand</span>
 						</button>
 					{/if}
@@ -168,24 +179,37 @@
 			</header>
 
 			<section
-				class="curie-card curie-static-card curie-report-shell"
-				class:curie-report-expanded={isFrameExpanded}
+				class="curie-card curie-card--static report-page__shell"
+				class:report-page__shell--expanded={isFrameExpanded}
 			>
 				{#if streamlitUrl}
 					{#if isFrameExpanded}
 						<button
-							class="curie-report-collapse-button"
+							class="report-page__collapse-button"
 							type="button"
 							aria-label="Collapse report frame"
 							aria-pressed={isFrameExpanded}
 							onclick={toggleFrameExpanded}
 						>
-							<Minimize2 class="h-4 w-4" aria-hidden="false" />
+							<MinimizeIcon class="h-4 w-4" aria-hidden="false" />
 						</button>
 					{/if}
 					{#key report.id}
-						<iframe class="curie-report-frame" title={report.title} src={streamlitUrl}></iframe>
+						<iframe
+							class="report-page__frame"
+							title={report.title}
+							src={streamlitUrl}
+							onload={() => (isFrameLoading = false)}
+						></iframe>
 					{/key}
+					{#if isFrameLoading}
+						<div class="report-page__loading" aria-live="polite">
+							<div class="report-page__loading-panel">
+								<LoadingLine />
+								<p class="report-page__loading-text">Loading report...</p>
+							</div>
+						</div>
+					{/if}
 				{:else}
 					<div class="grid min-h-[560px] place-items-center p-6">
 						<p class="text-[var(--curie-text-muted)]">Report workspace URL is not configured.</p>

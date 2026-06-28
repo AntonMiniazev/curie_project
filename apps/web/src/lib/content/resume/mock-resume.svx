@@ -1,27 +1,44 @@
 <script lang="ts">
-	import { Calendar, Mail } from '@lucide/svelte';
+	import CalendarIcon from '~icons/lucide/calendar';
+	import MailIcon from '~icons/lucide/mail';
+	import MapPinIcon from '~icons/lucide/map-pin';
+	import PhoneIcon from '~icons/lucide/phone';
+	import GithubIcon from '~icons/simple-icons/github';
+	import LinkedinIcon from '~icons/simple-icons/linkedin';
 </script>
 
 <section class="resume-document">
 	<header class="resume-header">
 		<div>
 			<h1>Anton Miniazev</h1>
-			<h2>Data Platform Engineer</h2>
+			<h2>BI Engineer</h2>
 		</div>
 
 		<nav class="resume-contact-links" aria-label="Resume contact links">
-			<a href="https://www.linkedin.com/" target="_blank" rel="noreferrer">
-				<span class="resume-brand-icon">in</span>
+			<a href="mailto:MinyazevAE@outlook.com">
+				<MailIcon class="resume-link-icon" aria-hidden="true" />
+				MinyazevAE@outlook.com
+			</a>
+
+			<a href="tel:+381621434392">
+				<PhoneIcon class="resume-link-icon" aria-hidden="true" />
+				(381) 621-434392
+			</a>
+
+			<a href="https://www.linkedin.com/in/antonminiazev/" target="_blank" rel="noreferrer">
+				<LinkedinIcon class="resume-link-icon" aria-hidden="true" />
 				LinkedIn
 			</a>
-			<a href="https://github.com/" target="_blank" rel="noreferrer">
-				<span class="resume-brand-icon">GH</span>
+
+			<a href="https://github.com/antonminiazev" target="_blank" rel="noreferrer">
+				<GithubIcon class="resume-link-icon" aria-hidden="true" />
 				GitHub
 			</a>
-			<a href="mailto:anton@example.com">
-				<Mail class="resume-link-icon" aria-hidden="true" />
-				anton@example.com
-			</a>
+
+			<span>
+				<MapPinIcon class="resume-link-icon" aria-hidden="true" />
+				Belgrade, Serbia
+			</span>
 		</nav>
 	</header>
 
@@ -32,19 +49,32 @@
 
 		<div class="resume-skill-grid">
 			<section>
-				<h3>Data engineering</h3>
-				<p>Python, Polars, PostgreSQL, MinIO, Delta Lake, Unity Catalog OSS, Alembic, SQLAlchemy</p>
+				<h3>Finance and reporting</h3>
+				<p>
+					Financial Due Diligence, Budgeting and Forecasting, FP&A analysis
+				</p>
 			</section>
 
 			<section>
-				<h3>Application stack</h3>
-				<p>FastAPI, Pydantic, SvelteKit, TypeScript, Tailwind CSS, Svelte Flow, REST APIs</p>
-			</section>
+				<h3>BI engineering tools</h3>
+				<p>
+					SQL, Python, Airflow, Tableau, and Power BI development
+				</p>
+			</section>			
 
 			<section>
-				<h3>Infrastructure</h3>
-				<p>Docker Compose, GitHub Actions, GHCR, SOPS, Azure Key Vault, Linux servers, Nginx</p>
+				<h3>Environments & Services</h3>
+				<p>
+					Databricks, Fabric, Kubernetes, Azure, Docker
+				</p>
 			</section>
+			<section>
+				<h3>Certificates</h3>
+				<p>
+					Power BI Data Analyst Associate,  ACCA Associate, IELTS 8.0
+				</p>
+			</section>
+
 		</div>
 	</section>
 
@@ -54,21 +84,59 @@
 		<h2 id="resume-work-title">Work Experience</h2>
 
 		<article class="resume-experience-item">
-			<h3>Curie Reporting Platform</h3>
+			<h3>DXC Luxoft Serbia - BI Engineer / Senior Financial Partner</h3>
 			<div class="resume-date-row">
-				<Calendar class="resume-date-icon" aria-hidden="true" />
-				<h4>2026 - Present</h4>
+				<CalendarIcon class="resume-date-icon" aria-hidden="true" />
+				<h4>Feb. 2023 - Present | Belgrade, Serbia</h4>
+			</div>
+			<ul>
+				<li>•	Development and maintenance of pipelines and reports in Fabric, introduced CI/CD using fabric-cicd.</li>
+				<li>Self-service project initiation with Airflow deployment using Azure DevOps on Azure Kubernetes Cluster.</li>
+				<li>Coordinated refactoring for core financial reporting model achieving strict SLA on Cognos-Tableau pipeline.</li>
+				<li>Development and maintenance of Tableau reports with data preparation on SQL Server.</li>
+			</ul>
+		</article>
+
+		<div class="resume-small-line"></div>
+
+		<article class="resume-experience-item">
+			<h3>X5 Group - Vprok.ru Online Retail - Financial Analyst</h3>
+			<div class="resume-date-row">
+				<CalendarIcon class="resume-date-icon" aria-hidden="true" />
+				<h4>Oct. 2021 - Feb. 2023 | Moscow, Russia</h4>
 			</div>
 			<ul>
 				<li>
-					Built a private reporting application with FastAPI, SvelteKit, PostgreSQL, and Docker.
+					Integrated Python/SQL scripts into reporting processes, reducing manual work and preparation time.
 				</li>
 				<li>
-					Implemented authentication, refresh tokens, role-aware reports, and protected frontend
-					routes.
+					Prepared FY budget models and led consolidation and preparation of materials for board approval.
 				</li>
 				<li>
-					Prepared parquet cache refresh flows backed by MinIO, Unity Catalog OSS, and Polars.
+					Designed a zonal performance model with supporting Tableau reports, enabling up to 30% cost optimization.
+				</li>
+				<li>
+					Analyzed the pickup business EBITDA impact, leading to its discontinuation for resource optimization.
+				</li>
+				<li>Redesigned management reporting and automated it with DAX and Power Query.</li>
+			</ul>
+		</article>
+
+		<div class="resume-small-line"></div>
+
+		<article class="resume-experience-item">
+			<h3>ivi.ru Video Streaming Service - Senior Business Analyst in Business Development Department</h3>
+			<div class="resume-date-row">
+				<CalendarIcon class="resume-date-icon" aria-hidden="true" />
+				<h4>Mar. 2021 - Jun. 2021 | Moscow, Russia</h4>
+			</div>
+			<ul>
+				<li>Led the rebudgeting process for the largest department streams, focused on B2B.</li>
+				<li>
+					Redesigned departmental reports for executive management, achieving a 50% time reduction.
+				</li>
+				<li>
+					Enhanced commercial models for partnership pre-analysis and post-analysis using SQL and Tableau inputs.
 				</li>
 			</ul>
 		</article>
@@ -76,21 +144,24 @@
 		<div class="resume-small-line"></div>
 
 		<article class="resume-experience-item">
-			<h3>Ampere Data Platform</h3>
+			<h3>KPMG - Senior Consultant in Transaction Services, Deal Advisory</h3>
 			<div class="resume-date-row">
-				<Calendar class="resume-date-icon" aria-hidden="true" />
-				<h4>2025 - Present</h4>
+				<CalendarIcon class="resume-date-icon" aria-hidden="true" />
+				<h4>Oct. 2015 - Mar. 2021 | Moscow, Russia</h4>
 			</div>
 			<ul>
 				<li>
-					Designed a gold-layer access pattern for downstream reporting and cache preparation.
+					Aided clients in Financial Due Diligence related to Russian and international M&A
+					transactions.
+				</li>
+				<li>Verified business models with preparation of inputs for valuation models.</li>
+				<li>
+					Performed revenue and profit quality analysis considering markets, operational schemes,
+					and groups.
 				</li>
 				<li>
-					Used Unity Catalog metadata as a baseline for schema extraction and data contract work.
-				</li>
-				<li>
-					Validated MinIO-backed analytical data access from local development and service
-					workflows.
+					Contributed to the initial ETL project, including Alteryx integration, by adjusting models
+					and delivering training.
 				</li>
 			</ul>
 		</article>
@@ -98,21 +169,16 @@
 		<div class="resume-small-line"></div>
 
 		<article class="resume-experience-item">
-			<h3>Bohr Infrastructure Lab</h3>
-			<div class="resume-date-row">
-				<Calendar class="resume-date-icon" aria-hidden="true" />
-				<h4>2025 - Present</h4>
-			</div>
+			<h3>KPMG - Senior Consultant in Accounting Advisory Services</h3>
 			<ul>
+				<li>Developed data collection and transformation packages using VBA for Excel.</li>
 				<li>
-					Documented Kubernetes, home-lab, server, and deployment architecture as interactive
-					diagrams.
+					Contributed to the design of a comprehensive costing system within a vertically integrated
+					holding.
 				</li>
 				<li>
-					Prepared GitHub Actions-driven deployment conventions for production server updates.
-				</li>
-				<li>
-					Organized service relationships across infrastructure, observability, and data components.
+					Adapted a revenue calculation model with multiple performance obligations for IFRS 15
+					implementation.
 				</li>
 			</ul>
 		</article>
@@ -127,14 +193,11 @@
 
 		<article class="resume-education-item">
 			<div class="resume-education-heading">
-				<strong>Education X</strong>
-				<span>2024 - 2026 | Europe</span>
+				<strong>Financial University under the Government of the Russian Federation</strong>
+				<span>Mar. 2018 | Moscow, Russia</span>
 			</div>
-			<p>
-				Short description of education, program focus, practical projects, and technical
-				specialization.
-			</p>
-			<p><strong>Additional text:</strong> Placeholder</p>
+			<p>Master's Degree, Economics</p>
+
 		</article>
 	</section>
 </section>

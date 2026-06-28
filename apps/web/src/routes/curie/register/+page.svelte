@@ -98,7 +98,7 @@
 			</p>
 		</div>
 
-		<form class="curie-card-flat p-6" onsubmit={handleSubmit}>
+		<form class="curie-card curie-card--flat p-6" onsubmit={handleSubmit}>
 			<div class="mb-6">
 				<h2 class="text-xl font-semibold text-[var(--curie-text)]">Register</h2>
 				<p class="mt-2 text-sm text-[var(--curie-text-muted)]">
@@ -126,10 +126,10 @@
 					required
 				>
 					{#if isLoadingRoles}
-						<option value="">Loading roles...</option>
+						<option class="curie-select__option" value="">Loading roles...</option>
 					{:else}
 						{#each roles as role (role.name)}
-							<option value={role.name}>{role.label}</option>
+							<option class="curie-select__option" value={role.name}>{role.label}</option>
 						{/each}
 					{/if}
 				</select>
@@ -142,11 +142,11 @@
 			{/if}
 
 			{#if errorMessage}
-				<p class="curie-alert-danger mb-4 px-3 py-2 text-sm">{errorMessage}</p>
+				<p class="curie-alert curie-alert--danger mb-4 px-3 py-2 text-sm">{errorMessage}</p>
 			{/if}
 
 			<button
-				class="curie-button-primary w-full px-4 py-2 disabled:cursor-not-allowed disabled:opacity-60"
+				class="curie-button curie-button--primary w-full px-4 py-2 disabled:cursor-not-allowed disabled:opacity-60"
 				type="submit"
 				disabled={isSubmitting || isLoadingRoles || !selectedRole}
 			>

@@ -20,10 +20,10 @@
 		getHandles(nodeData.handles?.sources, sourcePosition, isOutput || handlesDisabled)
 	);
 	let labelClass = $derived(
-		['curie-flow-node-label', nodeData.labelClass].filter(Boolean).join(' ')
+		['project-flow__node-label', nodeData.labelClass].filter(Boolean).join(' ')
 	);
 	let secondaryLabelClass = $derived(
-		['curie-flow-node-secondary-label', nodeData.secondaryLabelClass].filter(Boolean).join(' ')
+		['project-flow__node-secondary-label', nodeData.secondaryLabelClass].filter(Boolean).join(' ')
 	);
 
 	function getHandles(
@@ -44,7 +44,7 @@
 {/each}
 
 <div class="flex h-full w-full items-center justify-center overflow-hidden text-center">
-	<span class="curie-flow-node-text">
+	<span class="project-flow__node-text">
 		<span class={labelClass}>{nodeData.label}</span>
 		{#if nodeData.secondaryLabel}
 			<span class={secondaryLabelClass}>{nodeData.secondaryLabel}</span>

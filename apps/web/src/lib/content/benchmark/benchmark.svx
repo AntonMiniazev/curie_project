@@ -1,17 +1,18 @@
 <section class="resume-document benchmark-document">
-
 	<section class="resume-section" aria-labelledby="benchmark-runtime-title">
 		<h2 id="benchmark-runtime-title">Runtime</h2>
 		<p>
-			Curie runs as a compact deployment on a small Hetzner server. The public website,
-			API, embedded Streamlit reports, PostgreSQL, and local report cache share the same host.
+			Curie runs as a compact deployment on a small Hetzner server. The public website, API,
+			embedded Streamlit reports, PostgreSQL, and local report cache share the same host.
 		</p>
 
 		<div class="benchmark-metric-grid">
 			<section>
 				<h3>Server</h3>
-				<p>Hetzner CX23, <br> 
-				2 vCPU, 4 GB RAM</p>
+				<p>
+					Hetzner CX23, <br />
+					2 vCPU, 4 GB RAM
+				</p>
 			</section>
 			<section>
 				<h3>Frontend</h3>
@@ -33,9 +34,9 @@
 	<section class="resume-section" aria-labelledby="benchmark-http-title">
 		<h2 id="benchmark-http-title">HTTP Smoke Load Test</h2>
 		<p>
-			The public web and API smoke path was tested with k6 ramping up to 100 virtual users over a 30-second run. <br>
-			The run covered the home page, API health, cache status, and report metadata
-			endpoints.
+			The public web and API smoke path was tested with k6 ramping up to 100 virtual users over a
+			30-second run. <br />
+			The run covered the home page, API health, cache status, and report metadata endpoints.
 		</p>
 
 		<div class="benchmark-table-wrap">

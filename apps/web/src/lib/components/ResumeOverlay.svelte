@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { asset } from '$app/paths';
-	import { FileDown, X } from '@lucide/svelte';
 	import ResumeContent from '$lib/content/resume/mock-resume.svx';
+	import FileDownIcon from '~icons/lucide/file-down';
+	import XIcon from '~icons/lucide/x';
 
 	type Props = {
 		onClose: () => void;
@@ -19,7 +20,7 @@
 <svelte:window onkeydown={handleKeydown} />
 
 <div
-	class="curie-overlay-backdrop fixed inset-0 z-50 bg-[var(--curie-overlay-bg)] px-4 py-5"
+	class="curie-overlay fixed inset-0 z-50 bg-[var(--curie-overlay-bg)] px-4 py-5"
 	role="dialog"
 	aria-modal="true"
 	aria-labelledby="resume-title"
@@ -40,9 +41,6 @@
 		>
 			<div>
 				<p class="curie-eyebrow text-xs">Resume</p>
-				<h2 id="resume-title" class="text-xl font-semibold text-[var(--curie-text)]">
-					Anton Miniazev
-				</h2>
 			</div>
 
 			<div class="flex items-center gap-2">
@@ -53,7 +51,7 @@
 					aria-label="Download resume PDF"
 					title="Download resume PDF"
 				>
-					<FileDown class="h-4 w-4" aria-hidden="true" />
+					<FileDownIcon class="h-4 w-4" aria-hidden="true" />
 				</a>
 
 				<button
@@ -62,7 +60,7 @@
 					aria-label="Close resume"
 					onclick={onClose}
 				>
-					<X class="h-4 w-4" aria-hidden="true" />
+					<XIcon class="h-4 w-4" aria-hidden="true" />
 				</button>
 			</div>
 		</header>

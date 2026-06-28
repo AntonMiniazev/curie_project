@@ -1,4 +1,50 @@
-# Server Setup
+# Curie Infrastructure
+
+Infrastructure files describe local Docker Compose development, production Docker Compose deployment, Nginx routing, environment templates, and server bootstrap.
+
+## Layout
+
+```text
+infra/
+  bootstrap/   Hetzner server bootstrap script
+  env/         safe env templates plus encrypted production env
+  nginx/       production Nginx site config
+  postgres/    PostgreSQL initialization scripts
+  compose.dev.yml
+  compose.prod.yml
+  compose.prod.example.yml
+```
+
+## Local Compose
+
+Start PostgreSQL only:
+
+```bash
+docker compose --env-file infra/env/curie-dev.env -f infra/compose.dev.yml up -d postgres
+```
+
+Start optional API or Streamlit containers with profiles:
+
+```bash
+docker compose --env-file infra/env/curie-dev.env -f infra/compose.dev.yml --profile api up -d api
+docker compose --env-file infra/env/curie-dev.env -f infra/compose.dev.yml --profile streamlit up -d streamlit
+```
+
+## Production Deployment
+
+Production is deployed by GitHub Actions to `/opt/curie` on `curie-server`. The workflow copies Compose, Nginx, PostgreSQL init files, and the decrypted production env file, then runs migrations and restarts services.
+
+The public production routes are:
+
+```text
+https://ampere-data.work/            -> SvelteKit web
+https://ampere-data.work/api/*       -> FastAPI API
+https://ampere-data.work/streamlit/* -> Streamlit reports
+```
+
+Direct public API and Streamlit ports should remain closed.
+
+## Server Setup
 
 ## 1. Create A Fresh Ubuntu Server
 

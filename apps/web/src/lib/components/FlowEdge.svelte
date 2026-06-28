@@ -32,7 +32,9 @@
 		})
 	);
 	let labelVisual = $derived(data?.labelVisual);
-	let labelClass = $derived(['curie-flow-edge-label', data?.labelClass].filter(Boolean).join(' '));
+	let labelClass = $derived(
+		['project-flow__edge-label', data?.labelClass].filter(Boolean).join(' ')
+	);
 </script>
 
 <BaseEdge
@@ -40,7 +42,7 @@
 	{path}
 	{markerStart}
 	{markerEnd}
-	class="curie-flow-edge"
+	class="project-flow__edge"
 	{style}
 	interactionWidth={24}
 />

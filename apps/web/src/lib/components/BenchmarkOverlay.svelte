@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { Gauge, X } from '@lucide/svelte';
 	import BenchmarkContent from '$lib/content/benchmark/benchmark.svx';
+	import GaugeIcon from '~icons/lucide/gauge';
+	import XIcon from '~icons/lucide/x';
 
 	type Props = {
 		onClose: () => void;
@@ -18,7 +19,7 @@
 <svelte:window onkeydown={handleKeydown} />
 
 <div
-	class="curie-overlay-backdrop fixed inset-0 z-50 bg-[var(--curie-overlay-bg)] px-4 py-5"
+	class="curie-overlay fixed inset-0 z-50 bg-[var(--curie-overlay-bg)] px-4 py-5"
 	role="dialog"
 	aria-modal="true"
 	aria-labelledby="benchmark-title"
@@ -41,7 +42,7 @@
 				<span
 					class="grid h-10 w-10 place-items-center rounded-[var(--curie-radius-xm)] border border-[var(--curie-border)] bg-[var(--curie-control-bg)] text-[var(--curie-blue-l3)]"
 				>
-					<Gauge class="h-5 w-5" aria-hidden="true" />
+					<GaugeIcon class="h-5 w-5" aria-hidden="true" />
 				</span>
 				<div>
 					<p class="curie-eyebrow text-xs">Benchmark</p>
@@ -57,7 +58,7 @@
 				aria-label="Close benchmark"
 				onclick={onClose}
 			>
-				<X class="h-4 w-4" aria-hidden="true" />
+				<XIcon class="h-4 w-4" aria-hidden="true" />
 			</button>
 		</header>
 

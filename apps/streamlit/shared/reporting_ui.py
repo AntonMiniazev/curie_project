@@ -75,16 +75,16 @@ def kpi_grid(items: list[tuple[str, str]]) -> None:
     """Render a responsive KPI card grid from label/value pairs."""
     cards = "".join(_kpi_card_html(label, value) for label, value in items)
     st.markdown(
-        f'<div class="{css_classes("curie-kpi-grid")}">{cards}</div>',
+        f'<div class="{css_classes("reporting-kpis")}">{cards}</div>',
         unsafe_allow_html=True,
     )
 
 
 def _kpi_card_html(label: str, value: str) -> str:
     return (
-        f'<div class="{css_classes("curie-kpi")}">'
-        f'<div class="{css_classes("curie-kpi-label")}">{html.escape(label)}</div>'
-        f'<div class="{css_classes("curie-kpi-value")}">{html.escape(value)}</div>'
+        f'<div class="{css_classes("reporting-kpis__card")}">'
+        f'<div class="{css_classes("reporting-kpis__label")}">{html.escape(label)}</div>'
+        f'<div class="{css_classes("reporting-kpis__value")}">{html.escape(value)}</div>'
         "</div>"
     )
 

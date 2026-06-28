@@ -50,7 +50,7 @@
 			'--curie-scrollbar-width',
 			`${measureScrollbarWidth()}px`
 		);
-		document.body.classList.add('project-hub-page');
+		document.body.classList.add('project-hub');
 		hasMounted = true;
 		void initializeClientSections();
 
@@ -59,7 +59,7 @@
 		return () => {
 			sectionObserver?.disconnect();
 			scrollContainer?.removeEventListener('wheel', handleWheelScroll);
-			document.body.classList.remove('project-hub-page');
+			document.body.classList.remove('project-hub');
 			document.documentElement.style.removeProperty('--curie-scrollbar-width');
 		};
 	});
@@ -247,13 +247,9 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Curie Project Hub</title>
-</svelte:head>
-
 <svelte:body class:overflow-hidden={isResumeOpen || isBenchmarkOpen} />
 
-<div class="font-system h-screen overflow-hidden bg-[var(--curie-bg)]">
+<div class="curie-page h-screen overflow-hidden bg-[var(--curie-bg)]">
 	<AppHeader
 		pageName="Project hub"
 		navigationItems={mainNavigationItems}
@@ -270,9 +266,10 @@
 	>
 		<MainIntroSection
 			id="introduction"
-			eyebrow="Project hub"
 			title="A practical full-stack lab for data platforms, infrastructure, and reporting apps."
 			description="This website is the public entry point for the projects I am building while learning modern full-stack development. Each section documents one project and links the architecture to the running application."
+			projects={projectFlowMeta}
+			onProjectSelect={scrollToSection}
 		/>
 
 		{#if ProjectFlowsStage}
@@ -285,12 +282,21 @@
 					aria-labelledby={`${flow.id}-title`}
 				>
 					<header
-						class="curie-page-shell flex flex-col gap-4 md:flex-row md:items-start md:justify-between"
+						class="curie-page__shell flex flex-col gap-4 md:flex-row md:items-start md:justify-between"
 					>
 						<div>
 							<h2 id={`${flow.id}-title`} class="text-4xl font-semibold text-[var(--curie-text)]">
-								<span class="text-[var(--curie-blue-l3)]">Project</span>
-								{flow.name}
+								<!-- eslint-disable svelte/no-navigation-without-resolve -->
+								<a
+									class="project-flow__title-link"
+									href={flow.repositoryUrl}
+									target="_blank"
+									rel="noreferrer"
+								>
+									<span class="text-[var(--curie-blue-l3)]">Project</span>
+									{flow.name}
+								</a>
+								<!-- eslint-enable svelte/no-navigation-without-resolve -->
 							</h2>
 							<p class="mt-2 max-w-3xl leading-7 text-[var(--curie-text-muted)]">
 								{flow.description}
@@ -299,7 +305,7 @@
 					</header>
 
 					<div
-						class="curie-card curie-flow-card curie-page-shell grid h-full min-h-[22rem] place-items-center overflow-hidden text-sm text-[var(--curie-text-muted)]"
+						class="curie-card curie-card--flow curie-page__shell grid h-full min-h-[22rem] place-items-center overflow-hidden text-sm text-[var(--curie-text-muted)]"
 					>
 						Loading {flow.name} diagram...
 					</div>

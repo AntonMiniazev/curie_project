@@ -103,7 +103,7 @@
 
 <AppHeader pageName="Curie reports" navigationItems={mainNavigationItems} selectedHref="/curie" />
 
-<main class="font-system min-h-screen px-6 py-8">
+<main class="curie-page min-h-screen px-6 py-8">
 	{#if $isCheckingAuth}
 		<section class="mx-auto max-w-6xl">
 			<LoadingLine />
@@ -123,7 +123,7 @@
 
 				{#if $authSession.currentUser}
 					<button
-						class="curie-card block min-w-[14rem] p-4 text-left"
+						class="curie-card curie-card--clickable min-w-[14rem] p-4"
 						type="button"
 						aria-haspopup="dialog"
 						aria-expanded={isProfileOpen}
@@ -138,13 +138,13 @@
 			</header>
 
 			{#if errorMessage}
-				<p class="curie-alert-danger mb-5 px-4 py-3 text-sm">{errorMessage}</p>
+				<p class="curie-alert curie-alert--danger mb-5 px-4 py-3 text-sm">{errorMessage}</p>
 			{/if}
 
 			{#if isLoadingReports}
 				<p class="text-[var(--curie-text-muted)]">Loading reports...</p>
 			{:else if reports.length === 0}
-				<section class="curie-card-flat border-dashed p-6">
+				<section class="curie-card curie-card--flat border-dashed p-6">
 					<h2 class="text-lg font-semibold text-[var(--curie-text)]">No reports available</h2>
 					<p class="mt-2 text-[var(--curie-text-muted)]">
 						The API returned an empty report list. Seed or enable reports in PostgreSQL to show them
@@ -154,11 +154,14 @@
 			{:else}
 				<section class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 					{#each reports as report (report.id)}
-						<a class="curie-card block p-5" href={resolve(`/curie/reports/${report.id}`)}>
+						<a
+							class="curie-card curie-card--clickable p-5"
+							href={resolve(`/curie/reports/${report.id}`)}
+						>
 							<div class="mb-4 flex items-start justify-between gap-3">
 								<div>
 									<p class="curie-eyebrow text-xs">{report.category}</p>
-									<h2 class="mt-1 text-lg font-semibold text-[var(--curie-text)]">
+									<h2 class="mt-1 text-lg font-semibold text-[var(--curie-red-test)]">
 										{report.title}
 									</h2>
 								</div>
@@ -182,9 +185,9 @@
 				</p>
 			</div>
 
-			<nav class="curie-card-flat p-6">
+			<nav class="curie-card curie-card--flat p-6">
 				<a
-					class="curie-button-primary mb-4 block px-4 py-2 text-center"
+					class="curie-button curie-button--primary mb-4 block px-4 py-2 text-center"
 					href={resolve('/curie/login')}
 				>
 					Sign in
@@ -199,7 +202,7 @@
 
 {#if isProfileOpen && $authSession.currentUser}
 	<div
-		class="curie-overlay-backdrop fixed inset-0 z-50 grid place-items-center bg-[var(--curie-overlay-bg)] px-4"
+		class="curie-overlay fixed inset-0 z-50 grid place-items-center bg-[var(--curie-overlay-bg)] px-4"
 		role="presentation"
 	>
 		<button
@@ -209,7 +212,7 @@
 			onclick={() => (isProfileOpen = false)}
 		></button>
 		<div
-			class="curie-card curie-static-card relative z-10 w-full max-w-[42rem] p-6"
+			class="curie-card curie-card--surface relative z-10 w-full max-w-[42rem] p-6"
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby="curie-profile-title"
@@ -221,7 +224,7 @@
 				Email: {$authSession.currentUser.email}
 			</p>
 
-			<p class="mt-6 whitespace-nowrap text-lg text-[var(--curie-text)]">
+			<p class="mt-4 whitespace-nowrap text-sm text-[var(--curie-text)]">
 				<span class="font-semibold">Access:</span>
 				{primaryRoleDescription()}
 			</p>
