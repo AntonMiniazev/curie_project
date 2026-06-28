@@ -98,7 +98,7 @@
 			</p>
 		</div>
 
-		<form class="curie-card curie-card--flat p-6" onsubmit={handleSubmit}>
+		<form class="curie-card--flat p-6" onsubmit={handleSubmit}>
 			<div class="mb-6">
 				<h2 class="text-xl font-semibold text-[var(--curie-text)]">Register</h2>
 				<p class="mt-2 text-sm text-[var(--curie-text-muted)]">

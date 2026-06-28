@@ -185,7 +185,7 @@
 				</p>
 			</div>
 
-			<nav class="curie-card curie-card--flat p-6">
+			<nav class="curie-card--flat p-6">
 				<a
 					class="curie-button curie-button--primary mb-4 block px-4 py-2 text-center"
 					href={resolve('/curie/login')}

@@ -50,31 +50,22 @@
 		<div class="resume-skill-grid">
 			<section>
 				<h3>Finance and reporting</h3>
-				<p>
-					Financial Due Diligence, Budgeting and Forecasting, FP&A analysis
-				</p>
+				<p>Financial Due Diligence, Budgeting and Forecasting, FP&A analysis</p>
 			</section>
 
 			<section>
 				<h3>BI engineering tools</h3>
-				<p>
-					SQL, Python, Airflow, Tableau, and Power BI development
-				</p>
-			</section>			
+				<p>SQL, Python, Airflow, Tableau, and Power BI development</p>
+			</section>
 
 			<section>
 				<h3>Environments & Services</h3>
-				<p>
-					Databricks, Fabric, Kubernetes, Azure, Docker
-				</p>
+				<p>Databricks, Fabric, Kubernetes, Azure, Docker</p>
 			</section>
 			<section>
 				<h3>Certificates</h3>
-				<p>
-					Power BI Data Analyst Associate,  ACCA Associate, IELTS 8.0
-				</p>
+				<p>Power BI Data Analyst Associate, ACCA Associate, IELTS 8.0</p>
 			</section>
-
 		</div>
 	</section>
 
@@ -90,9 +81,18 @@
 				<h4>Feb. 2023 - Present | Belgrade, Serbia</h4>
 			</div>
 			<ul>
-				<li>•	Development and maintenance of pipelines and reports in Fabric, introduced CI/CD using fabric-cicd.</li>
-				<li>Self-service project initiation with Airflow deployment using Azure DevOps on Azure Kubernetes Cluster.</li>
-				<li>Coordinated refactoring for core financial reporting model achieving strict SLA on Cognos-Tableau pipeline.</li>
+				<li>
+					• Development and maintenance of pipelines and reports in Fabric, introduced CI/CD using
+					fabric-cicd.
+				</li>
+				<li>
+					Self-service project initiation with Airflow deployment using Azure DevOps on Azure
+					Kubernetes Cluster.
+				</li>
+				<li>
+					Coordinated refactoring for core financial reporting model achieving strict SLA on
+					Cognos-Tableau pipeline.
+				</li>
 				<li>Development and maintenance of Tableau reports with data preparation on SQL Server.</li>
 			</ul>
 		</article>
@@ -107,16 +107,20 @@
 			</div>
 			<ul>
 				<li>
-					Integrated Python/SQL scripts into reporting processes, reducing manual work and preparation time.
+					Integrated Python/SQL scripts into reporting processes, reducing manual work and
+					preparation time.
 				</li>
 				<li>
-					Prepared FY budget models and led consolidation and preparation of materials for board approval.
+					Prepared FY budget models and led consolidation and preparation of materials for board
+					approval.
 				</li>
 				<li>
-					Designed a zonal performance model with supporting Tableau reports, enabling up to 30% cost optimization.
+					Designed a zonal performance model with supporting Tableau reports, enabling up to 30%
+					cost optimization.
 				</li>
 				<li>
-					Analyzed the pickup business EBITDA impact, leading to its discontinuation for resource optimization.
+					Analyzed the pickup business EBITDA impact, leading to its discontinuation for resource
+					optimization.
 				</li>
 				<li>Redesigned management reporting and automated it with DAX and Power Query.</li>
 			</ul>
@@ -125,7 +129,9 @@
 		<div class="resume-small-line"></div>
 
 		<article class="resume-experience-item">
-			<h3>ivi.ru Video Streaming Service - Senior Business Analyst in Business Development Department</h3>
+			<h3>
+				ivi.ru Video Streaming Service - Senior Business Analyst in Business Development Department
+			</h3>
 			<div class="resume-date-row">
 				<CalendarIcon class="resume-date-icon" aria-hidden="true" />
 				<h4>Mar. 2021 - Jun. 2021 | Moscow, Russia</h4>
@@ -136,7 +142,8 @@
 					Redesigned departmental reports for executive management, achieving a 50% time reduction.
 				</li>
 				<li>
-					Enhanced commercial models for partnership pre-analysis and post-analysis using SQL and Tableau inputs.
+					Enhanced commercial models for partnership pre-analysis and post-analysis using SQL and
+					Tableau inputs.
 				</li>
 			</ul>
 		</article>
@@ -197,7 +204,6 @@
 				<span>Mar. 2018 | Moscow, Russia</span>
 			</div>
 			<p>Master's Degree, Economics</p>
-
 		</article>
 	</section>
 </section>

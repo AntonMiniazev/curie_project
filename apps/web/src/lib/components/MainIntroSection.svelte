@@ -34,9 +34,11 @@
 						onclick={() => onProjectSelect?.(project.id)}
 					>
 						<strong class="curie-card__title">{project.name}</strong>
-							{#if project.stack}
-								<span class="curie-card__meta">{project.stack}</span>
-							{/if}
+						{#if project.stack}
+							<span class="curie-card__meta" aria-hidden={!project.stack}>
+								{project.stack ?? ''}
+							</span>
+						{/if}
 						<span class="curie-card__text">{project.description}</span>
 					</button>
 				{/each}
