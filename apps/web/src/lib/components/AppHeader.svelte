@@ -83,6 +83,10 @@
 	}
 
 	function openMenuOnHover() {
+		if (!supportsHoverMenu()) {
+			return;
+		}
+
 		clearMenuHoverCloseTimeout();
 
 		if (!isMenuHoverSuppressed) {
@@ -91,6 +95,10 @@
 	}
 
 	function closeMenuOnHoverEnd() {
+		if (!supportsHoverMenu()) {
+			return;
+		}
+
 		isMenuHoverSuppressed = false;
 		clearMenuHoverCloseTimeout();
 		menuHoverCloseTimeout = setTimeout(() => {
@@ -107,6 +115,10 @@
 
 		clearTimeout(menuHoverCloseTimeout);
 		menuHoverCloseTimeout = null;
+	}
+
+	function supportsHoverMenu() {
+		return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 	}
 
 	async function openResume() {

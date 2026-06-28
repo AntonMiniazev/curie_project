@@ -260,6 +260,7 @@
 
 	<main
 		bind:this={scrollContainer}
+		data-project-scroll-container
 		class="h-[calc(100vh-4.5rem)] overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden {isAnimatingScroll
 			? 'snap-none'
 			: 'snap-y snap-mandatory'}"

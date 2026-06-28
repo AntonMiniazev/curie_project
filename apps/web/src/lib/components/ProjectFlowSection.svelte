@@ -80,7 +80,25 @@
 
 	function closeExpandedFlow() {
 		isExpanded = false;
-		document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		requestAnimationFrame(() => {
+			scrollProjectHubToSection();
+			window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+		});
+	}
+
+	function scrollProjectHubToSection() {
+		const sectionElement = document.getElementById(id);
+		const scrollContainer = sectionElement?.closest<HTMLElement>('[data-project-scroll-container]');
+
+		if (!sectionElement || !scrollContainer) {
+			sectionElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			return;
+		}
+
+		scrollContainer.scrollTo({
+			top: sectionElement.offsetTop,
+			behavior: 'smooth'
+		});
 	}
 
 	function handleWindowKeydown(event: KeyboardEvent) {
