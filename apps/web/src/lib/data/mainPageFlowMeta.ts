@@ -21,7 +21,7 @@ export const projectFlowMeta: ProjectFlowMeta[] = [
 		repositoryUrl: 'https://github.com/antonminiazev/bohr_project',
 		stack: 'Kubernetes, Terraform, Helm',
 		description:
-			'Infrastructure project: local workstation, Hetzner server, home lab, Kubernetes services, and deployment automation are documented as a connected operating model.'
+			'Infrastructure project: home lab Ubuntu server with Kubernetes cluster, Hetzner server and deployment automation are documented as a connected operating model.'
 	},
 	{
 		id: 'curie',

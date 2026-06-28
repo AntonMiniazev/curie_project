@@ -267,7 +267,7 @@
 		<MainIntroSection
 			id="introduction"
 			title="A practical full-stack lab for data platforms, infrastructure, and reporting apps."
-			description="This website is the public entry point for the projects I am building while learning modern full-stack development. Each section documents one project and links the architecture to the running application."
+			description="This website is the public entry point for the projects I am building for learning modern full-stack development. Combination of resources is inefficient as main purpose is learning through practice. Each section documents one project and links the architecture to the running application."
 			projects={projectFlowMeta}
 			onProjectSelect={scrollToSection}
 		/>
