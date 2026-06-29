@@ -1,23 +1,39 @@
 # ask Unity Catalog for table metadata and source location
 
-import requests
-import json
-from ..core.config import get_settings
+import time
 from typing import Any
+
+import requests
+
+from ..core.config import get_settings
 
 
 def uc_client_get_table_metadata(full_table_name: str) -> dict[str, Any]:
     settings = get_settings()
 
     url = f"{settings.uc_base_url}/api/2.1/unity-catalog/tables/{full_table_name}"
+    attempts = max(1, settings.uc_retry_attempts)
+    backoff_seconds = max(0, settings.uc_retry_backoff_seconds)
+    retryable_status_codes = {429, 500, 502, 503, 504}
 
-    response = requests.get(
-        url,
-        timeout=settings.uc_timeout_seconds,
-    )
-    response.raise_for_status()
+    for attempt in range(1, attempts + 1):
+        try:
+            response = requests.get(
+                url,
+                timeout=settings.uc_timeout_seconds,
+            )
+            if response.status_code in retryable_status_codes and attempt < attempts:
+                time.sleep(backoff_seconds * attempt)
+                continue
 
-    return response.json()
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException:
+            if attempt >= attempts:
+                raise
+            time.sleep(backoff_seconds * attempt)
+
+    raise RuntimeError(f"Unity Catalog request failed without response: {url}")
 
 
 def normalize_uc_table_metadata(raw_table: dict[str, Any]) -> dict[str, Any]:
