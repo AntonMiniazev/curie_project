@@ -28,7 +28,7 @@ services:
       - curie-postgres-prod-data:/var/lib/postgresql/data
       - ./postgres/initdb:/docker-entrypoint-initdb.d:ro
     ports:
-      - "${CURIE_POSTGRES_PORT:-replace_me_with_address:5432}:5432"
+      - "${CURIE_POSTGRES_PORT:-127.0.0.1:5432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
@@ -51,7 +51,7 @@ services:
       CURIE_CACHE_REFRESH_NETWORK: curie-prod_default
       CURIE_UPSTREAM_HOST_IP: ${CURIE_UPSTREAM_HOST_IP:replace_me_with_address}
     ports:
-      - "${CURIE_API_PORT:-8000}:8000"
+      - "${CURIE_API_PORT:-127.0.0.1:8000}:8000"
     volumes:
       - ${CURIE_HOST_CACHE_DIR:-/var/lib/curie/cache}:/app/data/cache
       - /var/run/docker.sock:/var/run/docker.sock
@@ -79,7 +79,7 @@ services:
       STREAMLIT_SERVER_HEADLESS: "true"
       STREAMLIT_THEME_BASE: light
     ports:
-      - "${CURIE_STREAMLIT_PORT:-replace_me_with_address:8501}:8501"
+      - "${CURIE_STREAMLIT_PORT:-127.0.0.1:8501}:8501"
     volumes:
       - ${CURIE_HOST_CACHE_DIR:-/var/lib/curie/cache}:/app/data/cache:ro
     depends_on:

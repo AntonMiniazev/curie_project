@@ -184,10 +184,12 @@ Before the first GitHub Actions deploy:
 1. Ensure GitHub Actions can SSH as root to this host.
    If you did not pass CURIE_DEPLOY_PUBLIC_KEY, add the public half of CURIE_DEPLOY_SSH_KEY to /root/.ssh/authorized_keys manually.
 2. Update .github/workflows/deploy-api.yml CURIE_DEPLOY_HOST if the public IPv4 changed.
-3. Update infra/env/curie-prod.sops.env Tailnet bindings when the Tailscale IP changed:
-   CURIE_API_PORT=<new-tailscale-ip>:8000
-   CURIE_STREAMLIT_PORT=<new-tailscale-ip>:8501
-   CURIE_POSTGRES_PORT=<new-tailscale-ip>:5432
+3. Keep Curie service ports bound to loopback because Nginx proxies to local services:
+   CURIE_WEB_PORT=127.0.0.1:3000
+   CURIE_API_PORT=127.0.0.1:8000
+   CURIE_STREAMLIT_PORT=127.0.0.1:8501
+   CURIE_POSTGRES_PORT=127.0.0.1:5432
+   Only update CURIE_UPSTREAM_HOST_IP when the upstream Ampere data host changes.
 4. Ensure certificates exist before applying the current HTTPS Nginx config.
    The current infra/nginx/curie.conf references /etc/letsencrypt/live/ampere-data.work/.
 5. Restore or refresh production data after deploy.

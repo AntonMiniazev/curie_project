@@ -38,11 +38,23 @@ The public production routes are:
 
 ```text
 https://ampere-data.work/            -> SvelteKit web
-https://ampere-data.work/api/*       -> FastAPI API
+https://ampere-data.work/api/*       -> public FastAPI user-facing routes
 https://ampere-data.work/streamlit/* -> Streamlit reports
 ```
 
 Direct public API and Streamlit ports should remain closed.
+
+Production Nginx intentionally does not expose admin, cache, development, or documentation API routes:
+
+```text
+/api/cache/*
+/api/check*
+/api/docs
+/api/redoc
+/api/openapi.json
+```
+
+These routes may exist inside the FastAPI container for local development or server-local operations, but they should not be reachable through the production public or default Nginx listeners. Cache refresh automation must use a private execution path instead of production Nginx, such as a server-local job or SSH-triggered command.
 
 ## Server Setup
 
@@ -151,14 +163,15 @@ The workflow is:
 .github/workflows/deploy-api.yml
 ```
 
-## 8. Update Production Tailnet Bindings
+## 8. Verify Production Loopback Bindings
 
-Update the encrypted production environment with the new Tailscale IP:
+Backend runtime ports should stay bound to loopback because Nginx, web, API, Streamlit, and PostgreSQL run on the same host:
 
 ```dotenv
-CURIE_API_PORT=<new-tailscale-ip>:8000
-CURIE_STREAMLIT_PORT=<new-tailscale-ip>:8501
-CURIE_POSTGRES_PORT=<new-tailscale-ip>:5432
+CURIE_WEB_PORT=127.0.0.1:3000
+CURIE_API_PORT=127.0.0.1:8000
+CURIE_STREAMLIT_PORT=127.0.0.1:8501
+CURIE_POSTGRES_PORT=127.0.0.1:5432
 ```
 
 The encrypted file is:
@@ -167,7 +180,7 @@ The encrypted file is:
 infra/env/curie-prod.sops.env
 ```
 
-Keep `CURIE_UPSTREAM_HOST_IP` unchanged unless the upstream data host also changed.
+Keep `CURIE_UPSTREAM_HOST_IP` as the upstream Ampere data host address; it is separate from Curie service port bindings.
 
 ## 9. Update DNS
 
