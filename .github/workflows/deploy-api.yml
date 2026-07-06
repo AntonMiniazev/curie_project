@@ -54,13 +54,16 @@ jobs:
             infra/compose.prod.yml \
             "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST:$CURIE_DEPLOY_DIR/compose.yml"
           ssh -i ~/.ssh/curie_deploy_key "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST" \
-            "mkdir -p $CURIE_DEPLOY_DIR/postgres/initdb $CURIE_DEPLOY_DIR/nginx"
+            "mkdir -p $CURIE_DEPLOY_DIR/postgres/initdb $CURIE_DEPLOY_DIR/nginx/stream"
           scp -i ~/.ssh/curie_deploy_key \
             infra/postgres/initdb/* \
             "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST:$CURIE_DEPLOY_DIR/postgres/initdb/"
           scp -i ~/.ssh/curie_deploy_key \
             infra/nginx/curie.conf \
             "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST:$CURIE_DEPLOY_DIR/nginx/curie.conf"
+          scp -i ~/.ssh/curie_deploy_key \
+            infra/nginx/stream/curie-postgres.conf \
+            "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST:$CURIE_DEPLOY_DIR/nginx/stream/curie-postgres.conf"
 
       - name: Decrypt and copy prod env
         run: |
@@ -95,6 +98,9 @@ jobs:
         run: |
           ssh -i ~/.ssh/curie_deploy_key "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST" \
             "cp $CURIE_DEPLOY_DIR/nginx/curie.conf /etc/nginx/sites-available/curie \
+            && mkdir -p /etc/nginx/stream-enabled \
+            && cp $CURIE_DEPLOY_DIR/nginx/stream/curie-postgres.conf /etc/nginx/stream-enabled/curie-postgres.conf \
+            && if ! grep -q 'include /etc/nginx/stream-enabled/\\*.conf;' /etc/nginx/nginx.conf; then sed -i '/^http {/i stream {\\n    include /etc/nginx/stream-enabled/*.conf;\\n}\\n' /etc/nginx/nginx.conf; fi \
             && ln -sf /etc/nginx/sites-available/curie /etc/nginx/sites-enabled/curie \
             && rm -f /etc/nginx/sites-enabled/default \
             && nginx -t \
