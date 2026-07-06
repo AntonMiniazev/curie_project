@@ -44,17 +44,30 @@ https://ampere-data.work/streamlit/* -> Streamlit reports
 
 Direct public API and Streamlit ports should remain closed.
 
-Production Nginx intentionally does not expose admin, cache, development, or documentation API routes:
+Production Nginx intentionally does not expose development or documentation API routes:
 
 ```text
-/api/cache/*
 /api/check*
 /api/docs
 /api/redoc
 /api/openapi.json
 ```
 
-These routes may exist inside the FastAPI container for local development or server-local operations, but they should not be reachable through the production public or default Nginx listeners. Cache refresh automation must use a private execution path instead of production Nginx, such as a server-local job or SSH-triggered command.
+The public HTTPS domain also blocks cache routes:
+
+```text
+https://ampere-data.work/api/cache/*
+```
+
+Cache routes are available only through the production server Tailnet address for the Airflow DAG and other explicitly allowed Tailnet machines:
+
+```text
+Dev machine:     100.118.58.111
+Ubuntu server:   100.86.133.66
+Hetzner server:  100.65.42.72
+```
+
+Airflow should call cache refresh through Nginx over the Curie server Tailscale address, for example `http://<curie-tailscale-ip>/api/cache/refresh`, not the public HTTPS domain and not the raw backend port.
 
 ## Server Setup
 
