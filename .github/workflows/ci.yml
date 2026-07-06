@@ -16,6 +16,7 @@ on:
       - apps/web/Dockerfile
       - infra/compose.dev.yml
       - infra/compose.prod.yml
+      - infra/env/**
       - infra/nginx/**
       - pyproject.toml
       - uv.lock
