@@ -3,7 +3,6 @@ from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jwt import PyJWTError
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -34,19 +33,13 @@ from ..schemas.auth import (
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 db_dependency = Annotated[Session, Depends(get_db_session)]
-bearer_scheme = HTTPBearer(auto_error=False)
-bearer_dependency = Annotated[
-    HTTPAuthorizationCredentials | None,
-    Depends(bearer_scheme),
-]
 
 
 def unauthorized(detail: str = "Invalid authentication credentials.") -> HTTPException:
-    """Create a Bearer-compatible 401 error for auth failures."""
+    """Create a 401 error for auth failures."""
     return HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail=detail,
-        headers={"WWW-Authenticate": "Bearer"},
     )
 
 
@@ -148,17 +141,15 @@ def cookie_token(request: Request | None, cookie_name: str) -> str | None:
 
 
 def resolve_current_user(
-    credentials: HTTPAuthorizationCredentials | None,
     db: Session,
-    access_token: str | None = None,
+    access_token: str | None,
 ) -> User:
-    """Resolve and validate the current user from a Bearer access token."""
-    token = credentials.credentials if credentials is not None else access_token
-    if token is None:
+    """Resolve and validate the current user from the session access-token cookie."""
+    if access_token is None:
         raise unauthorized()
 
     try:
-        claims = decode_access_token(token)
+        claims = decode_access_token(access_token)
     except PyJWTError as exc:
         raise unauthorized() from exc
 
@@ -359,13 +350,12 @@ def login_user(
     status_code=status.HTTP_200_OK,
 )
 def get_current_user(
-    credentials: bearer_dependency,
     db: db_dependency,
     request: Request,
 ) -> CurrentUserResponse:
-    """Return the current user represented by a valid Bearer access token."""
+    """Return the current user represented by a valid session cookie."""
     access_token = cookie_token(request, get_settings().auth_access_cookie_name)
-    user = resolve_current_user(credentials, db, access_token=access_token)
+    user = resolve_current_user(db, access_token=access_token)
     return CurrentUserResponse(
         id=str(user.id),
         email=user.email,
@@ -385,13 +375,12 @@ def get_current_user(
 )
 def nginx_streamlit_auth(
     response: Response,
-    credentials: bearer_dependency,
     db: db_dependency,
     request: Request,
 ) -> Response:
     """Validate a browser session for Nginx `auth_request` and return signed Streamlit scope."""
     access_token = cookie_token(request, get_settings().auth_access_cookie_name)
-    user = resolve_current_user(credentials, db, access_token=access_token)
+    user = resolve_current_user(db, access_token=access_token)
     response.status_code = status.HTTP_204_NO_CONTENT
     response.headers["X-Curie-Streamlit-Scope"] = create_streamlit_scope_token(
         user_id=str(user.id),

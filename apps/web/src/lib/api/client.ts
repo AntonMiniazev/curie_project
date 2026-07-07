@@ -6,7 +6,6 @@ type ApiFetch = typeof fetch;
 
 type ApiFetchOptions = Omit<RequestInit, 'body'> & {
 	body?: ApiRequestBody;
-	token?: string | null;
 	fetcher?: ApiFetch;
 };
 
@@ -28,12 +27,8 @@ export async function apiFetch<TResponse>(
 	path: string,
 	options: ApiFetchOptions = {}
 ): Promise<TResponse> {
-	const { token, fetcher = fetch, headers, body, ...requestInit } = options;
+	const { fetcher = fetch, headers, body, ...requestInit } = options;
 	const requestHeaders = new Headers(headers);
-
-	if (token) {
-		requestHeaders.set('Authorization', `Bearer ${token}`);
-	}
 
 	const requestBody = prepareBody(body, requestHeaders);
 

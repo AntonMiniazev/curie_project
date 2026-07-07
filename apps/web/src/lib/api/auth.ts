@@ -29,10 +29,8 @@ export function loginUser(request: UserLoginRequest): Promise<TokenResponse> {
 	});
 }
 
-export function getCurrentUser(accessToken?: string): Promise<CurrentUserResponse> {
-	return apiFetch<CurrentUserResponse>('/api/auth/me', {
-		token: accessToken
-	});
+export function getCurrentUser(): Promise<CurrentUserResponse> {
+	return apiFetch<CurrentUserResponse>('/api/auth/me');
 }
 
 export function refreshToken(request?: RefreshTokenRequest): Promise<TokenResponse> {

@@ -33,8 +33,8 @@
 		isSubmitting = true;
 
 		try {
-			const tokenResponse = await loginUser({ email, password });
-			const currentUser = await getCurrentUser(tokenResponse.access_token);
+			await loginUser({ email, password });
+			const currentUser = await getCurrentUser();
 			authSession.setCurrentUser(currentUser);
 
 			await goto(resolve('/curie'));

@@ -33,11 +33,13 @@ def test_user_create_request_rejects_invalid_email() -> None:
         )
 
 
-def test_token_response_defaults_to_bearer_token_type() -> None:
+def test_token_response_contains_session_tokens() -> None:
     response = TokenResponse(
         access_token="access",
         refresh_token="refresh",
         expires_in_seconds=3600,
     )
 
-    assert response.token_type == "bearer"
+    assert response.access_token == "access"
+    assert response.refresh_token == "refresh"
+    assert response.expires_in_seconds == 3600

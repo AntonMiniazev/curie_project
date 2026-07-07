@@ -158,7 +158,7 @@ export interface paths {
         };
         /**
          * Get Current User
-         * @description Return the current user represented by a valid Bearer access token.
+         * @description Return the current user represented by a valid session cookie.
          */
         get: operations["get_current_user_api_auth_me_get"];
         put?: never;
@@ -375,18 +375,13 @@ export interface components {
         };
         /**
          * TokenResponse
-         * @description Response body returned after register, login, or token refresh with access and refresh tokens.
+         * @description Response body returned after register, login, or token refresh with session token details.
          */
         TokenResponse: {
             /** Access Token */
             access_token: string;
             /** Refresh Token */
             refresh_token: string;
-            /**
-             * Token Type
-             * @default bearer
-             */
-            token_type: string;
             /** Expires In Seconds */
             expires_in_seconds: number;
         };

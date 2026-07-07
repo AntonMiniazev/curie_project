@@ -7,7 +7,6 @@ from uuid import UUID, uuid4
 
 import pytest
 from fastapi import HTTPException, Request, Response, status
-from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.exc import SQLAlchemyError
 
 from apps.api.db.models import RefreshToken, Role, User
@@ -198,7 +197,6 @@ def test_register_login_me_refresh_and_logout_flow() -> None:
         make_response(),
     )
 
-    assert registered.token_type == "bearer"
     assert registered.access_token
     assert registered.refresh_token
     assert len(db.users) == 1
@@ -207,11 +205,11 @@ def test_register_login_me_refresh_and_logout_flow() -> None:
     assert [role.name for role in db.users[0].roles] == ["store_fontaine"]
     assert len(db.refresh_tokens) == 1
 
-    credentials = HTTPAuthorizationCredentials(
-        scheme="Bearer",
-        credentials=registered.access_token,
+    settings = get_settings()
+    current_user = get_current_user(
+        db,  # type: ignore[arg-type]
+        make_request({settings.auth_access_cookie_name: registered.access_token}),
     )
-    current_user = get_current_user(credentials, db, make_request())  # type: ignore[arg-type]
 
     assert current_user.email == "demo@example.com"
     assert current_user.roles == ["store_fontaine"]
@@ -281,7 +279,6 @@ def test_nginx_streamlit_auth_returns_signed_scope_header_from_cookie() -> None:
 
     response = nginx_streamlit_auth(
         make_response(),
-        None,
         db,  # type: ignore[arg-type]
         make_request({settings.auth_access_cookie_name: registered.access_token}),
     )
@@ -297,7 +294,6 @@ def test_nginx_streamlit_auth_rejects_missing_session_cookie() -> None:
     with pytest.raises(HTTPException) as exc_info:
         nginx_streamlit_auth(
             make_response(),
-            None,
             session_with_roles(),  # type: ignore[arg-type]
             make_request(),
         )

@@ -1,4 +1,4 @@
-{
+﻿{
   "openapi": "3.1.0",
   "info": {
     "title": "FastAPI",
@@ -248,7 +248,7 @@
           "auth"
         ],
         "summary": "Get Current User",
-        "description": "Return the current user represented by a valid Bearer access token.",
+        "description": "Return the current user represented by a valid session cookie.",
         "operationId": "get_current_user_api_auth_me_get",
         "responses": {
           "200": {
@@ -261,12 +261,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     },
     "/api/auth/nginx-streamlit": {
@@ -281,12 +276,7 @@
           "204": {
             "description": "Successful Response"
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     },
     "/api/auth/refresh": {
@@ -774,11 +764,6 @@
             "type": "string",
             "title": "Refresh Token"
           },
-          "token_type": {
-            "type": "string",
-            "title": "Token Type",
-            "default": "bearer"
-          },
           "expires_in_seconds": {
             "type": "integer",
             "title": "Expires In Seconds"
@@ -791,7 +776,7 @@
           "expires_in_seconds"
         ],
         "title": "TokenResponse",
-        "description": "Response body returned after register, login, or token refresh with access and refresh tokens."
+        "description": "Response body returned after register, login, or token refresh with session token details."
       },
       "UserCreateRequest": {
         "properties": {
@@ -895,12 +880,6 @@
           "type"
         ],
         "title": "ValidationError"
-      }
-    },
-    "securitySchemes": {
-      "HTTPBearer": {
-        "type": "http",
-        "scheme": "bearer"
       }
     }
   }

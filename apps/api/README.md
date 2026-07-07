@@ -11,6 +11,22 @@ FastAPI service for Curie authentication, report metadata, cache status, and cac
 - Cache status endpoint and local cache manifest inspection.
 - Alembic migrations for PostgreSQL schema and seed data.
 
+## Authentication And Authorization
+
+Curie uses JWT-backed RBAC for user-facing access.
+
+- Users authenticate with email and password.
+- Passwords are hashed with Argon2 plus an application pepper before storage.
+- Successful login or registration issues a short-lived JWT access token and a long-lived opaque refresh token.
+- Refresh tokens are stored server-side only as SHA-256 hashes, so the raw token is not persisted.
+- Users are assigned roles through `curie.user_roles`; available roles are stored in `curie.roles`.
+- JWT access tokens include a `roles` claim.
+- Reports declare a `required_role`; report and Streamlit access are scoped from the authenticated user's roles.
+
+Browser sessions use HTTP-only cookies because the SvelteKit frontend and API share the same production origin. The browser sends these cookies automatically on same-origin requests, while JavaScript cannot read HTTP-only cookie values. This reduces accidental token exposure through frontend code or cross-site scripting bugs.
+
+Operational endpoints use a separate admin API key model
+
 ## Run Locally
 
 Commands are run from the repository root because the root `pyproject.toml` owns Python dependencies and pytest import paths.

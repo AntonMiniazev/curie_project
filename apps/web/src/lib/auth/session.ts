@@ -42,8 +42,8 @@ function createSessionStore() {
 				});
 			} catch {
 				try {
-					const tokenResponse = await refreshToken();
-					const currentUser = await getCurrentUser(tokenResponse.access_token);
+					await refreshToken();
+					const currentUser = await getCurrentUser();
 					set({
 						status: 'authenticated',
 						currentUser

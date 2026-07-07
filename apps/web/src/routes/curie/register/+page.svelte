@@ -50,14 +50,14 @@
 		isSubmitting = true;
 
 		try {
-			const tokenResponse = await registerUser({
+			await registerUser({
 				email,
 				password,
 				display_name: displayName || null,
 				role: selectedRole
 			});
 			try {
-				const currentUser = await getCurrentUser(tokenResponse.access_token);
+				const currentUser = await getCurrentUser();
 				authSession.setCurrentUser(currentUser);
 				await goto(resolve('/curie'));
 			} catch {

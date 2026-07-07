@@ -22,11 +22,10 @@ class UserLoginRequest(BaseModel):
 
 
 class TokenResponse(BaseModel):
-    """Response body returned after register, login, or token refresh with access and refresh tokens."""
+    """Response body returned after register, login, or token refresh with session token details."""
 
     access_token: str
     refresh_token: str
-    token_type: str = "bearer"
     expires_in_seconds: int
 
 
