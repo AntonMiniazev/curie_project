@@ -400,7 +400,7 @@ export const projectFlows: ProjectFlow[] = [
 					label: 'Spark Connect',
 					secondaryLabel: 'Service',
 					handles: {
-						targets: [{ id: 'from-ingress', position: Position.Right }]
+						targets: [{ id: 'from-gateway-api', position: Position.Right }]
 					}
 				},
 				position: { x: 20, y: 220 },
@@ -410,9 +410,9 @@ export const projectFlows: ProjectFlow[] = [
 				zIndex: 20
 			},
 			{
-				id: 'cluster-ingress',
+				id: 'cluster-gateway-api',
 				data: {
-					label: 'ingress-nginx',
+					label: 'gateway_api',
 					secondaryLabel: 'Routing',
 					handles: {
 						sources: [
@@ -440,7 +440,7 @@ export const projectFlows: ProjectFlow[] = [
 					secondaryLabel: 'Dashboards',
 					handles: {
 						sources: [{ id: 'to-prometheus', position: Position.Right }],
-						targets: [{ id: 'from-ingress', position: Position.Left }]
+						targets: [{ id: 'from-gateway-api', position: Position.Left }]
 					}
 				},
 				position: { x: 440, y: 220 },
@@ -486,7 +486,7 @@ export const projectFlows: ProjectFlow[] = [
 							{ id: 'to-minio', position: Position.Bottom }
 						],
 						targets: [
-							{ id: 'from-ingress', position: Position.Top },
+							{ id: 'from-gateway-api', position: Position.Top },
 							{ id: 'from-rbac', position: Position.Top },
 							{ id: 'from-keda', position: Position.Top }
 						]
@@ -505,7 +505,7 @@ export const projectFlows: ProjectFlow[] = [
 					secondaryLabel: 'Meta DB',
 					handles: {
 						targets: [
-							{ id: 'from-ingress', position: Position.Left },
+							{ id: 'from-gateway-api', position: Position.Left },
 							{ id: 'from-airflow', position: Position.Right }
 						]
 					}
@@ -543,7 +543,7 @@ export const projectFlows: ProjectFlow[] = [
 					secondaryLabel: 'Metadata API',
 					handles: {
 						sources: [{ id: 'to-minio', position: Position.Bottom }],
-						targets: [{ id: 'from-ingress', position: Position.Right }]
+						targets: [{ id: 'from-gateway-api', position: Position.Right }]
 					}
 				},
 				position: { x: 20, y: 350 },
@@ -561,7 +561,7 @@ export const projectFlows: ProjectFlow[] = [
 						targets: [
 							{ id: 'from-airflow', position: Position.Right },
 							{ id: 'from-uc', position: Position.Left },
-							{ id: 'from-ingress', position: Position.Top }
+							{ id: 'from-gateway-api', position: Position.Top }
 						]
 					}
 				},
@@ -590,72 +590,72 @@ export const projectFlows: ProjectFlow[] = [
 				...defaultEdgeOptions
 			},
 			{
-				id: 'cluster-cert-manager-ingress',
+				id: 'cluster-cert-manager-gateway-api',
 				source: 'cluster-cert-manager',
-				target: 'cluster-ingress',
+				target: 'cluster-gateway-api',
 				targetHandle: 'from-cluster-services',
 				label: 'issues TLS',
 				...defaultEdgeOptions
 			},
 			{
-				id: 'cluster-ingress-airflow',
-				source: 'cluster-ingress',
+				id: 'cluster-gateway-api-airflow',
+				source: 'cluster-gateway-api',
 				sourceHandle: 'to-airflow',
 				target: 'cluster-airflow',
-				targetHandle: 'from-ingress',
+				targetHandle: 'from-gateway-api',
 				label: 'routes UI/API',
 				...defaultEdgeOptions
 			},
 			{
-				id: 'cluster-ingress-minio',
-				source: 'cluster-ingress',
+				id: 'cluster-gateway-api-minio',
+				source: 'cluster-gateway-api',
 				sourceHandle: 'to-minio',
 				target: 'cluster-minio',
-				targetHandle: 'from-ingress',
+				targetHandle: 'from-gateway-api',
 				label: 'routes S3',
 				...defaultEdgeOptions
 			},
 			{
-				id: 'cluster-ingress-spark-connect',
-				source: 'cluster-ingress',
+				id: 'cluster-gateway-api-spark-connect',
+				source: 'cluster-gateway-api',
 				sourceHandle: 'to-spark-connect',
 				target: 'cluster-spark-connect',
-				targetHandle: 'from-ingress',
+				targetHandle: 'from-gateway-api',
 				label: 'routes gRPC',
 				...defaultEdgeOptions
 			},
 			{
-				id: 'cluster-ingress-uc-ui',
-				source: 'cluster-ingress',
+				id: 'cluster-gateway-api-uc-ui',
+				source: 'cluster-gateway-api',
 				sourceHandle: 'to-uc-ui',
 				target: 'cluster-unity-catalog-ui',
 				label: 'routes UI',
 				...defaultEdgeOptions
 			},
 			{
-				id: 'cluster-ingress-uc-server',
-				source: 'cluster-ingress',
+				id: 'cluster-gateway-api-uc-server',
+				source: 'cluster-gateway-api',
 				sourceHandle: 'to-uc-server',
 				target: 'cluster-unity-catalog-server',
-				targetHandle: 'from-ingress',
+				targetHandle: 'from-gateway-api',
 				label: 'routes API',
 				...defaultEdgeOptions
 			},
 			{
-				id: 'cluster-ingress-postgres',
-				source: 'cluster-ingress',
+				id: 'cluster-gateway-api-postgres',
+				source: 'cluster-gateway-api',
 				sourceHandle: 'to-postgres',
 				target: 'cluster-postgres',
-				targetHandle: 'from-ingress',
+				targetHandle: 'from-gateway-api',
 				label: 'routes TCP',
 				...defaultEdgeOptions
 			},
 			{
-				id: 'cluster-ingress-grafana',
-				source: 'cluster-ingress',
+				id: 'cluster-gateway-api-grafana',
+				source: 'cluster-gateway-api',
 				sourceHandle: 'to-grafana',
 				target: 'cluster-grafana',
-				targetHandle: 'from-ingress',
+				targetHandle: 'from-gateway-api',
 				label: 'routes UI',
 				...defaultEdgeOptions
 			},
