@@ -1,5 +1,6 @@
 <script lang="ts">
 	import CalendarIcon from '~icons/lucide/calendar';
+	import GlobeIcon from '~icons/lucide/globe';
 	import MailIcon from '~icons/lucide/mail';
 	import MapPinIcon from '~icons/lucide/map-pin';
 	import PhoneIcon from '~icons/lucide/phone';
@@ -11,7 +12,6 @@
 	<header class="resume-header">
 		<div>
 			<h1>Anton Miniazev</h1>
-			<h2>BI Engineer</h2>
 		</div>
 
 		<nav class="resume-contact-links" aria-label="Resume contact links">
@@ -22,7 +22,7 @@
 
 			<a href="tel:+381621434392">
 				<PhoneIcon class="resume-link-icon" aria-hidden="true" />
-				(381) 621-434392
+				+381 62 143 43 92
 			</a>
 
 			<a href="https://www.linkedin.com/in/antonminiazev/" target="_blank" rel="noreferrer">
@@ -30,41 +30,86 @@
 				LinkedIn
 			</a>
 
-			<a href="https://github.com/antonminiazev" target="_blank" rel="noreferrer">
+			<a
+				href="https://github.com/AntonMiniazev/AntonMiniazev"
+				target="_blank"
+				rel="noreferrer"
+			>
 				<GithubIcon class="resume-link-icon" aria-hidden="true" />
 				GitHub
 			</a>
 
+			<a href="https://ampere-data.work/" target="_blank" rel="noreferrer">
+				<GlobeIcon class="resume-link-icon" aria-hidden="true" />
+				Portfolio
+			</a>
+
 			<span>
 				<MapPinIcon class="resume-link-icon" aria-hidden="true" />
-				Belgrade, Serbia
+				Belgrade, Serbia (Permanent residence, no Serbian visa sponsorship required)
 			</span>
 		</nav>
 	</header>
 
 	<div class="resume-section-line"></div>
 
+	<section class="resume-section" aria-labelledby="resume-summary-title">
+		<h2 id="resume-summary-title">Professional Summary</h2>
+		<p>
+			Data and BI Engineer with 3+ years building and owning Microsoft Fabric lakehouse,
+			pipeline, semantic-model, and reporting solutions, backed by 10+ years across analytics,
+			finance, and consulting. Hands-on with PySpark, SQL, Python, dimensional modelling, CI/CD,
+			and governed BI delivery for hundreds of global users.
+		</p>
+		<p>
+			Combines engineering execution with strong FP&amp;A and sales domain expertise and a track
+			record of leading cross-functional adoption.
+		</p>
+	</section>
+
+	<div class="resume-section-line"></div>
+
 	<section class="resume-section" aria-labelledby="resume-skills-title">
-		<h2 id="resume-skills-title">Skills and certifications</h2>
+		<h2 id="resume-skills-title">Technical Skills</h2>
 
 		<div class="resume-skill-grid">
 			<section>
-				<h3>Finance and reporting</h3>
-				<p>Financial Due Diligence, Budgeting and Forecasting, FP&A analysis</p>
+				<h3>Data engineering</h3>
+				<p>
+					SQL, dynamic SQL, stored procedures, Python, PySpark, Pandas, Polars, PyTest,
+					Alembic, ETL/ELT, incremental processing
+				</p>
 			</section>
 
 			<section>
-				<h3>BI engineering tools</h3>
-				<p>SQL, Python, Airflow, Tableau, and Power BI development</p>
+				<h3>Cloud and platforms</h3>
+				<p>
+					Microsoft Fabric (lakehouse, pipelines, dataflows, notebooks, semantic models), ADLS,
+					AKS, Docker
+				</p>
 			</section>
 
 			<section>
-				<h3>Environments & Services</h3>
-				<p>Databricks, Fabric, Kubernetes, Azure, Docker</p>
+				<h3>Data modelling and BI</h3>
+				<p>
+					Data modelling (star/snowflake schemas, medallion architecture), Power BI, DAX,
+					Power Query, Tableau, row-level security
+				</p>
 			</section>
+
 			<section>
-				<h3>Certificates</h3>
-				<p>Power BI Data Analyst Associate, ACCA Associate, IELTS 8.0</p>
+				<h3>Engineering practices</h3>
+				<p>
+					Git, Azure DevOps, GitHub Actions, CI/CD, fabric-cicd, PBIP, dbt, REST APIs, FastAPI
+				</p>
+			</section>
+
+			<section>
+				<h3>Certifications</h3>
+				<p>
+					Databricks Certified Data Engineer Associate; Microsoft Certified: Power BI Data
+					Analyst Associate (PL-300); ACCA Associate
+				</p>
 			</section>
 		</div>
 	</section>
@@ -75,54 +120,74 @@
 		<h2 id="resume-work-title">Work Experience</h2>
 
 		<article class="resume-experience-item">
-			<h3>DXC Luxoft Serbia - BI Engineer / Senior Financial Partner</h3>
+			<h3>DXC Luxoft Serbia - BI Engineer</h3>
 			<div class="resume-date-row">
 				<CalendarIcon class="resume-date-icon" aria-hidden="true" />
-				<h4>Feb. 2023 - Present | Belgrade, Serbia</h4>
+				<h4>Feb. 2023 – Present | Belgrade, Serbia</h4>
 			</div>
 			<ul>
 				<li>
-					• Development and maintenance of pipelines and reports in Fabric, introduced CI/CD using
-					fabric-cicd.
+					Administration of Fabric workspace: lakehouse, 10+ pipelines and dataflows,
+					notebooks, semantic models, and a portfolio of up to 30 Power BI reports serving
+					hundreds of users worldwide; integrated Databricks, SharePoint, and OneLake sources.
 				</li>
 				<li>
-					Self-service project initiation with Airflow deployment using Azure DevOps on Azure
-					Kubernetes Cluster.
+					Implemented PR-based CI/CD across separate development and production Fabric
+					workspaces using Azure DevOps, Git, PBIP, and fabric-cicd; introduced version control,
+					isolated testing, collaborative development, and AI-assisted IDE workflows.
 				</li>
 				<li>
-					Coordinated refactoring for core financial reporting model achieving strict SLA on
-					Cognos-Tableau pipeline.
+					Combined finance, sales, and HR data in a Power BI solution with multi-layer
+					row-level security, enabling regular performance reviews for hundreds of sales
+					managers.
 				</li>
-				<li>Development and maintenance of Tableau reports with data preparation on SQL Server.</li>
+				<li>
+					Led Fabric adoption, CI/CD rollout, and reporting-source migrations across domains,
+					coordinating stakeholders and training colleagues on the new development process.
+				</li>
+				<li>
+					Coordinated the core financial reporting model and Cognos-to-Tableau pipeline
+					refactoring to sustain an hourly refresh cycle with fewer than 1% failed updates.
+				</li>
+				<li>
+					Delivered global sales reporting across regional, line-of-business, and product
+					dimensions, giving leaders recurring visibility into sales progress and target/budget
+					achievement.
+				</li>
+				<li>
+					Design and implementation of a code-first self-service reporting platform on Azure
+					using AKS, Streamlit, SQLMesh, ADLS, and DuckLake.
+				</li>
 			</ul>
 		</article>
 
 		<div class="resume-small-line"></div>
 
 		<article class="resume-experience-item">
-			<h3>X5 Group - Vprok.ru Online Retail - Financial Analyst</h3>
+			<h3>X5 Group - Vprok.ru Online Retail - Financial Analyst in FP&amp;A Department</h3>
 			<div class="resume-date-row">
 				<CalendarIcon class="resume-date-icon" aria-hidden="true" />
-				<h4>Oct. 2021 - Feb. 2023 | Moscow, Russia</h4>
+				<h4>Oct. 2021 – Feb. 2023 | Moscow, Russia</h4>
 			</div>
 			<ul>
 				<li>
-					Integrated Python/SQL scripts into reporting processes, reducing manual work and
-					preparation time.
+					Automated activity-based costing for internal production with Python and SQL,
+					processing millions of production and sales records into management P&amp;L reporting
+					with allocated direct and indirect costs.
 				</li>
 				<li>
-					Prepared FY budget models and led consolidation and preparation of materials for board
-					approval.
+					Designed a week-over-week delivery-zone performance model comparing revenue with
+					delivery spend, identifying persistently underperforming zones and supporting
+					service-area and cost decisions.
 				</li>
 				<li>
-					Designed a zonal performance model with supporting Tableau reports, enabling up to 30%
-					cost optimization.
+					Automated 10+ management reporting processes with DAX and Power Query, including
+					chain-method budget variance analysis.
 				</li>
 				<li>
-					Analyzed the pickup business EBITDA impact, leading to its discontinuation for resource
-					optimization.
+					Built annual budget models and led consolidation and preparation of materials for
+					board approval.
 				</li>
-				<li>Redesigned management reporting and automated it with DAX and Power Query.</li>
 			</ul>
 		</article>
 
@@ -130,20 +195,22 @@
 
 		<article class="resume-experience-item">
 			<h3>
-				ivi.ru Video Streaming Service - Senior Business Analyst in Business Development Department
+				ivi.ru Video Streaming Service - Senior Business Analyst in Business Development
+				Department
 			</h3>
 			<div class="resume-date-row">
 				<CalendarIcon class="resume-date-icon" aria-hidden="true" />
-				<h4>Mar. 2021 - Jun. 2021 | Moscow, Russia</h4>
+				<h4>Mar. 2021 – Jun. 2021 | Moscow, Russia</h4>
 			</div>
 			<ul>
-				<li>Led the rebudgeting process for the largest department streams, focused on B2B.</li>
 				<li>
-					Redesigned departmental reports for executive management, achieving a 50% time reduction.
+					Redesigned weekly C-level reporting by combining large finance and operational
+					datasets, reducing preparation time by 50% and giving leadership a unified view of
+					company performance.
 				</li>
 				<li>
-					Enhanced commercial models for partnership pre-analysis and post-analysis using SQL and
-					Tableau inputs.
+					Enhanced partnership pre- and post-analysis models using SQL and Tableau data to
+					support commercial decisions and product launches.
 				</li>
 			</ul>
 		</article>
@@ -151,41 +218,59 @@
 		<div class="resume-small-line"></div>
 
 		<article class="resume-experience-item">
-			<h3>KPMG - Senior Consultant in Transaction Services, Deal Advisory</h3>
+			<h3>KPMG</h3>
 			<div class="resume-date-row">
 				<CalendarIcon class="resume-date-icon" aria-hidden="true" />
-				<h4>Oct. 2015 - Mar. 2021 | Moscow, Russia</h4>
+				<h4>Oct. 2015 – Mar. 2021 | Moscow, Russia</h4>
 			</div>
+			<p><strong>Senior Consultant</strong> in Transaction Services (Deal Advisory)</p>
 			<ul>
 				<li>
-					Aided clients in Financial Due Diligence related to Russian and international M&A
+					Aided clients in Financial Due Diligence related to Russian and international M&amp;A
 					transactions.
 				</li>
 				<li>Verified business models with preparation of inputs for valuation models.</li>
 				<li>
-					Performed revenue and profit quality analysis considering markets, operational schemes,
-					and groups.
+					Performed revenue and profit quality analysis considering markets, operational
+					schemes, and groups.
+				</li>
+			</ul>
+			<p><strong>Senior Consultant</strong> in Accounting Advisory Services</p>
+			<ul>
+				<li>Developed data collection and transformation packages using VBA for Excel for clients.</li>
+				<li>
+					Contributed to the design of a comprehensive costing system within a vertically
+					integrated holding.
 				</li>
 				<li>
-					Contributed to the initial ETL project, including Alteryx integration, by adjusting models
-					and delivering training.
+					Adapted a revenue calculation model with multiple performance obligations (IFRS 15
+					implementation).
 				</li>
 			</ul>
 		</article>
+	</section>
 
-		<div class="resume-small-line"></div>
+	<div class="resume-section-space"></div>
+
+	<section class="resume-section" aria-labelledby="resume-project-title">
+		<h2 id="resume-project-title">Selected Project</h2>
 
 		<article class="resume-experience-item">
-			<h3>KPMG - Senior Consultant in Accounting Advisory Services</h3>
 			<ul>
-				<li>Developed data collection and transformation packages using VBA for Excel.</li>
 				<li>
-					Contributed to the design of a comprehensive costing system within a vertically integrated
-					holding.
+					Built an end-to-end learning data platform
+					(<a href="https://ampere-data.work/" target="_blank" rel="noreferrer">ampere-data.work</a>)
+					that generates synthetic operational data and transforms it through Bronze, Silver,
+					and Gold Delta Lake layers using PySpark, Polars, DuckDB, Airflow, and dbt, with Unity
+					Catalog OSS governance and BI consumption.
 				</li>
 				<li>
-					Adapted a revenue calculation model with multiple performance obligations for IFRS 15
-					implementation.
+					Automated a connected Kubernetes environment spanning a home-lab Ubuntu server and
+					Hetzner infrastructure using Terraform, Helm, and deployment automation.
+				</li>
+				<li>
+					Developed an authenticated reporting application with a SvelteKit frontend, FastAPI
+					backend, and Streamlit.
 				</li>
 			</ul>
 		</article>
@@ -203,7 +288,7 @@
 				<strong>Financial University under the Government of the Russian Federation</strong>
 				<span>Mar. 2018 | Moscow, Russia</span>
 			</div>
-			<p>Master's Degree, Economics</p>
+			<p>Master's Degree in Economics</p>
 		</article>
 	</section>
 </section>
