@@ -3,9 +3,9 @@
 import hashlib
 import json
 import shutil
-from typing import Any
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 import polars as pl
 
@@ -68,12 +68,13 @@ def refresh_one_table(
     parquet_path = data_dir / f"{table_name}.parquet"
     schema_path = schema_dir / f"{table_name}.schema.json"
 
-    df = pl.read_delta(
+    table_scan = pl.scan_delta(
         normalized_table["source_location"],
         storage_options=storage_options,
     )
 
-    df.write_parquet(parquet_path)
+    table_scan.sink_parquet(parquet_path)
+    row_count = table_scan.select(pl.len()).collect().item()
 
     with schema_path.open("w", encoding="utf-8") as file:
         json.dump(normalized_table, file, indent=2)
@@ -83,7 +84,7 @@ def refresh_one_table(
         "source_table": normalized_table["source_table"],
         "path": f"data/{table_name}.parquet",
         "schema_path": f"schemas/{table_name}.schema.json",
-        "row_count": df.height,
+        "row_count": row_count,
         "checksum": sha256_file(parquet_path),
     }
 

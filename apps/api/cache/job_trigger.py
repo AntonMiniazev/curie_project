@@ -5,11 +5,41 @@ from datetime import UTC, datetime
 from ..core.config import get_settings
 
 
+def _find_running_refresh_job_id() -> str | None:
+    result = subprocess.run(
+        [
+            "docker",
+            "ps",
+            "--filter",
+            "label=curie.job=cache-refresh",
+            "--filter",
+            "status=running",
+            "--format",
+            "{{.Names}}",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    if result.returncode != 0:
+        detail = result.stderr.strip() or result.stdout.strip()
+        raise RuntimeError(f"Cache refresh guard failed: {detail}")
+
+    running_jobs = [
+        line.strip() for line in result.stdout.splitlines() if line.strip()
+    ]
+    return running_jobs[0] if running_jobs else None
+
+
 def trigger_cache_refresh_job() -> str:
     settings = get_settings()
 
     if not settings.cache_refresh_enabled:
         raise RuntimeError("Cache refresh job trigger is not enabled.")
+
+    if running_job_id := _find_running_refresh_job_id():
+        return running_job_id
 
     job_id = f"{settings.cache_refresh_container_prefix}-{datetime.now(UTC).strftime('%Y%m%d%H%M%S')}"
 
