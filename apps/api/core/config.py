@@ -49,7 +49,9 @@ class Settings(BaseSettings):
     )
     cors_origins_csv: str = Field(default="", alias="CURIE_CORS_ORIGINS")
 
-    uc_base_url: str = Field(default="http://ucatalog.local", alias="CURIE_UC_BASE_URL")
+    uc_base_url: str = Field(
+        default="https://ucatalog.local", alias="CURIE_UC_BASE_URL"
+    )
     uc_timeout_seconds: int = Field(default=10, alias="CURIE_UC_TIMEOUT_SECONDS")
     uc_retry_attempts: int = Field(default=5, alias="CURIE_UC_RETRY_ATTEMPTS")
     uc_retry_backoff_seconds: int = Field(
