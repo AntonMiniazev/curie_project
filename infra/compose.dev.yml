@@ -38,14 +38,18 @@ services:
       CURIE_CACHE_REFRESH_IMAGE: ${CURIE_IMAGE:-curie-api:dev}
       CURIE_CACHE_REFRESH_VOLUMES_FROM: curie-api-dev
       CURIE_CACHE_REFRESH_NETWORK: curie-dev_default
+      CURIE_ICEBERG_CACHE_ROOT: /app/data/iceberg-cache
+      CURIE_ICEBERG_CACHE_CURRENT: /app/data/iceberg-cache/current
       CURIE_UPSTREAM_HOST_IP: ${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}
     ports:
       - "8000:8000"
     volumes:
       - ../data/dev-cache:/app/data/cache
+      - ../data/dev-iceberg-cache:/app/data/iceberg-cache
       - /var/run/docker.sock:/var/run/docker.sock
     extra_hosts:
       - "ucatalog.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
+      - "lakekeeper.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
       - "s3.minio.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
       - "minio.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
     depends_on:
@@ -70,6 +74,24 @@ services:
       - "ucatalog.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
       - "s3.minio.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
       - "minio.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
+
+  iceberg-cache-refresh:
+    image: ${CURIE_IMAGE:-curie-api:dev}
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    profiles: ["iceberg-cache"]
+    env_file:
+      - ./env/curie-dev.env
+    environment:
+      CURIE_ICEBERG_CACHE_ROOT: /app/data/iceberg-cache
+      CURIE_ICEBERG_CACHE_CURRENT: /app/data/iceberg-cache/current
+    command: ["uv", "run", "python", "-m", "apps.api.cache.refresh_iceberg"]
+    volumes:
+      - ../data/dev-iceberg-cache:/app/data/iceberg-cache
+    extra_hosts:
+      - "lakekeeper.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
+      - "s3.minio.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
 
   streamlit:
     build:

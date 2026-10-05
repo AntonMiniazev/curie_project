@@ -5,13 +5,14 @@ from datetime import UTC, datetime
 from ..core.config import get_settings
 
 
-def _find_running_refresh_job_id() -> str | None:
+def _find_running_refresh_job_id(job_kind: str = "delta") -> str | None:
+    label = "iceberg-cache-refresh" if job_kind == "iceberg" else "cache-refresh"
     result = subprocess.run(
         [
             "docker",
             "ps",
             "--filter",
-            "label=curie.job=cache-refresh",
+            f"label=curie.job={label}",
             "--filter",
             "status=running",
             "--format",
@@ -32,16 +33,23 @@ def _find_running_refresh_job_id() -> str | None:
     return running_jobs[0] if running_jobs else None
 
 
-def trigger_cache_refresh_job() -> str:
+def trigger_cache_refresh_job(job_kind: str = "delta") -> str:
     settings = get_settings()
 
     if not settings.cache_refresh_enabled:
         raise RuntimeError("Cache refresh job trigger is not enabled.")
 
-    if running_job_id := _find_running_refresh_job_id():
+    if job_kind not in {"delta", "iceberg"}:
+        raise ValueError(f"Unsupported cache refresh kind: {job_kind}")
+    if running_job_id := _find_running_refresh_job_id(job_kind):
         return running_job_id
 
-    job_id = f"{settings.cache_refresh_container_prefix}-{datetime.now(UTC).strftime('%Y%m%d%H%M%S')}"
+    container_prefix = (
+        settings.iceberg_refresh_container_prefix
+        if job_kind == "iceberg"
+        else settings.cache_refresh_container_prefix
+    )
+    job_id = f"{container_prefix}-{datetime.now(UTC).strftime('%Y%m%d%H%M%S')}"
 
     command = [
         "docker",
@@ -52,22 +60,43 @@ def trigger_cache_refresh_job() -> str:
         "--label",
         "app=curie",
         "--label",
-        "curie.job=cache-refresh",
-        "-e",
-        "CURIE_CACHE_ROOT=/app/data/cache",
-        "-e",
-        "CURIE_CACHE_CURRENT=/app/data/cache/current",
+        (
+            "curie.job=iceberg-cache-refresh"
+            if job_kind == "iceberg"
+            else "curie.job=cache-refresh"
+        ),
     ]
+
+    if job_kind == "iceberg":
+        command.extend(
+            [
+                "-e",
+                "CURIE_ICEBERG_CACHE_ROOT=/app/data/iceberg-cache",
+                "-e",
+                "CURIE_ICEBERG_CACHE_CURRENT=/app/data/iceberg-cache/current",
+            ]
+        )
+    else:
+        command.extend(
+            [
+                "-e",
+                "CURIE_CACHE_ROOT=/app/data/cache",
+                "-e",
+                "CURIE_CACHE_CURRENT=/app/data/cache/current",
+            ]
+        )
 
     if settings.cache_refresh_volumes_from:
         command.extend(["--volumes-from", settings.cache_refresh_volumes_from])
-    else:
+    elif job_kind == "delta":
         command.extend(
             [
                 "-v",
                 f"{settings.cache_refresh_host_cache_dir}:/app/data/cache",
             ]
         )
+    else:
+        raise RuntimeError("Iceberg cache job requires a mounted API cache volume.")
 
     if settings.cache_refresh_network:
         command.extend(["--network", settings.cache_refresh_network])
@@ -77,6 +106,13 @@ def trigger_cache_refresh_job() -> str:
 
     for key, value in os.environ.items():
         if key == "APP_ENV" or key.startswith("CURIE_"):
+            if job_kind == "iceberg" and key in {
+                "CURIE_CACHE_ROOT",
+                "CURIE_CACHE_CURRENT",
+                "CURIE_ICEBERG_CACHE_ROOT",
+                "CURIE_ICEBERG_CACHE_CURRENT",
+            }:
+                continue
             command.extend(["-e", key])
 
     command.extend(
@@ -86,7 +122,11 @@ def trigger_cache_refresh_job() -> str:
             "run",
             "python",
             "-m",
-            "apps.api.cache.refresh",
+            (
+                "apps.api.cache.refresh_iceberg"
+                if job_kind == "iceberg"
+                else "apps.api.cache.refresh"
+            ),
         ]
     )
 

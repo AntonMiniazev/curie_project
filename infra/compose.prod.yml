@@ -49,14 +49,18 @@ services:
       CURIE_CACHE_REFRESH_HOST_CACHE_DIR: ${CURIE_HOST_CACHE_DIR:-/var/lib/curie/cache}
       CURIE_CACHE_REFRESH_VOLUMES_FROM: curie-api-prod
       CURIE_CACHE_REFRESH_NETWORK: curie-prod_default
+      CURIE_ICEBERG_CACHE_ROOT: /app/data/iceberg-cache
+      CURIE_ICEBERG_CACHE_CURRENT: /app/data/iceberg-cache/current
       CURIE_UPSTREAM_HOST_IP: ${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}
     ports:
       - "${CURIE_API_PORT:-127.0.0.1:8000}:8000"
     volumes:
       - ${CURIE_HOST_CACHE_DIR:-/var/lib/curie/cache}:/app/data/cache
+      - ${CURIE_ICEBERG_HOST_CACHE_DIR:-/var/lib/curie/iceberg-cache}:/app/data/iceberg-cache
       - /var/run/docker.sock:/var/run/docker.sock
     extra_hosts:
       - "ucatalog.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
+      - "lakekeeper.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
       - "s3.minio.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
       - "minio.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
     depends_on:
@@ -101,6 +105,21 @@ services:
       - "ucatalog.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
       - "s3.minio.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
       - "minio.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
+
+  iceberg-cache-refresh:
+    image: ${CURIE_IMAGE:-ghcr.io/antonminiazev/curie-api:latest}
+    profiles: ["iceberg-cache"]
+    env_file:
+      - ${CURIE_ENV_FILE:-./env/curie-prod.env}
+    environment:
+      CURIE_ICEBERG_CACHE_ROOT: /app/data/iceberg-cache
+      CURIE_ICEBERG_CACHE_CURRENT: /app/data/iceberg-cache/current
+    command: ["uv", "run", "python", "-m", "apps.api.cache.refresh_iceberg"]
+    volumes:
+      - ${CURIE_ICEBERG_HOST_CACHE_DIR:-/var/lib/curie/iceberg-cache}:/app/data/iceberg-cache
+    extra_hosts:
+      - "lakekeeper.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
+      - "s3.minio.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
 
 volumes:
   curie-postgres-prod-data:

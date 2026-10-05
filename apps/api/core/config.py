@@ -77,6 +77,47 @@ class Settings(BaseSettings):
         ),
         alias="CURIE_SOURCE_TABLES",
     )
+    iceberg_source_tables_csv: str = Field(
+        default=(
+            "dim_clients,dim_costing,dim_delivery_cost,dim_products,dim_resource,"
+            "dim_stores,fct_deliveries,fct_order_margin,fct_orders_sales,"
+            "budget_orders_sales,fct_order_product"
+        ),
+        alias="CURIE_ICEBERG_SOURCE_TABLES",
+    )
+
+    iceberg_catalog_endpoint: str = Field(
+        default="https://lakekeeper.local/catalog",
+        alias="CURIE_ICEBERG_CATALOG_ENDPOINT",
+    )
+    iceberg_warehouse: str = Field(default="gold", alias="CURIE_ICEBERG_WAREHOUSE")
+    iceberg_namespace: str = Field(default="gold", alias="CURIE_ICEBERG_NAMESPACE")
+    iceberg_oauth_token_url: str = Field(
+        default="https://login.microsoftonline.com/2ffd8fbf-1421-46ed-9e6b-021c955dbe34/oauth2/v2.0/token",
+        alias="CURIE_ICEBERG_OAUTH_TOKEN_URL",
+    )
+    iceberg_oauth_scope: str = Field(
+        default="api://4120baf5-d479-464e-8c83-a96b5d475fdf/.default",
+        alias="CURIE_ICEBERG_OAUTH_SCOPE",
+    )
+    iceberg_client_id: SecretStr | None = Field(
+        default=None, alias="CURIE_LAKEKEEPER_CLIENT_ID"
+    )
+    iceberg_client_secret: SecretStr | None = Field(
+        default=None, alias="CURIE_LAKEKEEPER_CLIENT_SECRET"
+    )
+    iceberg_cache_root: Path = Field(
+        default=REPO_ROOT / "data" / "dev-iceberg-cache",
+        alias="CURIE_ICEBERG_CACHE_ROOT",
+    )
+    iceberg_cache_current: Path = Field(
+        default=REPO_ROOT / "data" / "dev-iceberg-cache" / "current",
+        alias="CURIE_ICEBERG_CACHE_CURRENT",
+    )
+    iceberg_refresh_container_prefix: str = Field(
+        default="curie-iceberg-cache-refresh",
+        alias="CURIE_ICEBERG_REFRESH_CONTAINER_PREFIX",
+    )
 
     minio_endpoint: str = Field(
         default="https://s3.minio.local", alias="CURIE_MINIO_ENDPOINT"
@@ -133,6 +174,14 @@ class Settings(BaseSettings):
         ]
 
     @property
+    def iceberg_source_tables(self) -> list[str]:
+        return [
+            item.strip()
+            for item in self.iceberg_source_tables_csv.split(",")
+            if item.strip()
+        ]
+
+    @property
     def cache_refresh_extra_hosts(self) -> list[str]:
         explicit_hosts = [
             item.strip()
@@ -144,6 +193,7 @@ class Settings(BaseSettings):
         if self.upstream_host_ip:
             return [
                 f"ucatalog.local:{self.upstream_host_ip}",
+                f"lakekeeper.local:{self.upstream_host_ip}",
                 f"s3.minio.local:{self.upstream_host_ip}",
                 f"minio.local:{self.upstream_host_ip}",
             ]

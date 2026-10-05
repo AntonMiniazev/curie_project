@@ -63,3 +63,50 @@ def refresh_cache_endpoint(
         message=f"Cache refresh job started: {job_id}",
         job_id=job_id,
     )
+
+
+@router.get(
+    "/status_iceberg",
+    response_model=CacheStatusResponse,
+    status_code=status.HTTP_200_OK,
+)
+def get_iceberg_cache_status() -> CacheStatusResponse:
+    settings = get_settings()
+    manifest_path = Path(settings.iceberg_cache_current) / "manifest.json"
+    if not manifest_path.exists():
+        return CacheStatusResponse(configured=False, active_release_id=None, tables=[])
+    try:
+        with manifest_path.open(encoding="utf-8") as file:
+            manifest_data = json.load(file)
+    except JSONDecodeError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Iceberg cache manifest is not valid JSON.",
+        ) from exc
+    return CacheStatusResponse(
+        configured=True,
+        active_release_id=manifest_data.get("release_id"),
+        tables=manifest_data.get("tables", []),
+    )
+
+
+@router.post(
+    "/refresh_iceberg",
+    response_model=CacheRefreshAcceptedResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+)
+def refresh_iceberg_cache_endpoint(
+    _: Annotated[None, Depends(require_admin_api_key)],
+) -> CacheRefreshAcceptedResponse:
+    try:
+        job_id = trigger_cache_refresh_job("iceberg")
+    except RuntimeError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(exc),
+        ) from exc
+    return CacheRefreshAcceptedResponse(
+        status="accepted",
+        message=f"Iceberg cache refresh job started: {job_id}",
+        job_id=job_id,
+    )

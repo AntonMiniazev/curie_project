@@ -68,10 +68,55 @@ jobs:
       - name: Decrypt and copy prod env
         run: |
           mkdir -p .deploy
+          umask 077
           sops --decrypt \
             --input-type dotenv \
             --output-type dotenv \
             infra/env/curie-prod.sops.env > .deploy/curie-prod.env
+          lakekeeper_client_id="$(az keyvault secret show --vault-name az-ampere-kv --name ampere-iceberg-curie-clientid --query value --output tsv)"
+          lakekeeper_client_secret="$(az keyvault secret show --vault-name az-ampere-kv --name ampere-iceberg-curie-secret --query value --output tsv)"
+          minio_access_key="$(az keyvault secret show --vault-name az-ampere-kv --name ampere-iceberg-minio-access-key --query value --output tsv)"
+          minio_secret_key="$(az keyvault secret show --vault-name az-ampere-kv --name ampere-iceberg-minio-secret-key --query value --output tsv)"
+          echo "::add-mask::$lakekeeper_client_id"
+          echo "::add-mask::$lakekeeper_client_secret"
+          echo "::add-mask::$minio_access_key"
+          echo "::add-mask::$minio_secret_key"
+          export CURIE_LAKEKEEPER_CLIENT_ID="$lakekeeper_client_id"
+          export CURIE_LAKEKEEPER_CLIENT_SECRET="$lakekeeper_client_secret"
+          export CURIE_MINIO_ACCESS_KEY="$minio_access_key"
+          export CURIE_MINIO_SECRET_KEY="$minio_secret_key"
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          env_file = Path('.deploy/curie-prod.env')
+          updates = {
+              key: os.environ[key]
+              for key in (
+                  'CURIE_LAKEKEEPER_CLIENT_ID',
+                  'CURIE_LAKEKEEPER_CLIENT_SECRET',
+                  'CURIE_MINIO_ACCESS_KEY',
+                  'CURIE_MINIO_SECRET_KEY',
+              )
+          }
+          lines = env_file.read_text(encoding='utf-8').splitlines()
+          written = set()
+          output = []
+          for line in lines:
+              key = line.partition('=')[0]
+              if key in updates:
+                  if key not in written:
+                      output.append(f'{key}={updates[key]}')
+                      written.add(key)
+              else:
+                  output.append(line)
+          for key, value in updates.items():
+              if key not in written:
+                  output.append(f'{key}={value}')
+          env_file.write_text('\n'.join(output) + '\n', encoding='utf-8')
+          PY
+          unset lakekeeper_client_id lakekeeper_client_secret minio_access_key minio_secret_key
+          unset CURIE_LAKEKEEPER_CLIENT_ID CURIE_LAKEKEEPER_CLIENT_SECRET CURIE_MINIO_ACCESS_KEY CURIE_MINIO_SECRET_KEY
           chmod 600 .deploy/curie-prod.env
           ssh -i ~/.ssh/curie_deploy_key "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST" \
             "mkdir -p $CURIE_DEPLOY_DIR/env && chmod 700 $CURIE_DEPLOY_DIR/env"
