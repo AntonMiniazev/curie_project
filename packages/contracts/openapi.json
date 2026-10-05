@@ -136,6 +136,76 @@
         }
       }
     },
+    "/api/cache/status_iceberg": {
+      "get": {
+        "tags": [
+          "cache"
+        ],
+        "summary": "Get Iceberg Cache Status",
+        "operationId": "get_iceberg_cache_status_api_cache_status_iceberg_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CacheStatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cache/refresh_iceberg": {
+      "post": {
+        "tags": [
+          "cache"
+        ],
+        "summary": "Refresh Iceberg Cache Endpoint",
+        "operationId": "refresh_iceberg_cache_endpoint_api_cache_refresh_iceberg_post",
+        "parameters": [
+          {
+            "name": "X-Curie-Admin-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Curie-Admin-Key"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CacheRefreshAcceptedResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/auth/roles": {
       "get": {
         "tags": [
