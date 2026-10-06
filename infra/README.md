@@ -67,7 +67,7 @@ Ubuntu server:   100.86.133.66
 Hetzner server:  100.65.42.72
 ```
 
-Airflow should call cache refresh through Nginx over the Curie server Tailscale address, for example `http://<curie-tailscale-ip>/api/cache/refresh`, not the public HTTPS domain and not the raw backend port.
+Airflow should call cache refresh through Nginx over the Curie server Tailscale address, for example `http://<curie-tailscale-ip>/api/cache/refresh`. This compatibility endpoint refreshes the Iceberg cache. The explicit `/api/cache/refresh_iceberg` endpoint does the same.
 
 PostgreSQL remains bound to loopback in Docker, but Nginx exposes a TCP stream proxy on the Curie server Tailnet address for explicitly allowed Tailnet machines:
 
@@ -279,7 +279,7 @@ If no backup exists, recreate application users and trigger a cache refresh.
 Cache path:
 
 ```text
-/var/lib/curie/cache/current
+/var/lib/curie/iceberg-cache/current
 ```
 
 PostgreSQL data is stored in the Docker volume:

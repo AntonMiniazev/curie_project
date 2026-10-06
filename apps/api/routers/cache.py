@@ -17,7 +17,7 @@ router = APIRouter(prefix="/api/cache", tags=["cache"])
 )
 def get_cache_status() -> CacheStatusResponse:
     settings = get_settings()
-    manifest_path = Path(settings.cache_current) / "manifest.json"
+    manifest_path = Path(settings.iceberg_cache_current) / "manifest.json"
 
     if not manifest_path.exists():
         return CacheStatusResponse(
@@ -51,7 +51,7 @@ def refresh_cache_endpoint(
     _: Annotated[None, Depends(require_admin_api_key)],
 ) -> CacheRefreshAcceptedResponse:
     try:
-        job_id = trigger_cache_refresh_job()
+        job_id = trigger_cache_refresh_job("iceberg")
     except RuntimeError as exc:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

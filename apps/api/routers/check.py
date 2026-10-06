@@ -3,7 +3,7 @@ import json
 from ..core.config import get_settings
 
 settings = get_settings()
-manifest_path = Path(settings.cache_current) / "manifest.json"
+manifest_path = Path(settings.iceberg_cache_current) / "manifest.json"
 
 if not manifest_path.exists():
     print(

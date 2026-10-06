@@ -32,8 +32,6 @@ services:
       - ./env/curie-dev.env
     environment:
       CURIE_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      CURIE_CACHE_ROOT: /app/data/cache
-      CURIE_CACHE_CURRENT: /app/data/cache/current
       CURIE_CACHE_REFRESH_ENABLED: "true"
       CURIE_CACHE_REFRESH_IMAGE: ${CURIE_IMAGE:-curie-api:dev}
       CURIE_CACHE_REFRESH_VOLUMES_FROM: curie-api-dev
@@ -44,7 +42,6 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ../data/dev-cache:/app/data/cache
       - ../data/dev-iceberg-cache:/app/data/iceberg-cache
       - /var/run/docker.sock:/var/run/docker.sock
     extra_hosts:
@@ -55,25 +52,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-
-  cache-refresh:
-    image: ${CURIE_IMAGE:-curie-api:dev}
-    build:
-      context: ..
-      dockerfile: Dockerfile
-    profiles: ["cache"]
-    env_file:
-      - ./env/curie-dev.env
-    environment:
-      CURIE_CACHE_ROOT: /app/data/cache
-      CURIE_CACHE_CURRENT: /app/data/cache/current
-    command: ["uv", "run", "python", "-m", "apps.api.cache.refresh"]
-    volumes:
-      - ../data/dev-cache:/app/data/cache
-    extra_hosts:
-      - "ucatalog.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
-      - "s3.minio.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
-      - "minio.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
 
   iceberg-cache-refresh:
     image: ${CURIE_IMAGE:-curie-api:dev}
@@ -103,7 +81,7 @@ services:
     restart: unless-stopped
     environment:
       APP_ENV: dev
-      CURIE_CACHE_CURRENT: /app/data/cache/current
+      CURIE_CACHE_CURRENT: /app/data/iceberg-cache/current
       CURIE_JWT_SECRET_KEY: ${CURIE_JWT_SECRET_KEY}
       CURIE_JWT_ALGORITHM: ${CURIE_JWT_ALGORITHM:-HS256}
       CURIE_AUTH_ACCESS_COOKIE_NAME: ${CURIE_AUTH_ACCESS_COOKIE_NAME:-curie_access_token}
@@ -114,7 +92,7 @@ services:
     ports:
       - "8501:8501"
     volumes:
-      - ../data/dev-cache:/app/data/cache:ro
+      - ../data/dev-iceberg-cache:/app/data/iceberg-cache:ro
 
 volumes:
   curie-postgres-dev-data:

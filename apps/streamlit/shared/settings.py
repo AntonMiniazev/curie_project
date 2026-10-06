@@ -1,7 +1,7 @@
 """Environment-driven settings for Streamlit reporting apps.
 
 The reporting process reads only Curie's local cache directory. Local
-development uses `data/dev-cache/current`; Docker/production should override it
+development uses `data/dev-iceberg-cache/current`; Docker/production should override it
 with `CURIE_CACHE_CURRENT`.
 """
 
@@ -16,7 +16,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 
 def _default_cache_current() -> Path:
     """Return the repo-local cache path used by Windows/root-venv development."""
-    return REPO_ROOT / "data" / "dev-cache" / "current"
+    return REPO_ROOT / "data" / "dev-iceberg-cache" / "current"
 
 
 class StreamlitSettings(BaseSettings):
