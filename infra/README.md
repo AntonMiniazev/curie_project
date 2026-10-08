@@ -34,6 +34,8 @@ docker compose --env-file infra/env/curie-dev.env -f infra/compose.dev.yml --pro
 
 Production is deployed by GitHub Actions to `/opt/curie` on `curie-server`. The workflow copies Compose, Nginx, PostgreSQL init files, and the decrypted production env file, then runs migrations and restarts services.
 
+Task 16 Flight SQL acceptance uses the official ADBC driver in the API image. The deploy workflow reads `ampere-flight-sql-token` from `az-ampere-kv` into the protected server env file. Grant the GitHub deployment service principal (`curie-github-actions-sops`) `Key Vault Secrets User` on that secret before deploying. The API container has `CURIE_FLIGHTSQL_URI` set to `flightsql://ampere-flight-sql.tail8f7784.ts.net:8815?transport=tcp`. On `curie-server`, run `cd /opt/curie && docker compose --env-file env/curie-prod.env -f compose.yml exec api uv run python -m apps.api.cache.validate_flightsql` after the new image deploys. This prints bounded query results and never prints the token. Keep the Iceberg cache active until this acceptance gate succeeds.
+
 The public production routes are:
 
 ```text

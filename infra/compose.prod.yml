@@ -48,6 +48,8 @@ services:
       CURIE_CACHE_REFRESH_NETWORK: curie-prod_default
       CURIE_ICEBERG_CACHE_ROOT: /app/data/iceberg-cache
       CURIE_ICEBERG_CACHE_CURRENT: /app/data/iceberg-cache/current
+      CURIE_FLIGHTSQL_URI: flightsql://ampere-flight-sql.tail8f7784.ts.net:8815?transport=tcp
+      CURIE_FLIGHTSQL_TIMEOUT_SECONDS: "30"
       CURIE_UPSTREAM_HOST_IP: ${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}
     ports:
       - "${CURIE_API_PORT:-127.0.0.1:8000}:8000"

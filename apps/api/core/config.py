@@ -119,6 +119,14 @@ class Settings(BaseSettings):
         alias="CURIE_ICEBERG_REFRESH_CONTAINER_PREFIX",
     )
 
+    flightsql_uri: str | None = Field(default=None, alias="CURIE_FLIGHTSQL_URI")
+    flightsql_auth_token: SecretStr | None = Field(
+        default=None, alias="CURIE_FLIGHTSQL_AUTH_TOKEN"
+    )
+    flightsql_timeout_seconds: int = Field(
+        default=30, ge=1, alias="CURIE_FLIGHTSQL_TIMEOUT_SECONDS"
+    )
+
     minio_endpoint: str = Field(
         default="https://s3.minio.local", alias="CURIE_MINIO_ENDPOINT"
     )
