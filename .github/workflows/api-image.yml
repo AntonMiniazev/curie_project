@@ -82,3 +82,13 @@ jobs:
             ${{ env.STREAMLIT_IMAGE_NAME }}:latest
           cache-from: type=gha,scope=streamlit
           cache-to: type=gha,scope=streamlit,mode=max
+
+      - name: Record published source commit
+        run: printf '%s\n' "$IMAGE_TAG" > image-tag.txt
+
+      - name: Upload published image tag
+        uses: actions/upload-artifact@v4
+        with:
+          name: curie-image-tag
+          path: image-tag.txt
+          if-no-files-found: error

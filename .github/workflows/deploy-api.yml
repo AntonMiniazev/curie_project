@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 env:
   CURIE_DEPLOY_HOST: 46.62.243.229
@@ -25,10 +26,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Download published image tag
+        if: github.event_name == 'workflow_run'
+        uses: actions/download-artifact@v4
+        with:
+          name: curie-image-tag
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: .deploy
+
+      - name: Resolve published source commit
+        id: image
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = workflow_run ]; then
+            image_tag="$(tr -d '\r\n' < .deploy/image-tag.txt)"
+            if [[ ! "$image_tag" =~ ^[0-9a-f]{40}$ ]]; then
+              echo 'Published image tag is missing or invalid.' >&2
+              exit 1
+            fi
+            echo "sha=$image_tag" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Checkout deployment files
         uses: actions/checkout@v5
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ steps.image.outputs.sha || github.sha }}
 
       - name: Authenticate to Azure for SOPS
         uses: azure/login@v2
@@ -85,7 +107,7 @@ jobs:
           test -n "$flightsql_token"
           echo "::add-mask::$flightsql_token"
           export CURIE_FLIGHTSQL_AUTH_TOKEN="$flightsql_token"
-          image_tag="${{ github.event.workflow_run.head_sha }}"
+          image_tag="${{ steps.image.outputs.sha }}"
           if [ -n "$image_tag" ]; then
             export CURIE_IMAGE="ghcr.io/antonminiazev/curie-api:$image_tag"
             export CURIE_WEB_IMAGE="ghcr.io/antonminiazev/curie-web:$image_tag"
