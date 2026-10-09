@@ -1,4 +1,4 @@
-"""Flight SQL serving-cache controls and temporary Airflow URL aliases."""
+"""Flight SQL serving-cache controls."""
 
 import json
 from json import JSONDecodeError
@@ -20,10 +20,8 @@ router = APIRouter(prefix="/api/cache", tags=["cache"])
 
 
 @router.get("/status_flightsql", response_model=FlightCacheStatusResponse)
-@router.get("/status", response_model=FlightCacheStatusResponse, deprecated=True)
-@router.get("/status_iceberg", response_model=FlightCacheStatusResponse, deprecated=True)
 def get_flightsql_cache_status() -> FlightCacheStatusResponse:
-    """Report the active DuckDB release, including for the older Airflow URLs."""
+    """Report the active DuckDB release."""
     settings = get_settings()
     state_path = settings.serving_cache_root / "status.json"
     state = {}
@@ -80,18 +78,10 @@ def get_flightsql_cache_status() -> FlightCacheStatusResponse:
     "/refresh_flightsql", response_model=CacheRefreshAcceptedResponse,
     status_code=status.HTTP_202_ACCEPTED,
 )
-@router.post(
-    "/refresh", response_model=CacheRefreshAcceptedResponse,
-    status_code=status.HTTP_202_ACCEPTED, deprecated=True,
-)
-@router.post(
-    "/refresh_iceberg", response_model=CacheRefreshAcceptedResponse,
-    status_code=status.HTTP_202_ACCEPTED, deprecated=True,
-)
 def refresh_flightsql_cache_endpoint(
     _: Annotated[None, Depends(require_admin_api_key)],
 ) -> CacheRefreshAcceptedResponse:
-    """Start a Flight SQL refresh even when Airflow calls an older URL."""
+    """Start a Flight SQL refresh."""
     try:
         job_id = trigger_cache_refresh_job()
     except RuntimeError as exc:

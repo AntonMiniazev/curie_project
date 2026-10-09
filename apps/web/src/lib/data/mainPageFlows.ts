@@ -28,7 +28,7 @@ export const projectFlows: ProjectFlow[] = [
 		id: 'ampere',
 		name: 'Ampere',
 		description:
-			'Data platform project: synthetic operational data is generated, landed, transformed through Bronze/Silver/Gold layers, governed through Unity Catalog OSS, and served to BI consumers.',
+			'Data platform project: synthetic operational data is generated, landed, transformed through Bronze/Silver/Gold layers, governed through Lakekeeper, and served to BI consumers.',
 		nodes: [
 			{
 				id: '1-1',
@@ -59,7 +59,7 @@ export const projectFlows: ProjectFlow[] = [
 					x: 400,
 					y: 100
 				},
-				data: { label: 'Delta Lakehouse on MinIO with Unity Catalog OSS' },
+				data: { label: 'Iceberg Lakehouse on MinIO with Lakekeeper' },
 				style: groupStyle(600, 300),
 				zIndex: 0
 			},
@@ -146,7 +146,7 @@ export const projectFlows: ProjectFlow[] = [
 				id: 'ampere-raw-bronze',
 				source: 'ampere-raw',
 				target: 'ampere-bronze',
-				label: 'Spark + Delta',
+				label: 'Spark ingestion',
 				...defaultEdgeOptions
 			},
 			{
@@ -167,7 +167,7 @@ export const projectFlows: ProjectFlow[] = [
 				id: 'ampere-gold-serving',
 				source: 'ampere-gold',
 				target: 'ampere-cache',
-				label: 'Caching via Polars job',
+				label: 'Flight SQL cache refresh',
 				...defaultEdgeOptions
 			},
 			{
@@ -308,7 +308,7 @@ export const projectFlows: ProjectFlow[] = [
 				source: 'bohr-home',
 				target: 'bohr-curie-runtime',
 				targetHandle: 'from-home-runtime',
-				label: 'UC / MinIO access',
+				label: 'Flight SQL access',
 				...defaultEdgeOptions
 			},
 			{
@@ -420,8 +420,7 @@ export const projectFlows: ProjectFlow[] = [
 							{ id: 'to-airflow', position: Position.Bottom },
 							{ id: 'to-minio', position: Position.Bottom },
 							{ id: 'to-spark-connect', position: Position.Left },
-							{ id: 'to-uc-ui', position: Position.Bottom },
-							{ id: 'to-uc-server', position: Position.Left },
+							{ id: 'to-lakekeeper', position: Position.Left },
 							{ id: 'to-postgres', position: Position.Bottom }
 						],
 						targets: [{ id: 'from-cluster-services', position: Position.Top }]
@@ -455,7 +454,6 @@ export const projectFlows: ProjectFlow[] = [
 					label: 'Prometheus',
 					secondaryLabel: 'Metrics',
 					handles: {
-						sources: [{ id: 'to-kube-control', position: Position.Bottom }],
 						targets: [{ id: 'from-grafana', position: Position.Left }]
 					}
 				},
@@ -537,9 +535,9 @@ export const projectFlows: ProjectFlow[] = [
 				zIndex: 20
 			},
 			{
-				id: 'cluster-unity-catalog-server',
+				id: 'cluster-lakekeeper',
 				data: {
-					label: 'Unity Catalog OSS Server',
+					label: 'Lakekeeper',
 					secondaryLabel: 'Metadata API',
 					handles: {
 						sources: [{ id: 'to-minio', position: Position.Bottom }],
@@ -556,11 +554,11 @@ export const projectFlows: ProjectFlow[] = [
 				id: 'cluster-minio',
 				data: {
 					label: 'MinIO',
-					secondaryLabel: 'Raw + Delta Lake',
+					secondaryLabel: 'Raw + Iceberg Lake',
 					handles: {
 						targets: [
 							{ id: 'from-airflow', position: Position.Right },
-							{ id: 'from-uc', position: Position.Left },
+							{ id: 'from-lakekeeper', position: Position.Left },
 							{ id: 'from-gateway-api', position: Position.Top }
 						]
 					}
@@ -582,13 +580,6 @@ export const projectFlows: ProjectFlow[] = [
 			}
 		],
 		detailEdges: [
-			{
-				id: 'cluster-external-secrets-resources-operator',
-				source: 'cluster-external-secrets-resources',
-				target: 'cluster-external-secrets',
-				label: 'defines stores',
-				...defaultEdgeOptions
-			},
 			{
 				id: 'cluster-cert-manager-gateway-api',
 				source: 'cluster-cert-manager',
@@ -625,18 +616,10 @@ export const projectFlows: ProjectFlow[] = [
 				...defaultEdgeOptions
 			},
 			{
-				id: 'cluster-gateway-api-uc-ui',
+				id: 'cluster-gateway-api-lakekeeper',
 				source: 'cluster-gateway-api',
-				sourceHandle: 'to-uc-ui',
-				target: 'cluster-unity-catalog-ui',
-				label: 'routes UI',
-				...defaultEdgeOptions
-			},
-			{
-				id: 'cluster-gateway-api-uc-server',
-				source: 'cluster-gateway-api',
-				sourceHandle: 'to-uc-server',
-				target: 'cluster-unity-catalog-server',
+				sourceHandle: 'to-lakekeeper',
+				target: 'cluster-lakekeeper',
 				targetHandle: 'from-gateway-api',
 				label: 'routes API',
 				...defaultEdgeOptions
@@ -695,20 +678,12 @@ export const projectFlows: ProjectFlow[] = [
 				...defaultEdgeOptions
 			},
 			{
-				id: 'cluster-uc-minio',
-				source: 'cluster-unity-catalog-server',
+				id: 'cluster-lakekeeper-minio',
+				source: 'cluster-lakekeeper',
 				sourceHandle: 'to-minio',
 				target: 'cluster-minio',
-				targetHandle: 'from-uc',
-				label: 'catalog government',
-				...defaultEdgeOptions
-			},
-			{
-				id: 'cluster-prometheus-kube-control',
-				source: 'cluster-prometheus',
-				sourceHandle: 'to-kube-control',
-				target: 'cluster-kube-control',
-				label: 'scrapes metrics',
+				targetHandle: 'from-lakekeeper',
+				label: 'catalog metadata',
 				...defaultEdgeOptions
 			},
 			{
@@ -734,7 +709,7 @@ export const projectFlows: ProjectFlow[] = [
 		id: 'curie',
 		name: 'Curie',
 		description:
-			'Full-stack reporting project: FastAPI, PostgreSQL, Polars cache refresh workers, SvelteKit frontend, Streamlit report apps, and GitHub Actions deployment to Hetzner.',
+			'Full-stack reporting project: FastAPI, PostgreSQL, Flight SQL cache refresh workers, SvelteKit frontend, Streamlit report apps, and GitHub Actions deployment to Hetzner.',
 		nodes: [
 			{
 				id: 'curie-user',
@@ -747,11 +722,11 @@ export const projectFlows: ProjectFlow[] = [
 				id: 'curie-web',
 				data: {
 					label: 'SvelteKit frontend',
-					secondaryLabel: 'Main site + Streamlit',
+					secondaryLabel: 'Portal and report pages',
 					handles: {
 						sources: [
 							{ id: 'to-api', position: Position.Right },
-							{ id: 'to-cache-storage-web', position: Position.Bottom }
+							{ id: 'to-streamlit', position: Position.Bottom }
 						],
 						targets: [{ id: 'from-user', position: Position.Left }]
 					}
@@ -759,6 +734,20 @@ export const projectFlows: ProjectFlow[] = [
 				position: { x: 320, y: 150 },
 				sourcePosition: Position.Right,
 				targetPosition: Position.Left
+			},
+			{
+				id: 'curie-streamlit',
+				data: {
+					label: 'Streamlit reports',
+					secondaryLabel: 'Scoped DuckDB queries',
+					handles: {
+						sources: [{ id: 'to-cache-storage', position: Position.Right }],
+						targets: [{ id: 'from-web', position: Position.Top }]
+					}
+				},
+				position: { x: 320, y: 300 },
+				sourcePosition: Position.Right,
+				targetPosition: Position.Top
 			},
 			{
 				id: 'curie-ampere-pipeline',
@@ -798,7 +787,7 @@ export const projectFlows: ProjectFlow[] = [
 				id: 'curie-cache',
 				data: {
 					label: 'Cache refresh worker',
-					secondaryLabel: 'Polars + Delta reads',
+					secondaryLabel: 'ADBC Flight SQL',
 					handles: {
 						sources: [{ id: 'to-cache-storage', position: Position.Left }],
 						targets: [{ id: 'from-api', position: Position.Right }]
@@ -812,12 +801,12 @@ export const projectFlows: ProjectFlow[] = [
 				id: 'curie-cache-storage',
 				data: {
 					label: 'Cache storage',
-					secondaryLabel: 'Parquet files',
+					secondaryLabel: 'DuckDB release',
 					handles: {
 						sources: [],
 						targets: [
 							{ id: 'from-cache-refresh', position: Position.Right },
-							{ id: 'from-web', position: Position.Left }
+							{ id: 'from-streamlit', position: Position.Left }
 						]
 					}
 				},
@@ -878,11 +867,20 @@ export const projectFlows: ProjectFlow[] = [
 				...defaultEdgeOptions
 			},
 			{
-				id: 'curie-cache-storage-web',
+				id: 'curie-web-streamlit',
 				source: 'curie-web',
-				sourceHandle: 'to-cache-storage-web',
-				target: 'curie-cache-storage',
+				sourceHandle: 'to-streamlit',
+				target: 'curie-streamlit',
 				targetHandle: 'from-web',
+				label: 'embeds reports',
+				...defaultEdgeOptions
+			},
+			{
+				id: 'curie-streamlit-cache-storage',
+				source: 'curie-streamlit',
+				sourceHandle: 'to-cache-storage',
+				target: 'curie-cache-storage',
+				targetHandle: 'from-streamlit',
 				label: 'reads cache',
 				...defaultEdgeOptions
 			}

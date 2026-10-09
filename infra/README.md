@@ -53,7 +53,7 @@ docker compose --env-file env/curie-prod.env -f compose.yml exec -T api uv run p
 
 To start the job from an authorized Tailnet machine, use the admin protected POST endpoint. Watch the status until `running` is false and `state` is `succeeded`; verify `active_release_id` and all eight table counts.
 
-After deployment, verify login and all three reports through HTTPS. The old `/var/lib/curie/iceberg-cache` directory is no longer mounted; inspect it before reclaiming its disk space.
+After deployment, verify login and all three reports through HTTPS. The active DuckDB release is stored under `/var/lib/curie/serving-cache`.
 
 The public production routes are:
 
@@ -88,7 +88,7 @@ Ubuntu server:   100.86.133.66
 Hetzner server:  100.65.42.72
 ```
 
-Airflow calls cache refresh through Nginx over the Curie server Tailscale address. `/api/cache/refresh`, `/api/cache/refresh_iceberg`, and `/api/cache/refresh_flightsql` all start the Flight SQL refresh; the old URLs are compatibility aliases until the DAG changes.
+Airflow calls `/api/cache/refresh_flightsql` and `/api/cache/status_flightsql` through Nginx over the Curie server Tailscale address.
 
 PostgreSQL remains bound to loopback in Docker, but Nginx exposes a TCP stream proxy on the Curie server Tailnet address for explicitly allowed Tailnet machines:
 

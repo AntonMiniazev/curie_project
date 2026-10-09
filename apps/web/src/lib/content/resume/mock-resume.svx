@@ -261,8 +261,8 @@
 					Built an end-to-end learning data platform
 					(<a href="https://ampere-data.work/" target="_blank" rel="noreferrer">ampere-data.work</a>)
 					that generates synthetic operational data and transforms it through Bronze, Silver,
-					and Gold Delta Lake layers using PySpark, Polars, DuckDB, Airflow, and dbt, with Unity
-					Catalog OSS governance and BI consumption.
+					and Gold Iceberg layers using PySpark, DuckDB, Airflow, and dbt, with Lakekeeper
+					catalog governance and BI consumption.
 				</li>
 				<li>
 					Automated a connected Kubernetes environment spanning a home-lab Ubuntu server and

@@ -11,9 +11,9 @@ export const projectFlowMeta: ProjectFlowMeta[] = [
 		id: 'ampere',
 		name: 'Ampere',
 		repositoryUrl: 'https://github.com/antonminiazev/ampere_project',
-		stack: 'Delta Lake, Python (PySpark, Polars, DuckDb), Airflow, dbt, Unity Catalog OSS',
+		stack: 'Apache Iceberg, Python (PySpark, DuckDB), Airflow, dbt, Lakekeeper',
 		description:
-			'Data platform project: synthetic operational data is generated, landed, transformed through Bronze/Silver/Gold layers, governed through Unity Catalog OSS, and served to BI consumers.'
+			'Data platform project: synthetic operational data is generated, landed, transformed through Bronze/Silver/Gold layers, governed through Lakekeeper, and served to BI consumers.'
 	},
 	{
 		id: 'bohr',
@@ -29,6 +29,6 @@ export const projectFlowMeta: ProjectFlowMeta[] = [
 		repositoryUrl: 'https://github.com/antonminiazev/curie_project',
 		stack: 'FastAPI, SvelteKit, Streamlit',
 		description:
-			'Reporting application project: authenticated SvelteKit frontend and FastAPI backend expose governed reports backed by a parquet cache refreshed from the Ampere gold layer.'
+			'Reporting application project: authenticated SvelteKit frontend and FastAPI backend expose governed reports backed by a DuckDB cache refreshed from Ampere Gold through Flight SQL.'
 	}
 ];

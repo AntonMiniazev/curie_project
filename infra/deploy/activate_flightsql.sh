@@ -4,11 +4,6 @@ set -euo pipefail
 cd /opt/curie
 compose=(docker compose --env-file env/curie-prod.env -f compose.yml)
 
-if [ -n "$(docker ps --quiet --filter label=curie.job=iceberg-cache-refresh)" ]; then
-  echo "An old Iceberg refresh is still running; deployment stopped before changing services." >&2
-  exit 1
-fi
-
 "${compose[@]}" pull web api streamlit
 "${compose[@]}" run --rm --no-deps api sh -c 'cd apps/api && uv run alembic upgrade head'
 "${compose[@]}" up -d --no-deps --force-recreate api

@@ -8,17 +8,17 @@ Person(dev, "Developer", "Builds, deploys, and operates Curie")
 
 System_Ext(github, "GitHub + GHCR", "Source control, GitHub Actions, and container registry")
 System_Ext(keyvault, "Azure Key Vault", "KMS used by SOPS encrypted production environment files")
-System_Ext(ampere, "Ampere Gold Layer", "Unity Catalog OSS metadata and MinIO-backed Delta/Parquet data")
+System_Ext(ampere, "Ampere Gold Layer", "Flight SQL access to governed Iceberg Gold aggregates")
 
 System_Boundary(curieServer, "Hetzner Curie Server") {
-    System(curieRuntime, "Curie Docker Runtime", "Docker Compose runtime for API, PostgreSQL, cache refresh jobs, and future web/Streamlit services")
+    System(curieRuntime, "Curie Docker Runtime", "Docker Compose runtime for web, API, PostgreSQL, Streamlit, and isolated cache refresh jobs")
 }
 
 Rel(visitor, curieRuntime, "Uses public website and Curie reporting UI", "HTTPS")
 Rel(dev, github, "Pushes code and triggers deploys", "Git")
 Rel(github, curieRuntime, "Publishes and deploys images", "GitHub Actions")
 Rel(curieRuntime, keyvault, "Uses decrypted SOPS env values prepared by CI", "SOPS")
-Rel(curieRuntime, ampere, "Builds local report cache from governed Gold tables", "UC API + MinIO")
+Rel(curieRuntime, ampere, "Builds local DuckDB cache from governed Gold aggregates", "Flight SQL")
 
 SHOW_LEGEND()
 @enduml

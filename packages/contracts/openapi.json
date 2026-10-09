@@ -66,59 +66,13 @@
         }
       }
     },
-    "/api/cache/status_iceberg": {
-      "get": {
-        "tags": [
-          "cache"
-        ],
-        "summary": "Get Flightsql Cache Status",
-        "description": "Report the active DuckDB release, including for the older Airflow URLs.",
-        "operationId": "get_flightsql_cache_status_api_cache_status_iceberg_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FlightCacheStatusResponse"
-                }
-              }
-            }
-          }
-        },
-        "deprecated": true
-      }
-    },
-    "/api/cache/status": {
-      "get": {
-        "tags": [
-          "cache"
-        ],
-        "summary": "Get Flightsql Cache Status",
-        "description": "Report the active DuckDB release, including for the older Airflow URLs.",
-        "operationId": "get_flightsql_cache_status_api_cache_status_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FlightCacheStatusResponse"
-                }
-              }
-            }
-          }
-        },
-        "deprecated": true
-      }
-    },
     "/api/cache/status_flightsql": {
       "get": {
         "tags": [
           "cache"
         ],
         "summary": "Get Flightsql Cache Status",
-        "description": "Report the active DuckDB release, including for the older Airflow URLs.",
+        "description": "Report the active DuckDB release.",
         "operationId": "get_flightsql_cache_status_api_cache_status_flightsql_get",
         "responses": {
           "200": {
@@ -134,115 +88,13 @@
         }
       }
     },
-    "/api/cache/refresh_iceberg": {
-      "post": {
-        "tags": [
-          "cache"
-        ],
-        "summary": "Refresh Flightsql Cache Endpoint",
-        "description": "Start a Flight SQL refresh even when Airflow calls an older URL.",
-        "operationId": "refresh_flightsql_cache_endpoint_api_cache_refresh_iceberg_post",
-        "deprecated": true,
-        "parameters": [
-          {
-            "name": "X-Curie-Admin-Key",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Curie-Admin-Key"
-            }
-          }
-        ],
-        "responses": {
-          "202": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CacheRefreshAcceptedResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/cache/refresh": {
-      "post": {
-        "tags": [
-          "cache"
-        ],
-        "summary": "Refresh Flightsql Cache Endpoint",
-        "description": "Start a Flight SQL refresh even when Airflow calls an older URL.",
-        "operationId": "refresh_flightsql_cache_endpoint_api_cache_refresh_post",
-        "deprecated": true,
-        "parameters": [
-          {
-            "name": "X-Curie-Admin-Key",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Curie-Admin-Key"
-            }
-          }
-        ],
-        "responses": {
-          "202": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CacheRefreshAcceptedResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/cache/refresh_flightsql": {
       "post": {
         "tags": [
           "cache"
         ],
         "summary": "Refresh Flightsql Cache Endpoint",
-        "description": "Start a Flight SQL refresh even when Airflow calls an older URL.",
+        "description": "Start a Flight SQL refresh.",
         "operationId": "refresh_flightsql_cache_endpoint_api_cache_refresh_flightsql_post",
         "parameters": [
           {

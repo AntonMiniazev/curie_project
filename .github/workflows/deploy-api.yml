@@ -120,15 +120,11 @@ jobs:
           env_file = Path('.deploy/curie-prod.env')
           updates = {'CURIE_FLIGHTSQL_AUTH_TOKEN': os.environ['CURIE_FLIGHTSQL_AUTH_TOKEN']}
           updates.update({key: os.environ[key] for key in ('CURIE_IMAGE', 'CURIE_WEB_IMAGE', 'CURIE_STREAMLIT_IMAGE') if key in os.environ})
-          obsolete_prefixes = ('CURIE_LAKEKEEPER_', 'CURIE_MINIO_', 'CURIE_ICEBERG_')
-          obsolete_keys = {'CURIE_UPSTREAM_HOST_IP'}
           lines = env_file.read_text(encoding='utf-8').splitlines()
           written = set()
           output = []
           for line in lines:
               key = line.partition('=')[0]
-              if key.startswith(obsolete_prefixes) or key in obsolete_keys:
-                  continue
               if key in updates:
                   if key not in written:
                       output.append(f'{key}={updates[key]}')
