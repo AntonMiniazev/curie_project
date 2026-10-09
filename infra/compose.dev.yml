@@ -28,48 +28,45 @@ services:
     container_name: curie-api-dev
     profiles: ["api"]
     restart: unless-stopped
+    command:
+      - sh
+      - -ec
+      - cd /app/apps/api && uv run alembic upgrade head && cd /app && exec uv run uvicorn apps.api.main:app --host 0.0.0.0 --port 8000
     env_file:
       - ./env/curie-dev.env
     environment:
       CURIE_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       CURIE_CACHE_REFRESH_ENABLED: "true"
       CURIE_CACHE_REFRESH_IMAGE: ${CURIE_IMAGE:-curie-api:dev}
-      CURIE_CACHE_REFRESH_VOLUMES_FROM: curie-api-dev
       CURIE_CACHE_REFRESH_NETWORK: curie-dev_default
-      CURIE_ICEBERG_CACHE_ROOT: /app/data/iceberg-cache
-      CURIE_ICEBERG_CACHE_CURRENT: /app/data/iceberg-cache/current
-      CURIE_UPSTREAM_HOST_IP: ${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}
+      CURIE_SERVING_CACHE_ROOT: /app/data/serving-cache
+      CURIE_SERVING_CACHE_CURRENT: /app/data/serving-cache/current
+      CURIE_SERVING_HOST_CACHE_DIR: curie-dev-serving-cache
     ports:
       - "8000:8000"
     volumes:
-      - ../data/dev-iceberg-cache:/app/data/iceberg-cache
+      - curie-dev-serving-cache:/app/data/serving-cache
       - /var/run/docker.sock:/var/run/docker.sock
-    extra_hosts:
-      - "ucatalog.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
-      - "lakekeeper.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
-      - "s3.minio.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
-      - "minio.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
     depends_on:
       postgres:
         condition: service_healthy
 
-  iceberg-cache-refresh:
+  flightsql-cache-refresh:
     image: ${CURIE_IMAGE:-curie-api:dev}
     build:
       context: ..
       dockerfile: Dockerfile
-    profiles: ["iceberg-cache"]
+    profiles: ["flightsql-cache"]
     env_file:
       - ./env/curie-dev.env
     environment:
-      CURIE_ICEBERG_CACHE_ROOT: /app/data/iceberg-cache
-      CURIE_ICEBERG_CACHE_CURRENT: /app/data/iceberg-cache/current
-    command: ["uv", "run", "python", "-m", "apps.api.cache.refresh_iceberg"]
+      CURIE_SERVING_CACHE_ROOT: /app/data/serving-cache
+      CURIE_SERVING_CACHE_CURRENT: /app/data/serving-cache/current
+    command: ["uv", "run", "python", "-m", "apps.api.cache.refresh_flightsql"]
+    mem_limit: 2g
+    cpus: 1.5
     volumes:
-      - ../data/dev-iceberg-cache:/app/data/iceberg-cache
-    extra_hosts:
-      - "lakekeeper.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
-      - "s3.minio.local:${CURIE_UPSTREAM_HOST_IP:-192.168.1.29}"
+      - curie-dev-serving-cache:/app/data/serving-cache
 
   streamlit:
     build:
@@ -81,7 +78,7 @@ services:
     restart: unless-stopped
     environment:
       APP_ENV: dev
-      CURIE_CACHE_CURRENT: /app/data/iceberg-cache/current
+      CURIE_SERVING_CACHE_CURRENT: /app/data/serving-cache/current
       CURIE_JWT_SECRET_KEY: ${CURIE_JWT_SECRET_KEY}
       CURIE_JWT_ALGORITHM: ${CURIE_JWT_ALGORITHM:-HS256}
       CURIE_AUTH_ACCESS_COOKIE_NAME: ${CURIE_AUTH_ACCESS_COOKIE_NAME:-curie_access_token}
@@ -92,7 +89,9 @@ services:
     ports:
       - "8501:8501"
     volumes:
-      - ../data/dev-iceberg-cache:/app/data/iceberg-cache:ro
+      - curie-dev-serving-cache:/app/data/serving-cache:ro
 
 volumes:
   curie-postgres-dev-data:
+  curie-dev-serving-cache:
+    name: curie-dev-serving-cache

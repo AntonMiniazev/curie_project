@@ -2,7 +2,7 @@
 
 ## Overview
 
-Architecture and frontend documentation for Curie, a small full-stack reporting platform that combines a SvelteKit public website, FastAPI backend, PostgreSQL metadata store, Streamlit report dashboards, and a local Parquet serving cache.
+Architecture and frontend documentation for Curie, a small full-stack reporting platform that combines a SvelteKit public website, FastAPI backend, PostgreSQL metadata store, Streamlit report dashboards, and a local serving cache. Task 16 introduces Flight SQL refresh into durable DuckDB releases while the Parquet cache remains for parity.
 
 The diagrams explain how Curie sits between public users and the Ampere data platform, how the runtime containers interact, and where report metadata, authentication, cache refresh, and embedded dashboards fit into the system.
 

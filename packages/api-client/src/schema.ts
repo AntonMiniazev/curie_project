@@ -55,15 +55,19 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/cache/status": {
+    "/api/cache/status_iceberg": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get Cache Status */
-        get: operations["get_cache_status_api_cache_status_get"];
+        /**
+         * Get Flightsql Cache Status
+         * @deprecated
+         * @description Report the active DuckDB release, including for the older Airflow URLs.
+         */
+        get: operations["get_flightsql_cache_status_api_cache_status_iceberg_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -72,32 +76,39 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/cache/refresh": {
+    "/api/cache/status": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * Get Flightsql Cache Status
+         * @deprecated
+         * @description Report the active DuckDB release, including for the older Airflow URLs.
+         */
+        get: operations["get_flightsql_cache_status_api_cache_status_get"];
         put?: never;
-        /** Refresh Cache Endpoint */
-        post: operations["refresh_cache_endpoint_api_cache_refresh_post"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/cache/status_iceberg": {
+    "/api/cache/status_flightsql": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get Iceberg Cache Status */
-        get: operations["get_iceberg_cache_status_api_cache_status_iceberg_get"];
+        /**
+         * Get Flightsql Cache Status
+         * @description Report the active DuckDB release, including for the older Airflow URLs.
+         */
+        get: operations["get_flightsql_cache_status_api_cache_status_flightsql_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -115,8 +126,53 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Refresh Iceberg Cache Endpoint */
-        post: operations["refresh_iceberg_cache_endpoint_api_cache_refresh_iceberg_post"];
+        /**
+         * Refresh Flightsql Cache Endpoint
+         * @deprecated
+         * @description Start a Flight SQL refresh even when Airflow calls an older URL.
+         */
+        post: operations["refresh_flightsql_cache_endpoint_api_cache_refresh_iceberg_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cache/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh Flightsql Cache Endpoint
+         * @deprecated
+         * @description Start a Flight SQL refresh even when Airflow calls an older URL.
+         */
+        post: operations["refresh_flightsql_cache_endpoint_api_cache_refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cache/refresh_flightsql": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Refresh Flightsql Cache Endpoint
+         * @description Start a Flight SQL refresh even when Airflow calls an older URL.
+         */
+        post: operations["refresh_flightsql_cache_endpoint_api_cache_refresh_flightsql_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -300,30 +356,6 @@ export interface components {
             /** Job Id */
             job_id?: string | null;
         };
-        /** CacheStatusResponse */
-        CacheStatusResponse: {
-            /** Configured */
-            configured: boolean;
-            /** Active Release Id */
-            active_release_id: string | null;
-            /** Tables */
-            tables: components["schemas"]["CacheTableStatus"][];
-        };
-        /** CacheTableStatus */
-        CacheTableStatus: {
-            /** Name */
-            name: string;
-            /** Source Table */
-            source_table: string;
-            /** Path */
-            path: string;
-            /** Schema Path */
-            schema_path: string;
-            /** Row Count */
-            row_count: number;
-            /** Checksum */
-            checksum: string;
-        };
         /**
          * CurrentUserResponse
          * @description Response body describing the authenticated user resolved from a valid access token.
@@ -350,6 +382,38 @@ export interface components {
             is_active: boolean;
             /** Is Verified */
             is_verified: boolean;
+        };
+        /** FlightCacheStatusResponse */
+        FlightCacheStatusResponse: {
+            /** Configured */
+            configured: boolean;
+            /** Running */
+            running: boolean;
+            /** Job Id */
+            job_id?: string | null;
+            /** State */
+            state?: string | null;
+            /** Last Failure */
+            last_failure?: string | null;
+            /** Active Release Id */
+            active_release_id?: string | null;
+            /** Active Release Timestamp */
+            active_release_timestamp?: string | null;
+            /** Tables */
+            tables?: components["schemas"]["FlightDatasetStatus"][];
+        };
+        /** FlightDatasetStatus */
+        FlightDatasetStatus: {
+            /** Name */
+            name: string;
+            /** Row Count */
+            row_count: number;
+            /** Date Min */
+            date_min?: string | null;
+            /** Date Max */
+            date_max?: string | null;
+            /** Checksum */
+            checksum?: string | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -531,7 +595,7 @@ export interface operations {
             };
         };
     };
-    get_cache_status_api_cache_status_get: {
+    get_flightsql_cache_status_api_cache_status_iceberg_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -546,12 +610,52 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CacheStatusResponse"];
+                    "application/json": components["schemas"]["FlightCacheStatusResponse"];
                 };
             };
         };
     };
-    refresh_cache_endpoint_api_cache_refresh_post: {
+    get_flightsql_cache_status_api_cache_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlightCacheStatusResponse"];
+                };
+            };
+        };
+    };
+    get_flightsql_cache_status_api_cache_status_flightsql_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlightCacheStatusResponse"];
+                };
+            };
+        };
+    };
+    refresh_flightsql_cache_endpoint_api_cache_refresh_iceberg_post: {
         parameters: {
             query?: never;
             header?: {
@@ -582,27 +686,38 @@ export interface operations {
             };
         };
     };
-    get_iceberg_cache_status_api_cache_status_iceberg_get: {
+    refresh_flightsql_cache_endpoint_api_cache_refresh_post: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                "X-Curie-Admin-Key"?: string | null;
+            };
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
             /** @description Successful Response */
-            200: {
+            202: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CacheStatusResponse"];
+                    "application/json": components["schemas"]["CacheRefreshAcceptedResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
     };
-    refresh_iceberg_cache_endpoint_api_cache_refresh_iceberg_post: {
+    refresh_flightsql_cache_endpoint_api_cache_refresh_flightsql_post: {
         parameters: {
             query?: never;
             header?: {

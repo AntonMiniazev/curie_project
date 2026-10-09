@@ -8,7 +8,7 @@ import pandas as pd
 import polars as pl
 import streamlit as st
 from shared.reporting_ui import current_report_colors
-from shared.access_control import ReportAccess, restrict_store_options
+from shared.report_scope import ReportScope
 from data.query_utils import store_dimension
 from shared.reporting_format import (
     TableColumn,
@@ -17,24 +17,27 @@ from shared.reporting_format import (
 )
 
 
-def store_options() -> list[tuple[str, int | None]]:
+def store_options(scope: ReportScope, domain: str) -> list[tuple[str, int | None]]:
     """Return report store selector options from the cached store dimension."""
-    options: list[tuple[str, int | None]] = [("All stores", None)]
-    for row in store_dimension().iter_rows(named=True):
+    label = "All stores" if scope.can_view_all_stores else "All allowed stores"
+    options: list[tuple[str, int | None]] = [(label, None)]
+    for row in store_dimension(scope, domain).iter_rows(named=True):
         options.append((f"{row['store_name']} ({row['city']})", int(row["store_id"])))
     return options
 
 
-def selected_store_id(access: ReportAccess, key: str = "store") -> int | None:
+def selected_store_id(
+    scope: ReportScope, domain: str, key: str = "store"
+) -> int | None:
     """Render a store selector scoped to the current user's report access."""
-    options = restrict_store_options(store_options(), access)
+    options = store_options(scope, domain)
     if not options:
         return None
 
     selected_label = st.sidebar.selectbox(
         "Store",
         options=[label for label, _ in options],
-        disabled=not access.can_view_all_stores and len(options) == 1,
+        disabled=not scope.can_view_all_stores and len(options) <= 2,
         key=key,
     )
     return dict(options)[selected_label]

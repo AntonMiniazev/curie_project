@@ -66,20 +66,67 @@
         }
       }
     },
-    "/api/cache/status": {
+    "/api/cache/status_iceberg": {
       "get": {
         "tags": [
           "cache"
         ],
-        "summary": "Get Cache Status",
-        "operationId": "get_cache_status_api_cache_status_get",
+        "summary": "Get Flightsql Cache Status",
+        "description": "Report the active DuckDB release, including for the older Airflow URLs.",
+        "operationId": "get_flightsql_cache_status_api_cache_status_iceberg_get",
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CacheStatusResponse"
+                  "$ref": "#/components/schemas/FlightCacheStatusResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/api/cache/status": {
+      "get": {
+        "tags": [
+          "cache"
+        ],
+        "summary": "Get Flightsql Cache Status",
+        "description": "Report the active DuckDB release, including for the older Airflow URLs.",
+        "operationId": "get_flightsql_cache_status_api_cache_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlightCacheStatusResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/api/cache/status_flightsql": {
+      "get": {
+        "tags": [
+          "cache"
+        ],
+        "summary": "Get Flightsql Cache Status",
+        "description": "Report the active DuckDB release, including for the older Airflow URLs.",
+        "operationId": "get_flightsql_cache_status_api_cache_status_flightsql_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlightCacheStatusResponse"
                 }
               }
             }
@@ -87,13 +134,15 @@
         }
       }
     },
-    "/api/cache/refresh": {
+    "/api/cache/refresh_iceberg": {
       "post": {
         "tags": [
           "cache"
         ],
-        "summary": "Refresh Cache Endpoint",
-        "operationId": "refresh_cache_endpoint_api_cache_refresh_post",
+        "summary": "Refresh Flightsql Cache Endpoint",
+        "description": "Start a Flight SQL refresh even when Airflow calls an older URL.",
+        "operationId": "refresh_flightsql_cache_endpoint_api_cache_refresh_iceberg_post",
+        "deprecated": true,
         "parameters": [
           {
             "name": "X-Curie-Admin-Key",
@@ -136,20 +185,50 @@
         }
       }
     },
-    "/api/cache/status_iceberg": {
-      "get": {
+    "/api/cache/refresh": {
+      "post": {
         "tags": [
           "cache"
         ],
-        "summary": "Get Iceberg Cache Status",
-        "operationId": "get_iceberg_cache_status_api_cache_status_iceberg_get",
+        "summary": "Refresh Flightsql Cache Endpoint",
+        "description": "Start a Flight SQL refresh even when Airflow calls an older URL.",
+        "operationId": "refresh_flightsql_cache_endpoint_api_cache_refresh_post",
+        "deprecated": true,
+        "parameters": [
+          {
+            "name": "X-Curie-Admin-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Curie-Admin-Key"
+            }
+          }
+        ],
         "responses": {
-          "200": {
+          "202": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CacheStatusResponse"
+                  "$ref": "#/components/schemas/CacheRefreshAcceptedResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -157,13 +236,14 @@
         }
       }
     },
-    "/api/cache/refresh_iceberg": {
+    "/api/cache/refresh_flightsql": {
       "post": {
         "tags": [
           "cache"
         ],
-        "summary": "Refresh Iceberg Cache Endpoint",
-        "operationId": "refresh_iceberg_cache_endpoint_api_cache_refresh_iceberg_post",
+        "summary": "Refresh Flightsql Cache Endpoint",
+        "description": "Start a Flight SQL refresh even when Airflow calls an older URL.",
+        "operationId": "refresh_flightsql_cache_endpoint_api_cache_refresh_flightsql_post",
         "parameters": [
           {
             "name": "X-Curie-Admin-Key",
@@ -537,77 +617,6 @@
         ],
         "title": "CacheRefreshAcceptedResponse"
       },
-      "CacheStatusResponse": {
-        "properties": {
-          "configured": {
-            "type": "boolean",
-            "title": "Configured"
-          },
-          "active_release_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Active Release Id"
-          },
-          "tables": {
-            "items": {
-              "$ref": "#/components/schemas/CacheTableStatus"
-            },
-            "type": "array",
-            "title": "Tables"
-          }
-        },
-        "type": "object",
-        "required": [
-          "configured",
-          "active_release_id",
-          "tables"
-        ],
-        "title": "CacheStatusResponse"
-      },
-      "CacheTableStatus": {
-        "properties": {
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "source_table": {
-            "type": "string",
-            "title": "Source Table"
-          },
-          "path": {
-            "type": "string",
-            "title": "Path"
-          },
-          "schema_path": {
-            "type": "string",
-            "title": "Schema Path"
-          },
-          "row_count": {
-            "type": "integer",
-            "title": "Row Count"
-          },
-          "checksum": {
-            "type": "string",
-            "title": "Checksum"
-          }
-        },
-        "type": "object",
-        "required": [
-          "name",
-          "source_table",
-          "path",
-          "schema_path",
-          "row_count",
-          "checksum"
-        ],
-        "title": "CacheTableStatus"
-      },
       "CurrentUserResponse": {
         "properties": {
           "id": {
@@ -678,6 +687,137 @@
         ],
         "title": "CurrentUserResponse",
         "description": "Response body describing the authenticated user resolved from a valid access token."
+      },
+      "FlightCacheStatusResponse": {
+        "properties": {
+          "configured": {
+            "type": "boolean",
+            "title": "Configured"
+          },
+          "running": {
+            "type": "boolean",
+            "title": "Running"
+          },
+          "job_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Id"
+          },
+          "state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State"
+          },
+          "last_failure": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Failure"
+          },
+          "active_release_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Release Id"
+          },
+          "active_release_timestamp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Release Timestamp"
+          },
+          "tables": {
+            "items": {
+              "$ref": "#/components/schemas/FlightDatasetStatus"
+            },
+            "type": "array",
+            "title": "Tables"
+          }
+        },
+        "type": "object",
+        "required": [
+          "configured",
+          "running"
+        ],
+        "title": "FlightCacheStatusResponse"
+      },
+      "FlightDatasetStatus": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "row_count": {
+            "type": "integer",
+            "title": "Row Count"
+          },
+          "date_min": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Min"
+          },
+          "date_max": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Max"
+          },
+          "checksum": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checksum"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "row_count"
+        ],
+        "title": "FlightDatasetStatus"
       },
       "HTTPValidationError": {
         "properties": {

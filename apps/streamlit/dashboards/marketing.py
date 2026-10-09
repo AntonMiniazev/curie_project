@@ -14,7 +14,8 @@ import polars as pl
 import streamlit as st
 
 import shared.reporting_charts as reporting_charts
-from shared.access_control import current_report_access, restrict_store_options
+from shared.access_control import current_report_access, report_scope
+from shared.report_scope import ReportScope
 from data.cache_reader import load_manifest
 from data.marketing_queries import (
     marketing_active_clients,
@@ -61,49 +62,61 @@ def _manifest() -> dict:
 
 
 @st.cache_data(show_spinner=False)
-def _monthly_sales(store_id: int | None, cache_key: str) -> pl.DataFrame:
+def _monthly_sales(
+    store_id: int | None, cache_key: str, scope: ReportScope
+) -> pl.DataFrame:
     """Cached monthly sales query; `cache_key` invalidates on cache release."""
-    return marketing_monthly_sales(store_id=store_id)
+    return marketing_monthly_sales(store_id=store_id, scope=scope)
 
 
 @st.cache_data(show_spinner=False)
-def _average_bill_by_month(store_id: int | None, cache_key: str) -> pl.DataFrame:
+def _average_bill_by_month(
+    store_id: int | None, cache_key: str, scope: ReportScope
+) -> pl.DataFrame:
     """Cached average bill query for the Sales Dynamics block."""
-    return marketing_average_bill_by_month(store_id=store_id)
+    return marketing_average_bill_by_month(store_id=store_id, scope=scope)
 
 
 @st.cache_data(show_spinner=False)
-def _monthly_clients(store_id: int | None, cache_key: str) -> pl.DataFrame:
+def _monthly_clients(
+    store_id: int | None, cache_key: str, scope: ReportScope
+) -> pl.DataFrame:
     """Cached active-client query for the Client Base block."""
-    return marketing_monthly_clients(store_id=store_id)
+    return marketing_monthly_clients(store_id=store_id, scope=scope)
 
 
 @st.cache_data(show_spinner=False)
 def _active_clients(
-    months: tuple[date, ...], store_id: int | None, cache_key: str
+    months: tuple[date, ...], store_id: int | None, cache_key: str, scope: ReportScope
 ) -> pl.DataFrame:
     """Cached distinct active-client KPI query for the selected timeframe."""
-    return marketing_active_clients(months=list(months) or None, store_id=store_id)
+    return marketing_active_clients(
+        months=list(months) or None, store_id=store_id, scope=scope
+    )
 
 
 @st.cache_data(show_spinner=False)
-def _client_churn_by_month(store_id: int | None, cache_key: str) -> pl.DataFrame:
+def _client_churn_by_month(
+    store_id: int | None, cache_key: str, scope: ReportScope
+) -> pl.DataFrame:
     """Cached churn query for the Client Base block."""
-    return marketing_client_churn_by_month(store_id=store_id)
+    return marketing_client_churn_by_month(store_id=store_id, scope=scope)
 
 
 @st.cache_data(show_spinner=False)
-def _monthly_sales_vs_budget(store_id: int | None, cache_key: str) -> pl.DataFrame:
+def _monthly_sales_vs_budget(
+    store_id: int | None, cache_key: str, scope: ReportScope
+) -> pl.DataFrame:
     """Cached actual-vs-budget query for total monthly Sales reporting."""
-    return marketing_monthly_sales_vs_budget(store_id=store_id)
+    return marketing_monthly_sales_vs_budget(store_id=store_id, scope=scope)
 
 
 @st.cache_data(show_spinner=False)
 def _store_monthly_sales_vs_budget(
-    store_id: int | None, cache_key: str
+    store_id: int | None, cache_key: str, scope: ReportScope
 ) -> pl.DataFrame:
     """Cached actual-vs-budget query for the store-level Sales table."""
-    return marketing_store_monthly_sales_vs_budget(store_id=store_id)
+    return marketing_store_monthly_sales_vs_budget(store_id=store_id, scope=scope)
 
 
 @st.cache_data(show_spinner=False)
@@ -113,6 +126,7 @@ def _top_products(
     limit: int,
     store_id: int | None,
     cache_key: str,
+    scope: ReportScope,
 ) -> pl.DataFrame:
     """Cached top-product query for the Products tab ranking block."""
     return marketing_top_products(
@@ -120,6 +134,7 @@ def _top_products(
         metric=metric,
         limit=limit,
         store_id=store_id,
+        scope=scope,
     )
 
 
@@ -130,6 +145,7 @@ def _top_categories(
     limit: int,
     store_id: int | None,
     cache_key: str,
+    scope: ReportScope,
 ) -> pl.DataFrame:
     """Cached top-category query for the Products tab ranking block."""
     return marketing_top_categories(
@@ -137,13 +153,16 @@ def _top_categories(
         metric=metric,
         limit=limit,
         store_id=store_id,
+        scope=scope,
     )
 
 
 @st.cache_data(show_spinner=False)
-def _new_clients_by_month(store_id: int | None, cache_key: str) -> pl.DataFrame:
+def _new_clients_by_month(
+    store_id: int | None, cache_key: str, scope: ReportScope
+) -> pl.DataFrame:
     """Cached new-client query for the Client Base block."""
-    return marketing_new_clients_by_month(store_id=store_id)
+    return marketing_new_clients_by_month(store_id=store_id, scope=scope)
 
 
 def _month_options(
@@ -153,7 +172,9 @@ def _month_options(
     return [(month.strftime("%b %Y"), month) for month in months]
 
 
-def _store_options(store_sales_vs_budget: pl.DataFrame) -> list[tuple[str, int | None]]:
+def _store_options(
+    store_sales_vs_budget: pl.DataFrame, scope: ReportScope
+) -> list[tuple[str, int | None]]:
     """Build sidebar store choices from store-level reporting data."""
     stores = (
         store_sales_vs_budget.select(["store_id", "store_name", "city"])
@@ -161,7 +182,8 @@ def _store_options(store_sales_vs_budget: pl.DataFrame) -> list[tuple[str, int |
         .unique()
         .sort("store_name")
     )
-    options: list[tuple[str, int | None]] = [("All stores", None)]
+    all_label = "All stores" if scope.can_view_all_stores else "All allowed stores"
+    options: list[tuple[str, int | None]] = [(all_label, None)]
     for row in stores.iter_rows(named=True):
         options.append((f"{row['store_name']} ({row['city']})", int(row["store_id"])))
     return options
@@ -305,20 +327,20 @@ TOP_CATEGORY_COLUMNS = [
 
 manifest = _manifest()
 cache_key = manifest.get("release_id") or manifest["created_at_utc"]
-all_store_sales_vs_budget = _store_monthly_sales_vs_budget(None, cache_key)
 access = current_report_access()
-store_options = restrict_store_options(
-    _store_options(all_store_sales_vs_budget), access
-)
+scope = report_scope(access) if access.is_allowed else None
 
 st.title("Marketing Reporting")
 st.caption(data_freshness(manifest["created_at_utc"]))
 
-if not access.is_allowed or not store_options:
+if not access.is_allowed or scope is None or not scope.is_allowed:
     st.error(
         access.error or "Your Curie role does not allow access to this report data."
     )
     st.stop()
+
+all_store_sales_vs_budget = _store_monthly_sales_vs_budget(None, cache_key, scope)
+store_options = _store_options(all_store_sales_vs_budget, scope)
 
 st.caption(f"Data access: {access.label}")
 
@@ -334,21 +356,21 @@ if st.sidebar.button("Reset table and chart layout"):
 selected_store_label = st.sidebar.selectbox(
     "Store",
     options=[label for label, _ in store_options],
-    disabled=not access.can_view_all_stores and len(store_options) == 1,
+    disabled=not scope.can_view_all_stores and len(store_options) <= 2,
 )
 selected_store_id = dict(store_options)[selected_store_label]
 
-monthly_sales_all = _monthly_sales(selected_store_id, cache_key)
-average_bill_all = _average_bill_by_month(selected_store_id, cache_key)
-monthly_clients_all = _monthly_clients(selected_store_id, cache_key)
-client_churn_all = _client_churn_by_month(selected_store_id, cache_key)
-sales_vs_budget_all = _monthly_sales_vs_budget(selected_store_id, cache_key)
+monthly_sales_all = _monthly_sales(selected_store_id, cache_key, scope)
+average_bill_all = _average_bill_by_month(selected_store_id, cache_key, scope)
+monthly_clients_all = _monthly_clients(selected_store_id, cache_key, scope)
+client_churn_all = _client_churn_by_month(selected_store_id, cache_key, scope)
+sales_vs_budget_all = _monthly_sales_vs_budget(selected_store_id, cache_key, scope)
 store_sales_vs_budget_all = (
     all_store_sales_vs_budget
     if selected_store_id is None
-    else _store_monthly_sales_vs_budget(selected_store_id, cache_key)
+    else _store_monthly_sales_vs_budget(selected_store_id, cache_key, scope)
 )
-new_clients_all = _new_clients_by_month(selected_store_id, cache_key)
+new_clients_all = _new_clients_by_month(selected_store_id, cache_key, scope)
 
 year_options = available_years(
     monthly_sales_all,
@@ -437,7 +459,7 @@ period_sales_amount = _sum_column(monthly_sales, "sales_amount")
 period_order_count = _sum_column(monthly_sales, "order_count")
 period_average_bill = _period_average_bill(monthly_sales)
 period_active_clients = (
-    _active_clients(selected_months, selected_store_id, cache_key)
+    _active_clients(selected_months, selected_store_id, cache_key, scope)
     .select("active_client_count")
     .item()
     if selected_months
@@ -508,6 +530,7 @@ with products_tab:
             10,
             selected_store_id,
             cache_key,
+            scope,
         )
         top_categories = _top_categories(
             selected_months,
@@ -515,13 +538,14 @@ with products_tab:
             10,
             selected_store_id,
             cache_key,
+            scope,
         )
     else:
         top_products = _empty_frame_like(
-            _top_products((), ranking_metric, 1, selected_store_id, cache_key)
+            _top_products((), ranking_metric, 1, selected_store_id, cache_key, scope)
         )
         top_categories = _empty_frame_like(
-            _top_categories((), ranking_metric, 1, selected_store_id, cache_key)
+            _top_categories((), ranking_metric, 1, selected_store_id, cache_key, scope)
         )
 
     dataframe_with_download(

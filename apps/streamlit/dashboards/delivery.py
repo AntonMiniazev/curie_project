@@ -9,7 +9,8 @@ import polars as pl
 import streamlit as st
 
 import shared.reporting_charts as reporting_charts
-from shared.access_control import current_report_access
+from shared.access_control import current_report_access, report_scope
+from shared.report_scope import ReportScope
 from data.cache_reader import load_manifest
 from data.delivery_queries import (
     delivery_courier_types,
@@ -51,18 +52,22 @@ def _monthly_courier_orders(
     store_id: int | None,
     courier_types: tuple[str, ...] | None,
     cache_key: str,
+    scope: ReportScope,
 ) -> pl.DataFrame:
     """Cached monthly courier workload query."""
     return delivery_monthly_courier_orders(
         store_id=store_id,
         courier_types=courier_types,
+        scope=scope,
     )
 
 
 @st.cache_data(show_spinner=False)
-def _courier_types(store_id: int | None, cache_key: str) -> pl.DataFrame:
+def _courier_types(
+    store_id: int | None, cache_key: str, scope: ReportScope
+) -> pl.DataFrame:
     """Cached list of courier types available to Delivery filters."""
-    return delivery_courier_types(store_id=store_id)
+    return delivery_courier_types(store_id=store_id, scope=scope)
 
 
 @st.cache_data(show_spinner=False)
@@ -71,12 +76,14 @@ def _courier_type_tariff(
     store_id: int | None,
     courier_types: tuple[str, ...] | None,
     cache_key: str,
+    scope: ReportScope,
 ) -> pl.DataFrame:
     """Cached tariff-by-courier-type query."""
     return delivery_courier_type_tariff(
         months=list(months) or None,
         store_id=store_id,
         courier_types=courier_types,
+        scope=scope,
     )
 
 
@@ -86,12 +93,14 @@ def _courier_workload(
     store_id: int | None,
     courier_types: tuple[str, ...] | None,
     cache_key: str,
+    scope: ReportScope,
 ) -> pl.DataFrame:
     """Cached courier workload table query."""
     return delivery_courier_workload(
         months=list(months) or None,
         store_id=store_id,
         courier_types=courier_types,
+        scope=scope,
     )
 
 
@@ -115,7 +124,10 @@ def _filter_couriers_by_name(
         return courier_workload
 
     return courier_workload.filter(
-        pl.col("fullname").fill_null("").str.to_lowercase().str.contains(
+        pl.col("fullname")
+        .fill_null("")
+        .str.to_lowercase()
+        .str.contains(
             query_text,
             literal=True,
         )
@@ -231,11 +243,12 @@ def _empty_courier_workload_frame() -> pl.DataFrame:
 manifest = load_manifest()
 cache_key = manifest.get("release_id") or manifest["created_at_utc"]
 access = current_report_access()
+scope = report_scope(access) if access.is_allowed else None
 
 st.title("Delivery Operations")
 st.caption(data_freshness(manifest["created_at_utc"]))
 
-if not access.is_allowed:
+if not access.is_allowed or scope is None or not scope.is_allowed:
     st.error(
         access.error or "Your Curie role does not allow access to this report data."
     )
@@ -244,8 +257,8 @@ if not access.is_allowed:
 st.caption(f"Data access: {access.label}")
 reset_layout_control()
 
-store_id = selected_store_id(access, key="delivery_store")
-courier_type_df = _courier_types(store_id, cache_key)
+store_id = selected_store_id(scope, "Delivery", key="delivery_store")
+courier_type_df = _courier_types(store_id, cache_key, scope)
 courier_type_options = courier_type_df.get_column("courier_type").to_list()
 selected_courier_types = st.sidebar.multiselect(
     "Courier type",
@@ -259,7 +272,7 @@ courier_types = (
     else tuple(selected_courier_types)
 )
 
-monthly_all = _monthly_courier_orders(store_id, courier_types, cache_key)
+monthly_all = _monthly_courier_orders(store_id, courier_types, cache_key, scope)
 
 year_options = available_years(monthly_all)
 selected_years = st.sidebar.multiselect(
@@ -278,12 +291,12 @@ timeframe_end = months[-1] if months else None
 monthly = filter_month_range(monthly, timeframe_start, timeframe_end)
 
 tariff_by_type = (
-    _courier_type_tariff(months, store_id, courier_types, cache_key)
+    _courier_type_tariff(months, store_id, courier_types, cache_key, scope)
     if months
     else _empty_tariff_frame()
 )
 courier_workload = (
-    _courier_workload(months, store_id, courier_types, cache_key)
+    _courier_workload(months, store_id, courier_types, cache_key, scope)
     if months
     else _empty_courier_workload_frame()
 )

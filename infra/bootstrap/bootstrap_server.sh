@@ -24,7 +24,7 @@ set -euo pipefail
 #
 # Optional environment variables:
 #   CURIE_DEPLOY_DIR=/opt/curie
-#   CURIE_ICEBERG_HOST_CACHE_DIR=/var/lib/curie/iceberg-cache
+#   CURIE_SERVING_HOST_CACHE_DIR=/var/lib/curie/serving-cache
 #   CURIE_TAILSCALE_HOSTNAME=curie-server
 #   TAILSCALE_AUTH_KEY=tskey-auth-...
 #   CURIE_DEPLOY_PUBLIC_KEY='ssh-ed25519 ...'
@@ -32,7 +32,7 @@ set -euo pipefail
 #   GHCR_TOKEN=...
 
 CURIE_DEPLOY_DIR="${CURIE_DEPLOY_DIR:-/opt/curie}"
-CURIE_ICEBERG_HOST_CACHE_DIR="${CURIE_ICEBERG_HOST_CACHE_DIR:-/var/lib/curie/iceberg-cache}"
+CURIE_SERVING_HOST_CACHE_DIR="${CURIE_SERVING_HOST_CACHE_DIR:-/var/lib/curie/serving-cache}"
 CURIE_TAILSCALE_HOSTNAME="${CURIE_TAILSCALE_HOSTNAME:-curie-server}"
 
 require_root() {
@@ -129,8 +129,8 @@ create_directories() {
   install -d -m 0700 "${CURIE_DEPLOY_DIR}/env"
   install -d -m 0755 "${CURIE_DEPLOY_DIR}/nginx"
   install -d -m 0755 "${CURIE_DEPLOY_DIR}/postgres/initdb"
-  install -d -m 0755 "${CURIE_ICEBERG_HOST_CACHE_DIR}/current"
-  install -d -m 0755 "${CURIE_ICEBERG_HOST_CACHE_DIR}/releases"
+  install -d -m 0755 "${CURIE_SERVING_HOST_CACHE_DIR}/refresh"
+  install -d -m 0755 "${CURIE_SERVING_HOST_CACHE_DIR}/releases"
 }
 
 authorize_deploy_key_if_configured() {
@@ -177,7 +177,7 @@ Server readiness state:
 - Nginx and Certbot are installed, but no Curie Nginx site was written by bootstrap.
 - UFW allows SSH, HTTP, and HTTPS.
 - Deployment directory exists: ${CURIE_DEPLOY_DIR}
-- Cache directory exists: ${CURIE_ICEBERG_HOST_CACHE_DIR}
+- Serving cache directory exists: ${CURIE_SERVING_HOST_CACHE_DIR}
 - Tailscale IPv4: ${tailscale_ip:-not joined}
 
 Before the first GitHub Actions deploy:
@@ -193,7 +193,7 @@ Before the first GitHub Actions deploy:
 4. Ensure certificates exist before applying the current HTTPS Nginx config.
    The current infra/nginx/curie.conf references /etc/letsencrypt/live/ampere-data.work/.
 5. Restore or refresh production data after deploy.
-   Deleting the old server deletes its Docker postgres volume and ${CURIE_ICEBERG_HOST_CACHE_DIR} unless backed up separately.
+   Deleting the old server deletes its Docker postgres volume and ${CURIE_SERVING_HOST_CACHE_DIR} unless backed up separately.
 EOF
 }
 

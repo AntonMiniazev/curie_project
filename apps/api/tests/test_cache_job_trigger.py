@@ -1,6 +1,7 @@
 from types import SimpleNamespace
 
 import pytest
+from pydantic import SecretStr
 
 from apps.api.cache import job_trigger
 
@@ -21,12 +22,15 @@ class CompletedProcessStub:
 def _settings() -> SimpleNamespace:
     return SimpleNamespace(
         cache_refresh_enabled=True,
-        cache_refresh_container_prefix="curie-cache-refresh",
-        cache_refresh_volumes_from="curie-api-prod",
-        cache_refresh_host_cache_dir="/var/lib/curie/cache",
+        serving_refresh_container_prefix="curie-flightsql-cache-refresh",
+        serving_host_cache_dir="/var/lib/curie/serving-cache",
         cache_refresh_network="curie-prod_default",
-        cache_refresh_extra_hosts=[],
         cache_refresh_image="curie-api:latest",
+        flightsql_uri="flightsql://example.invalid:8815?transport=tcp",
+        flightsql_auth_token=SecretStr("test-token"),
+        flightsql_timeout_seconds=30,
+        flightsql_fetch_timeout_seconds=300,
+        serving_cache_keep_previous=3,
     )
 
 
@@ -37,14 +41,14 @@ def test_trigger_cache_refresh_job_returns_running_job_without_starting_new_cont
 
     def fake_run(command: list[str], **_: object) -> CompletedProcessStub:
         calls.append(command)
-        return CompletedProcessStub(stdout="curie-cache-refresh-20260816045438\n")
+        return CompletedProcessStub(stdout="curie-flightsql-cache-refresh-20260816045438\n")
 
     monkeypatch.setattr(job_trigger, "get_settings", _settings)
     monkeypatch.setattr(job_trigger.subprocess, "run", fake_run)
 
     job_id = job_trigger.trigger_cache_refresh_job()
 
-    assert job_id == "curie-cache-refresh-20260816045438"
+    assert job_id == "curie-flightsql-cache-refresh-20260816045438"
     assert len(calls) == 1
     assert calls[0][:2] == ["docker", "ps"]
 
@@ -63,11 +67,12 @@ def test_trigger_cache_refresh_job_starts_new_container_when_no_job_is_running(
 
     job_id = job_trigger.trigger_cache_refresh_job()
 
-    assert job_id.startswith("curie-cache-refresh-")
+    assert job_id.startswith("curie-flightsql-cache-refresh-")
     assert len(calls) == 2
     assert calls[0][:2] == ["docker", "ps"]
     assert calls[1][:3] == ["docker", "run", "-d"]
-    assert "--volumes-from" in calls[1]
+    assert "--volumes-from" not in calls[1]
+    assert "/var/lib/curie/serving-cache:/app/data/serving-cache" in calls[1]
     assert "curie-api:latest" in calls[1]
 
 

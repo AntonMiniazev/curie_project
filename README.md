@@ -2,7 +2,7 @@
 
 Curie is a full-stack reporting portal built as a practical data-application lab. It brings together a public project hub, authenticated report workspace, embedded Streamlit dashboards, and a FastAPI backend that serves users, roles, report metadata, and cache-refresh operations.
 
-The application is designed around a realistic but compact production shape: SvelteKit renders the website, FastAPI protects the API surface, PostgreSQL stores application metadata, Streamlit delivers interactive dashboards, and a local Parquet cache keeps report queries independent from the upstream data platform during user interaction.
+The application is designed around a compact production shape: SvelteKit renders the website, FastAPI protects the API surface, PostgreSQL stores application metadata, and Streamlit delivers interactive dashboards. Task 16 adds an isolated Flight SQL refresh job that builds durable local DuckDB releases. The existing Iceberg-derived Parquet cache remains available during parity validation; production Streamlit stays on it until the DuckDB release passes the live gates.
 
 Curie is also the public-facing companion to the wider Ampere/Bohr learning environment:
 
@@ -24,7 +24,7 @@ Curie is also the public-facing companion to the wider Ampere/Bohr learning envi
 ```text
 apps/
   api/        FastAPI application, auth, report metadata, cache refresh endpoints, Alembic migrations
-  streamlit/  Streamlit dashboards and shared DuckDB/Parquet reporting helpers
+  streamlit/  Streamlit dashboards and scoped DuckDB reporting queries
   web/        SvelteKit frontend, project hub, auth screens, report iframe shell
 docs/         Architecture diagrams and frontend styling notes
 infra/        Docker Compose, Nginx, bootstrap, and environment templates

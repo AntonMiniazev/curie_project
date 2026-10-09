@@ -21,12 +21,14 @@ env:
 jobs:
   deploy:
     name: ${{ github.event_name == 'workflow_dispatch' && 'Deploy Curie services manual' || 'Deploy Curie services after image build' }}
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout deployment files
         uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Authenticate to Azure for SOPS
         uses: azure/login@v2
@@ -54,7 +56,7 @@ jobs:
             infra/compose.prod.yml \
             "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST:$CURIE_DEPLOY_DIR/compose.yml"
           ssh -i ~/.ssh/curie_deploy_key "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST" \
-            "mkdir -p $CURIE_DEPLOY_DIR/postgres/initdb $CURIE_DEPLOY_DIR/nginx/stream $CURIE_DEPLOY_DIR/systemd"
+            "mkdir -p $CURIE_DEPLOY_DIR/postgres/initdb $CURIE_DEPLOY_DIR/nginx/stream $CURIE_DEPLOY_DIR/systemd $CURIE_DEPLOY_DIR/deploy"
           scp -i ~/.ssh/curie_deploy_key \
             infra/postgres/initdb/* \
             "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST:$CURIE_DEPLOY_DIR/postgres/initdb/"
@@ -67,6 +69,9 @@ jobs:
           scp -i ~/.ssh/curie_deploy_key \
             infra/systemd/nginx-tailnet-retry.conf \
             "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST:$CURIE_DEPLOY_DIR/systemd/nginx-tailnet-retry.conf"
+          scp -i ~/.ssh/curie_deploy_key \
+            infra/deploy/activate_flightsql.sh infra/deploy/check_flightsql_status.py \
+            "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST:$CURIE_DEPLOY_DIR/deploy/"
 
       - name: Decrypt and copy prod env
         run: |
@@ -76,42 +81,32 @@ jobs:
             --input-type dotenv \
             --output-type dotenv \
             infra/env/curie-prod.sops.env > .deploy/curie-prod.env
-          lakekeeper_client_id="$(az keyvault secret show --vault-name az-ampere-kv --name ampere-iceberg-curie-clientid --query value --output tsv)"
-          lakekeeper_client_secret="$(az keyvault secret show --vault-name az-ampere-kv --name ampere-iceberg-curie-secret --query value --output tsv)"
-          minio_access_key="$(az keyvault secret show --vault-name az-ampere-kv --name ampere-iceberg-minio-access-key --query value --output tsv)"
-          minio_secret_key="$(az keyvault secret show --vault-name az-ampere-kv --name ampere-iceberg-minio-secret-key --query value --output tsv)"
           flightsql_token="$(az keyvault secret show --vault-name az-ampere-kv --name ampere-flight-sql-token --query value --output tsv)"
           test -n "$flightsql_token"
-          echo "::add-mask::$lakekeeper_client_id"
-          echo "::add-mask::$lakekeeper_client_secret"
-          echo "::add-mask::$minio_access_key"
-          echo "::add-mask::$minio_secret_key"
           echo "::add-mask::$flightsql_token"
-          export CURIE_LAKEKEEPER_CLIENT_ID="$lakekeeper_client_id"
-          export CURIE_LAKEKEEPER_CLIENT_SECRET="$lakekeeper_client_secret"
-          export CURIE_MINIO_ACCESS_KEY="$minio_access_key"
-          export CURIE_MINIO_SECRET_KEY="$minio_secret_key"
           export CURIE_FLIGHTSQL_AUTH_TOKEN="$flightsql_token"
+          image_tag="${{ github.event.workflow_run.head_sha }}"
+          if [ -n "$image_tag" ]; then
+            export CURIE_IMAGE="ghcr.io/antonminiazev/curie-api:$image_tag"
+            export CURIE_WEB_IMAGE="ghcr.io/antonminiazev/curie-web:$image_tag"
+            export CURIE_STREAMLIT_IMAGE="ghcr.io/antonminiazev/curie-streamlit:$image_tag"
+          fi
           python3 - <<'PY'
           import os
           from pathlib import Path
 
           env_file = Path('.deploy/curie-prod.env')
-          updates = {
-              key: os.environ[key]
-              for key in (
-                  'CURIE_LAKEKEEPER_CLIENT_ID',
-                  'CURIE_LAKEKEEPER_CLIENT_SECRET',
-                  'CURIE_MINIO_ACCESS_KEY',
-                  'CURIE_MINIO_SECRET_KEY',
-                  'CURIE_FLIGHTSQL_AUTH_TOKEN',
-              )
-          }
+          updates = {'CURIE_FLIGHTSQL_AUTH_TOKEN': os.environ['CURIE_FLIGHTSQL_AUTH_TOKEN']}
+          updates.update({key: os.environ[key] for key in ('CURIE_IMAGE', 'CURIE_WEB_IMAGE', 'CURIE_STREAMLIT_IMAGE') if key in os.environ})
+          obsolete_prefixes = ('CURIE_LAKEKEEPER_', 'CURIE_MINIO_', 'CURIE_ICEBERG_')
+          obsolete_keys = {'CURIE_UPSTREAM_HOST_IP'}
           lines = env_file.read_text(encoding='utf-8').splitlines()
           written = set()
           output = []
           for line in lines:
               key = line.partition('=')[0]
+              if key.startswith(obsolete_prefixes) or key in obsolete_keys:
+                  continue
               if key in updates:
                   if key not in written:
                       output.append(f'{key}={updates[key]}')
@@ -123,8 +118,7 @@ jobs:
                   output.append(f'{key}={value}')
           env_file.write_text('\n'.join(output) + '\n', encoding='utf-8')
           PY
-          unset lakekeeper_client_id lakekeeper_client_secret minio_access_key minio_secret_key flightsql_token
-          unset CURIE_LAKEKEEPER_CLIENT_ID CURIE_LAKEKEEPER_CLIENT_SECRET CURIE_MINIO_ACCESS_KEY CURIE_MINIO_SECRET_KEY CURIE_FLIGHTSQL_AUTH_TOKEN
+          unset flightsql_token CURIE_FLIGHTSQL_AUTH_TOKEN CURIE_IMAGE CURIE_WEB_IMAGE CURIE_STREAMLIT_IMAGE
           chmod 600 .deploy/curie-prod.env
           ssh -i ~/.ssh/curie_deploy_key "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST" \
             "mkdir -p $CURIE_DEPLOY_DIR/env && chmod 700 $CURIE_DEPLOY_DIR/env"
@@ -135,17 +129,10 @@ jobs:
             "chmod 600 $CURIE_DEPLOY_DIR/env/curie-prod.env"
           rm -f .deploy/curie-prod.env
 
-      - name: Deploy web, API, and Streamlit
+      - name: Build Flight SQL cache, then deploy web and Streamlit
         run: |
           ssh -i ~/.ssh/curie_deploy_key "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST" \
-            "cd $CURIE_DEPLOY_DIR \
-            && docker compose --env-file env/curie-prod.env -f compose.yml pull web api streamlit \
-            && docker compose --env-file env/curie-prod.env -f compose.yml run --rm api sh -c 'cd apps/api && uv run alembic upgrade head' \
-            && docker compose --env-file env/curie-prod.env -f compose.yml up -d --force-recreate web api streamlit \
-            && docker image prune -f \
-            && docker port curie-web-prod \
-            && docker port curie-api-prod \
-            && docker port curie-streamlit-prod"
+            "bash $CURIE_DEPLOY_DIR/deploy/activate_flightsql.sh"
 
       - name: Configure Nginx
         run: |
@@ -220,3 +207,12 @@ jobs:
             exit 1
           fi
           echo "Public Streamlit port 8501 is not reachable, as expected."
+
+      - name: Prune unused image layers after validation
+        run: |
+          ssh -i ~/.ssh/curie_deploy_key "$CURIE_DEPLOY_USER@$CURIE_DEPLOY_HOST" \
+            "docker image rm \
+              ghcr.io/antonminiazev/curie-api:latest \
+              ghcr.io/antonminiazev/curie-web:latest \
+              ghcr.io/antonminiazev/curie-streamlit:latest 2>/dev/null || true; \
+              docker image prune -f"

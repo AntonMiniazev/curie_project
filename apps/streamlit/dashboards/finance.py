@@ -8,7 +8,8 @@ import polars as pl
 import streamlit as st
 
 import shared.reporting_charts as reporting_charts
-from shared.access_control import current_report_access
+from shared.access_control import current_report_access, report_scope
+from shared.report_scope import ReportScope
 from data.cache_reader import load_manifest
 from data.finance_queries import (
     finance_monthly_performance,
@@ -45,15 +46,19 @@ apply_shared_css()
 
 
 @st.cache_data(show_spinner=False)
-def _monthly_performance(store_id: int | None, cache_key: str) -> pl.DataFrame:
+def _monthly_performance(
+    store_id: int | None, cache_key: str, scope: ReportScope
+) -> pl.DataFrame:
     """Cached monthly Finance performance query."""
-    return finance_monthly_performance(store_id=store_id)
+    return finance_monthly_performance(store_id=store_id, scope=scope)
 
 
 @st.cache_data(show_spinner=False)
-def _store_monthly_performance(store_id: int | None, cache_key: str) -> pl.DataFrame:
+def _store_monthly_performance(
+    store_id: int | None, cache_key: str, scope: ReportScope
+) -> pl.DataFrame:
     """Cached store-level Finance performance query."""
-    return finance_store_monthly_performance(store_id=store_id)
+    return finance_store_monthly_performance(store_id=store_id, scope=scope)
 
 
 @st.cache_data(show_spinner=False)
@@ -62,6 +67,7 @@ def _product_margin(
     direction: str,
     store_id: int | None,
     cache_key: str,
+    scope: ReportScope,
 ) -> pl.DataFrame:
     """Cached product margin ranking query."""
     return finance_product_margin(
@@ -69,6 +75,7 @@ def _product_margin(
         store_id=store_id,
         limit=5,
         direction=direction,
+        scope=scope,
     )
 
 
@@ -263,11 +270,12 @@ def _operational_pl(monthly: pl.DataFrame) -> pl.DataFrame:
 manifest = load_manifest()
 cache_key = manifest.get("release_id") or manifest["created_at_utc"]
 access = current_report_access()
+scope = report_scope(access) if access.is_allowed else None
 
 st.title("Finance Performance")
 st.caption(data_freshness(manifest["created_at_utc"]))
 
-if not access.is_allowed:
+if not access.is_allowed or scope is None or not scope.is_allowed:
     st.error(
         access.error or "Your Curie role does not allow access to this report data."
     )
@@ -276,9 +284,9 @@ if not access.is_allowed:
 st.caption(f"Data access: {access.label}")
 reset_layout_control()
 
-store_id = selected_store_id(access, key="finance_store")
-monthly_all = _monthly_performance(store_id, cache_key)
-store_monthly_all = _store_monthly_performance(store_id, cache_key)
+store_id = selected_store_id(scope, "Financial", key="finance_store")
+monthly_all = _monthly_performance(store_id, cache_key, scope)
+store_monthly_all = _store_monthly_performance(store_id, cache_key, scope)
 
 year_options = available_years(monthly_all)
 selected_years = st.sidebar.multiselect(
@@ -335,8 +343,8 @@ with overview_tab:
 
 with products_tab:
     if months:
-        top_margin = _product_margin(months, "top", store_id, cache_key)
-        bottom_margin = _product_margin(months, "bottom", store_id, cache_key)
+        top_margin = _product_margin(months, "top", store_id, cache_key, scope)
+        bottom_margin = _product_margin(months, "bottom", store_id, cache_key, scope)
     else:
         top_margin = pl.DataFrame()
         bottom_margin = pl.DataFrame()

@@ -44,23 +44,18 @@ services:
     environment:
       CURIE_CACHE_REFRESH_ENABLED: "true"
       CURIE_CACHE_REFRESH_IMAGE: ${CURIE_IMAGE:-ghcr.io/OWNER/curie-api:latest}
-      CURIE_CACHE_REFRESH_VOLUMES_FROM: curie-api-prod
       CURIE_CACHE_REFRESH_NETWORK: curie-prod_default
-      CURIE_ICEBERG_CACHE_ROOT: /app/data/iceberg-cache
-      CURIE_ICEBERG_CACHE_CURRENT: /app/data/iceberg-cache/current
       CURIE_FLIGHTSQL_URI: flightsql://ampere-flight-sql.tail8f7784.ts.net:8815?transport=tcp
       CURIE_FLIGHTSQL_TIMEOUT_SECONDS: "30"
-      CURIE_UPSTREAM_HOST_IP: ${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}
+      CURIE_FLIGHTSQL_FETCH_TIMEOUT_SECONDS: "300"
+      CURIE_SERVING_CACHE_ROOT: /app/data/serving-cache
+      CURIE_SERVING_CACHE_CURRENT: /app/data/serving-cache/current
+      CURIE_SERVING_HOST_CACHE_DIR: ${CURIE_SERVING_HOST_CACHE_DIR:-/var/lib/curie/serving-cache}
     ports:
       - "${CURIE_API_PORT:-127.0.0.1:8000}:8000"
     volumes:
-      - ${CURIE_ICEBERG_HOST_CACHE_DIR:-/var/lib/curie/iceberg-cache}:/app/data/iceberg-cache
+      - ${CURIE_SERVING_HOST_CACHE_DIR:-/var/lib/curie/serving-cache}:/app/data/serving-cache
       - /var/run/docker.sock:/var/run/docker.sock
-    extra_hosts:
-      - "ucatalog.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
-      - "lakekeeper.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
-      - "s3.minio.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
-      - "minio.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
     depends_on:
       postgres:
         condition: service_healthy
@@ -69,12 +64,12 @@ services:
     image: ${CURIE_STREAMLIT_IMAGE:-ghcr.io/OWNER/curie-streamlit:latest}
     container_name: curie-streamlit-prod
     restart: unless-stopped
-    env_file:
-      - ${CURIE_ENV_FILE:-./env/curie-prod.env}
     environment:
-      CURIE_CACHE_CURRENT: /app/data/iceberg-cache/current
+      APP_ENV: prod
+      CURIE_SERVING_CACHE_CURRENT: /app/data/serving-cache/current
       CURIE_JWT_SECRET_KEY: ${CURIE_JWT_SECRET_KEY}
       CURIE_JWT_ALGORITHM: ${CURIE_JWT_ALGORITHM:-HS256}
+      CURIE_AUTH_ACCESS_COOKIE_NAME: ${CURIE_AUTH_ACCESS_COOKIE_NAME:-curie_access_token}
       STREAMLIT_SERVER_BASE_URL_PATH: ${STREAMLIT_SERVER_BASE_URL_PATH:-streamlit}
       STREAMLIT_CLIENT_TOOLBAR_MODE: minimal
       STREAMLIT_BROWSER_GATHER_USAGE_STATS: "false"
@@ -83,25 +78,27 @@ services:
     ports:
       - "${CURIE_STREAMLIT_PORT:-127.0.0.1:8501}:8501"
     volumes:
-      - ${CURIE_ICEBERG_HOST_CACHE_DIR:-/var/lib/curie/iceberg-cache}:/app/data/iceberg-cache:ro
+      - ${CURIE_SERVING_HOST_CACHE_DIR:-/var/lib/curie/serving-cache}:/app/data/serving-cache:ro
     depends_on:
       api:
         condition: service_started
 
-  iceberg-cache-refresh:
+  flightsql-cache-refresh:
     image: ${CURIE_IMAGE:-ghcr.io/OWNER/curie-api:latest}
-    profiles: ["iceberg-cache"]
-    env_file:
-      - ${CURIE_ENV_FILE:-./env/curie-prod.env}
+    profiles: ["flightsql-cache"]
     environment:
-      CURIE_ICEBERG_CACHE_ROOT: /app/data/iceberg-cache
-      CURIE_ICEBERG_CACHE_CURRENT: /app/data/iceberg-cache/current
-    command: ["uv", "run", "python", "-m", "apps.api.cache.refresh_iceberg"]
+      APP_ENV: prod
+      CURIE_FLIGHTSQL_URI: flightsql://ampere-flight-sql.tail8f7784.ts.net:8815?transport=tcp
+      CURIE_FLIGHTSQL_AUTH_TOKEN: ${CURIE_FLIGHTSQL_AUTH_TOKEN}
+      CURIE_FLIGHTSQL_TIMEOUT_SECONDS: "30"
+      CURIE_FLIGHTSQL_FETCH_TIMEOUT_SECONDS: "300"
+      CURIE_SERVING_CACHE_ROOT: /app/data/serving-cache
+      CURIE_SERVING_CACHE_CURRENT: /app/data/serving-cache/current
+    command: ["uv", "run", "python", "-m", "apps.api.cache.refresh_flightsql"]
+    mem_limit: 2g
+    cpus: 1.5
     volumes:
-      - ${CURIE_ICEBERG_HOST_CACHE_DIR:-/var/lib/curie/iceberg-cache}:/app/data/iceberg-cache
-    extra_hosts:
-      - "lakekeeper.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
-      - "s3.minio.local:${CURIE_UPSTREAM_HOST_IP:-100.86.133.66}"
+      - ${CURIE_SERVING_HOST_CACHE_DIR:-/var/lib/curie/serving-cache}:/app/data/serving-cache
 
 volumes:
   curie-postgres-prod-data:

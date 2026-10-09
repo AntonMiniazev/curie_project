@@ -7,8 +7,7 @@ FastAPI service for Curie authentication, report metadata, cache status, and cac
 - User registration, login, logout, JWT cookies, and refresh-token storage.
 - Public role metadata for account creation.
 - Authenticated report metadata returned to the SvelteKit app.
-- Admin-protected cache refresh endpoint used by Ampere Airflow.
-- Cache status endpoint and local cache manifest inspection.
+- Admin-protected Flight SQL cache refresh endpoint and status endpoint. Older Airflow URLs are temporary aliases for this same refresh.
 - Alembic migrations for PostgreSQL schema and seed data.
 
 ## Authentication And Authorization
@@ -26,6 +25,10 @@ Curie uses JWT-backed RBAC for user-facing access.
 Browser sessions use HTTP-only cookies because the SvelteKit frontend and API share the same production origin. The browser sends these cookies automatically on same-origin requests, while JavaScript cannot read HTTP-only cookie values. This reduces accidental token exposure through frontend code or cross-site scripting bugs.
 
 Operational endpoints use a separate admin API key model
+
+## Flight SQL serving cache
+
+`POST /api/cache/refresh_flightsql` starts an isolated, resource limited refresh container and returns HTTP 202 with its job ID. `GET /api/cache/status_flightsql` reports the running job, last failure, active release, and dataset inventory. A 202 response means the job started; wait for status `succeeded` and verify the active release ID before using it. The refresh reads the eight Task 17 Gold aggregates through the official ADBC Flight SQL driver and streams Arrow batches into a temporary DuckDB file. It checks required columns, non-null store keys, and unique rows at each declared grain before atomically switching `current`. Failed builds preserve the previous release. The refresh runtime exits after completion.
 
 ## Run Locally
 

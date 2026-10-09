@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from hashlib import sha256
 
 import jwt
 import streamlit as st
 from jwt import PyJWTError
 
 from shared.settings import get_settings
+from shared.report_scope import ReportScope
 
 
 REGION_ROLE = "region_directory"
@@ -46,36 +48,27 @@ class ReportAccess:
 
 
 def current_report_access() -> ReportAccess:
-    """Resolve signed report scope from Nginx headers, with a local-dev cookie fallback."""
-    cached_claims = st.session_state.get("curie_embed_claims")
-    claims = cached_claims if isinstance(cached_claims, dict) else None
-
-    if claims is None:
-        settings = get_settings()
-        token = _scope_header()
-        expected_type = "streamlit_scope"
-        if token is None and settings.app_env == "dev":
-            token = _access_cookie(settings.auth_access_cookie_name)
-            expected_type = "access"
-
-        if token is None:
-            return _denied(
-                "Open this report from the Curie website so Streamlit receives an authenticated report scope."
-            )
-
-        try:
-            claims = jwt.decode(
-                token,
-                settings.jwt_secret_key.get_secret_value(),
-                algorithms=[settings.jwt_algorithm],
-            )
-        except PyJWTError:
-            return _denied("The Streamlit report scope is invalid or expired.")
-
-        if claims.get("type") != expected_type:
-            return _denied("The Streamlit report scope has an unexpected token type.")
-
-        st.session_state.curie_embed_claims = claims
+    """Verify the signed scope on every rerun, including expiry and role changes."""
+    settings = get_settings()
+    token = _scope_header()
+    expected_type = "streamlit_scope"
+    if token is None and settings.app_env == "dev":
+        token = _access_cookie(settings.auth_access_cookie_name)
+        expected_type = "access"
+    if token is None:
+        return _denied(
+            "Open this report from the Curie website so Streamlit receives an authenticated report scope."
+        )
+    try:
+        claims = jwt.decode(
+            token,
+            settings.jwt_secret_key.get_secret_value(),
+            algorithms=[settings.jwt_algorithm],
+        )
+    except PyJWTError:
+        return _denied("The Streamlit report scope is invalid or expired.")
+    if claims.get("type") != expected_type:
+        return _denied("The Streamlit report scope has an unexpected token type.")
 
     roles = tuple(str(role) for role in claims.get("roles", []) if role)
     allowed_store_names = tuple(
@@ -103,8 +96,36 @@ def restrict_store_options(
     return [
         (label, store_id)
         for label, store_id in store_options
-        if store_id is not None and _store_name_from_label(label).lower() in allowed_names
+        if store_id is not None
+        and _store_name_from_label(label).lower() in allowed_names
     ]
+
+
+def report_scope(access: ReportAccess) -> ReportScope:
+    """Resolve signed roles to cache store IDs without exposing unscoped rows."""
+    from data.cache_reader import all_store_rows
+
+    if not access.is_allowed or not access.email:
+        return ReportScope("", False, (), "denied")
+    allowed_names = {name.casefold() for name in access.allowed_store_names}
+    ids = tuple(
+        sorted(
+            {
+                int(row["store_id"])
+                for row in all_store_rows()
+                if row["store_name"] and row["store_name"].casefold() in allowed_names
+            }
+        )
+    )
+    if not access.can_view_all_stores and not ids:
+        return ReportScope(access.email, False, (), "denied")
+    identity = f"{access.email.casefold()}|{access.can_view_all_stores}|{ids}"
+    return ReportScope(
+        email=access.email,
+        can_view_all_stores=access.can_view_all_stores,
+        allowed_store_ids=ids,
+        scope_id=sha256(identity.encode("utf-8")).hexdigest(),
+    )
 
 
 def _scope_header() -> str | None:

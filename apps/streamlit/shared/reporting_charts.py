@@ -288,6 +288,7 @@ def clients_chart(
             .replace({"Active clients": 0, "New clients": 1})
             .alias("metric_order")
         )
+        .pipe(_integer_columns, ["client_count"])
         .to_dicts()
     )
     churn_line_data = (
@@ -447,6 +448,7 @@ def delivery_workload_chart(monthly_delivery: pl.DataFrame) -> alt.LayerChart:
     colors = curie_colors()
     chart_data = (
         monthly_delivery.pipe(_float_columns, ["avg_orders_per_courier"])
+        .pipe(_integer_columns, ["delivered_order_count", "active_courier_count"])
         .with_columns(pl.col("month").dt.strftime("%b %Y").alias("month_label"))
         .with_columns(pl.col("month").dt.strftime("%Y-%m-%d").alias("month_date"))
     )
@@ -524,10 +526,17 @@ def delivery_tariff_donut_chart(tariff_by_type: pl.DataFrame) -> alt.Chart:
             .properties(height=320)
         )
 
-    prepared_data = tariff_by_type.pipe(
-        _float_columns,
-        ["total_delivery_cost", "avg_delivery_cost_per_order"],
-    ).sort("total_delivery_cost", descending=True)
+    prepared_data = (
+        tariff_by_type.pipe(
+            _float_columns,
+            ["total_delivery_cost", "avg_delivery_cost_per_order"],
+        )
+        .pipe(
+            _integer_columns,
+            ["delivered_order_count", "active_courier_count"],
+        )
+        .sort("total_delivery_cost", descending=True)
+    )
     chart_data = prepared_data.to_dicts()
     courier_types = prepared_data.get_column("courier_type").to_list()
     segment_colors = [
@@ -537,47 +546,40 @@ def delivery_tariff_donut_chart(tariff_by_type: pl.DataFrame) -> alt.Chart:
         colors["blue_l4"],
         colors["blue_l1"],
     ][: len(courier_types)]
-    base = (
-        alt.Chart(alt.Data(values=chart_data))
-        .encode(
-            theta=alt.Theta("total_delivery_cost:Q", title="Delivery cost"),
-            color=alt.Color(
-                "courier_type:N",
-                title=None,
-                scale=alt.Scale(domain=courier_types, range=segment_colors),
-                legend=alt.Legend(orient="right"),
-            ),
-            order=alt.Order("total_delivery_cost:Q", sort="descending"),
-        )
+    base = alt.Chart(alt.Data(values=chart_data)).encode(
+        theta=alt.Theta("total_delivery_cost:Q", title="Delivery cost"),
+        color=alt.Color(
+            "courier_type:N",
+            title=None,
+            scale=alt.Scale(domain=courier_types, range=segment_colors),
+            legend=alt.Legend(orient="right"),
+        ),
+        order=alt.Order("total_delivery_cost:Q", sort="descending"),
     )
-    arc = (
-        base
-        .mark_arc(innerRadius=72, outerRadius=132)
-        .encode(
-            tooltip=[
-                alt.Tooltip("courier_type:N", title="Courier type"),
-                alt.Tooltip(
-                    "total_delivery_cost:Q",
-                    title="Delivery cost",
-                    format="$,.0f",
-                ),
-                alt.Tooltip(
-                    "avg_delivery_cost_per_order:Q",
-                    title="Avg tariff / order",
-                    format="$,.2f",
-                ),
-                alt.Tooltip(
-                    "delivered_order_count:Q",
-                    title="Delivered orders",
-                    format=",.0f",
-                ),
-                alt.Tooltip(
-                    "active_courier_count:Q",
-                    title="Active couriers",
-                    format=",.0f",
-                ),
-            ],
-        )
+    arc = base.mark_arc(innerRadius=72, outerRadius=132).encode(
+        tooltip=[
+            alt.Tooltip("courier_type:N", title="Courier type"),
+            alt.Tooltip(
+                "total_delivery_cost:Q",
+                title="Delivery cost",
+                format="$,.0f",
+            ),
+            alt.Tooltip(
+                "avg_delivery_cost_per_order:Q",
+                title="Avg tariff / order",
+                format="$,.2f",
+            ),
+            alt.Tooltip(
+                "delivered_order_count:Q",
+                title="Delivered orders",
+                format=",.0f",
+            ),
+            alt.Tooltip(
+                "active_courier_count:Q",
+                title="Active couriers",
+                format=",.0f",
+            ),
+        ],
     )
     labels = (
         alt.Chart(alt.Data(values=chart_data))
@@ -595,6 +597,14 @@ def _float_columns(df: pl.DataFrame, columns: list[str]) -> pl.DataFrame:
     """Cast chart measure columns to float so Altair receives JSON-safe values."""
     expressions = [
         pl.col(column).cast(pl.Float64) for column in columns if column in df.columns
+    ]
+    return df.with_columns(expressions) if expressions else df
+
+
+def _integer_columns(df: pl.DataFrame, columns: list[str]) -> pl.DataFrame:
+    """Cast chart counts to JSON-safe integers after DuckDB aggregation."""
+    expressions = [
+        pl.col(column).cast(pl.Int64) for column in columns if column in df.columns
     ]
     return df.with_columns(expressions) if expressions else df
 

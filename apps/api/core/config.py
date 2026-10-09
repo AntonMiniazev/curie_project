@@ -1,3 +1,5 @@
+"""Curie API runtime settings for auth and the Flight SQL serving cache."""
+
 from functools import lru_cache
 from pathlib import Path
 
@@ -17,16 +19,13 @@ class Settings(BaseSettings):
     app_env: str = Field(default="dev", alias="APP_ENV")
     database_url: str = Field(alias="CURIE_DATABASE_URL")
     database_connect_timeout_seconds: int = Field(
-        default=2,
-        alias="CURIE_DATABASE_CONNECT_TIMEOUT_SECONDS",
+        default=2, alias="CURIE_DATABASE_CONNECT_TIMEOUT_SECONDS"
     )
     database_statement_timeout_ms: int = Field(
-        default=15000,
-        alias="CURIE_DATABASE_STATEMENT_TIMEOUT_MS",
+        default=15000, alias="CURIE_DATABASE_STATEMENT_TIMEOUT_MS"
     )
     database_pool_timeout_seconds: int = Field(
-        default=2,
-        alias="CURIE_DATABASE_POOL_TIMEOUT_SECONDS",
+        default=2, alias="CURIE_DATABASE_POOL_TIMEOUT_SECONDS"
     )
     curie_password_pepper: SecretStr = Field(alias="CURIE_PASSWORD_PEPPER")
     jwt_secret_key: SecretStr = Field(alias="CURIE_JWT_SECRET_KEY")
@@ -34,90 +33,17 @@ class Settings(BaseSettings):
     access_token_minutes: int = Field(default=60, alias="CURIE_ACCESS_TOKEN_MINUTES")
     refresh_token_days: int = Field(default=14, alias="CURIE_REFRESH_TOKEN_DAYS")
     auth_access_cookie_name: str = Field(
-        default="curie_access_token",
-        alias="CURIE_AUTH_ACCESS_COOKIE_NAME",
+        default="curie_access_token", alias="CURIE_AUTH_ACCESS_COOKIE_NAME"
     )
     auth_refresh_cookie_name: str = Field(
-        default="curie_refresh_token",
-        alias="CURIE_AUTH_REFRESH_COOKIE_NAME",
+        default="curie_refresh_token", alias="CURIE_AUTH_REFRESH_COOKIE_NAME"
     )
     auth_cookie_secure: bool = Field(default=False, alias="CURIE_AUTH_COOKIE_SECURE")
     auth_cookie_samesite: str = Field(default="lax", alias="CURIE_AUTH_COOKIE_SAMESITE")
     admin_api_keys_csv: SecretStr | None = Field(
-        default=None,
-        alias="CURIE_ADMIN_API_KEYS",
+        default=None, alias="CURIE_ADMIN_API_KEYS"
     )
     cors_origins_csv: str = Field(default="", alias="CURIE_CORS_ORIGINS")
-
-    uc_base_url: str = Field(
-        default="https://ucatalog.local", alias="CURIE_UC_BASE_URL"
-    )
-    uc_timeout_seconds: int = Field(default=10, alias="CURIE_UC_TIMEOUT_SECONDS")
-    uc_retry_attempts: int = Field(default=5, alias="CURIE_UC_RETRY_ATTEMPTS")
-    uc_retry_backoff_seconds: int = Field(
-        default=5,
-        alias="CURIE_UC_RETRY_BACKOFF_SECONDS",
-    )
-
-    source_catalog: str = Field(default="ampere", alias="CURIE_SOURCE_CATALOG")
-    source_schema: str = Field(default="gold", alias="CURIE_SOURCE_SCHEMA")
-    source_tables_csv: str = Field(
-        default=(
-            "dim_clients,"
-            "dim_costing,"
-            "dim_delivery_cost,"
-            "dim_products,"
-            "dim_resource,"
-            "dim_stores,"
-            "fct_deliveries,"
-            "fct_order_margin,"
-            "fct_orders_sales,"
-            "budget_orders_sales,"
-            "fct_order_product"
-        ),
-        alias="CURIE_SOURCE_TABLES",
-    )
-    iceberg_source_tables_csv: str = Field(
-        default=(
-            "dim_clients,dim_costing,dim_delivery_cost,dim_products,dim_resource,"
-            "dim_stores,fct_deliveries,fct_order_margin,fct_orders_sales,"
-            "budget_orders_sales,fct_order_product"
-        ),
-        alias="CURIE_ICEBERG_SOURCE_TABLES",
-    )
-
-    iceberg_catalog_endpoint: str = Field(
-        default="https://lakekeeper.local/catalog",
-        alias="CURIE_ICEBERG_CATALOG_ENDPOINT",
-    )
-    iceberg_warehouse: str = Field(default="gold", alias="CURIE_ICEBERG_WAREHOUSE")
-    iceberg_namespace: str = Field(default="gold", alias="CURIE_ICEBERG_NAMESPACE")
-    iceberg_oauth_token_url: str = Field(
-        default="https://login.microsoftonline.com/2ffd8fbf-1421-46ed-9e6b-021c955dbe34/oauth2/v2.0/token",
-        alias="CURIE_ICEBERG_OAUTH_TOKEN_URL",
-    )
-    iceberg_oauth_scope: str = Field(
-        default="api://4120baf5-d479-464e-8c83-a96b5d475fdf/.default",
-        alias="CURIE_ICEBERG_OAUTH_SCOPE",
-    )
-    iceberg_client_id: SecretStr | None = Field(
-        default=None, alias="CURIE_LAKEKEEPER_CLIENT_ID"
-    )
-    iceberg_client_secret: SecretStr | None = Field(
-        default=None, alias="CURIE_LAKEKEEPER_CLIENT_SECRET"
-    )
-    iceberg_cache_root: Path = Field(
-        default=REPO_ROOT / "data" / "dev-iceberg-cache",
-        alias="CURIE_ICEBERG_CACHE_ROOT",
-    )
-    iceberg_cache_current: Path = Field(
-        default=REPO_ROOT / "data" / "dev-iceberg-cache" / "current",
-        alias="CURIE_ICEBERG_CACHE_CURRENT",
-    )
-    iceberg_refresh_container_prefix: str = Field(
-        default="curie-iceberg-cache-refresh",
-        alias="CURIE_ICEBERG_REFRESH_CONTAINER_PREFIX",
-    )
 
     flightsql_uri: str | None = Field(default=None, alias="CURIE_FLIGHTSQL_URI")
     flightsql_auth_token: SecretStr | None = Field(
@@ -126,28 +52,27 @@ class Settings(BaseSettings):
     flightsql_timeout_seconds: int = Field(
         default=30, ge=1, alias="CURIE_FLIGHTSQL_TIMEOUT_SECONDS"
     )
-
-    minio_endpoint: str = Field(
-        default="https://s3.minio.local", alias="CURIE_MINIO_ENDPOINT"
+    flightsql_fetch_timeout_seconds: int = Field(
+        default=300, ge=1, alias="CURIE_FLIGHTSQL_FETCH_TIMEOUT_SECONDS"
     )
-    minio_region: str = Field(default="us-east-1", alias="CURIE_MINIO_REGION")
-    minio_access_key: SecretStr | None = Field(
-        default=None, alias="CURIE_MINIO_ACCESS_KEY"
+    serving_cache_root: Path = Field(
+        default=REPO_ROOT / "data" / "dev-serving-cache",
+        alias="CURIE_SERVING_CACHE_ROOT",
     )
-    minio_secret_key: SecretStr | None = Field(
-        default=None, alias="CURIE_MINIO_SECRET_KEY"
+    serving_cache_current: Path = Field(
+        default=REPO_ROOT / "data" / "dev-serving-cache" / "current",
+        alias="CURIE_SERVING_CACHE_CURRENT",
     )
-    minio_allow_invalid_certificates: bool = Field(
-        default=True,
-        alias="CURIE_MINIO_ALLOW_INVALID_CERTIFICATES",
+    serving_cache_keep_previous: int = Field(
+        default=3, ge=0, alias="CURIE_SERVING_CACHE_KEEP_PREVIOUS"
     )
-
-    cache_root: Path = Field(
-        default=REPO_ROOT / "data" / "dev-cache", alias="CURIE_CACHE_ROOT"
+    serving_refresh_container_prefix: str = Field(
+        default="curie-flightsql-cache-refresh",
+        alias="CURIE_SERVING_REFRESH_CONTAINER_PREFIX",
     )
-    cache_current: Path = Field(
-        default=REPO_ROOT / "data" / "dev-cache" / "current",
-        alias="CURIE_CACHE_CURRENT",
+    serving_host_cache_dir: str = Field(
+        default="/var/lib/curie/serving-cache",
+        alias="CURIE_SERVING_HOST_CACHE_DIR",
     )
     cache_refresh_enabled: bool = Field(
         default=False, alias="CURIE_CACHE_REFRESH_ENABLED"
@@ -156,56 +81,9 @@ class Settings(BaseSettings):
         default="ghcr.io/antonminiazev/curie-api:latest",
         alias="CURIE_CACHE_REFRESH_IMAGE",
     )
-    cache_refresh_host_cache_dir: str = Field(
-        default=str(REPO_ROOT / "data" / "dev-cache"),
-        alias="CURIE_CACHE_REFRESH_HOST_CACHE_DIR",
-    )
-    cache_refresh_volumes_from: str | None = Field(
-        default=None, alias="CURIE_CACHE_REFRESH_VOLUMES_FROM"
-    )
-    cache_refresh_container_prefix: str = Field(
-        default="curie-cache-refresh",
-        alias="CURIE_CACHE_REFRESH_CONTAINER_PREFIX",
-    )
     cache_refresh_network: str | None = Field(
         default=None, alias="CURIE_CACHE_REFRESH_NETWORK"
     )
-    upstream_host_ip: str | None = Field(default=None, alias="CURIE_UPSTREAM_HOST_IP")
-    cache_refresh_extra_hosts_csv: str = Field(
-        default="", alias="CURIE_CACHE_REFRESH_EXTRA_HOSTS"
-    )
-
-    @property
-    def source_tables(self) -> list[str]:
-        return [
-            item.strip() for item in self.source_tables_csv.split(",") if item.strip()
-        ]
-
-    @property
-    def iceberg_source_tables(self) -> list[str]:
-        return [
-            item.strip()
-            for item in self.iceberg_source_tables_csv.split(",")
-            if item.strip()
-        ]
-
-    @property
-    def cache_refresh_extra_hosts(self) -> list[str]:
-        explicit_hosts = [
-            item.strip()
-            for item in self.cache_refresh_extra_hosts_csv.split(",")
-            if item.strip()
-        ]
-        if explicit_hosts:
-            return explicit_hosts
-        if self.upstream_host_ip:
-            return [
-                f"ucatalog.local:{self.upstream_host_ip}",
-                f"lakekeeper.local:{self.upstream_host_ip}",
-                f"s3.minio.local:{self.upstream_host_ip}",
-                f"minio.local:{self.upstream_host_ip}",
-            ]
-        return []
 
     @property
     def admin_api_keys(self) -> list[str]:
@@ -222,10 +100,6 @@ class Settings(BaseSettings):
         return [
             item.strip() for item in self.cors_origins_csv.split(",") if item.strip()
         ]
-
-    @property
-    def has_minio_credentials(self) -> bool:
-        return bool(self.minio_access_key and self.minio_secret_key)
 
 
 @lru_cache

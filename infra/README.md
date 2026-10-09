@@ -30,11 +30,30 @@ docker compose --env-file infra/env/curie-dev.env -f infra/compose.dev.yml --pro
 docker compose --env-file infra/env/curie-dev.env -f infra/compose.dev.yml --profile streamlit up -d streamlit
 ```
 
+The dev API applies Alembic migrations before starting Uvicorn, including when the PostgreSQL volume is new. A fresh local database has no user accounts; register one through the dev site before signing in. Production migrations remain part of the deployment workflow.
+
+For local Flight SQL testing, put the bearer token in the ignored `infra/env/curie-dev.env` as `CURIE_FLIGHTSQL_AUTH_TOKEN`. The API and refresh job share the `curie-dev-serving-cache` Docker volume, while Streamlit mounts it read only. Build/start the API with the normal command, check `GET http://localhost:8000/api/cache/status_flightsql`, then call the admin-protected `POST /api/cache/refresh_flightsql`. A 202 response means the job started; poll status for `state=succeeded` and an active release. Rebuild/start the Streamlit profile to test the release.
+
+The optional `flightsql-cache-refresh` profile runs the same isolated builder directly. The Docker named volume makes the API-triggered `docker run` mount portable across Windows and Linux Docker hosts.
+
 ## Production Deployment
 
 Production is deployed by GitHub Actions to `/opt/curie` on `curie-server`. The workflow copies Compose, Nginx, PostgreSQL init files, and the decrypted production env file, then runs migrations and restarts services.
 
-Task 16 Flight SQL acceptance uses the official ADBC driver in the API image. The deploy workflow reads `ampere-flight-sql-token` from `az-ampere-kv` into the protected server env file. Grant the GitHub deployment service principal (`curie-github-actions-sops`) `Key Vault Secrets User` on that secret before deploying. The API container has `CURIE_FLIGHTSQL_URI` set to `flightsql://ampere-flight-sql.tail8f7784.ts.net:8815?transport=tcp`. On `curie-server`, run `cd /opt/curie && docker compose --env-file env/curie-prod.env -f compose.yml exec api uv run python -m apps.api.cache.validate_flightsql` after the new image deploys. This prints bounded query results and never prints the token. Keep the Iceberg cache active until this acceptance gate succeeds.
+Flight SQL uses the official ADBC driver in the API image. The deploy workflow reads `ampere-flight-sql-token` from `az-ampere-kv` into the protected server env file. The GitHub deployment service principal (`curie-github-actions-sops`) needs `Key Vault Secrets User` on that secret. The API container has `CURIE_FLIGHTSQL_URI` set to `flightsql://ampere-flight-sql.tail8f7784.ts.net:8815?transport=tcp`.
+
+The Task 17 refresh reads eight Gold aggregates. The API starts a 2 GiB, 1.5 CPU isolated refresh container with a writable `/var/lib/curie/serving-cache` mount. Streamlit receives the same directory read only. The refresh builds `refresh/*.tmp.duckdb`, validates required columns and types, store keys, and row grains, promotes a release under `releases/`, atomically switches `current`, and exits. The deploy workflow builds and checks this release before recreating Streamlit. The old Airflow URLs temporarily trigger the same Flight SQL refresh.
+
+On `curie-server`, check refresh without printing the token:
+
+```bash
+cd /opt/curie
+docker compose --env-file env/curie-prod.env -f compose.yml exec -T api uv run python -c "from apps.api.routers.cache import get_flightsql_cache_status; print(get_flightsql_cache_status().model_dump_json())"
+```
+
+To start the job from an authorized Tailnet machine, use the admin protected POST endpoint. Watch the status until `running` is false and `state` is `succeeded`; verify `active_release_id` and all eight table counts.
+
+After deployment, verify login and all three reports through HTTPS. The old `/var/lib/curie/iceberg-cache` directory is no longer mounted; inspect it before reclaiming its disk space.
 
 The public production routes are:
 
@@ -69,7 +88,7 @@ Ubuntu server:   100.86.133.66
 Hetzner server:  100.65.42.72
 ```
 
-Airflow should call cache refresh through Nginx over the Curie server Tailscale address, for example `http://<curie-tailscale-ip>/api/cache/refresh`. This compatibility endpoint refreshes the Iceberg cache. The explicit `/api/cache/refresh_iceberg` endpoint does the same.
+Airflow calls cache refresh through Nginx over the Curie server Tailscale address. `/api/cache/refresh`, `/api/cache/refresh_iceberg`, and `/api/cache/refresh_flightsql` all start the Flight SQL refresh; the old URLs are compatibility aliases until the DAG changes.
 
 PostgreSQL remains bound to loopback in Docker, but Nginx exposes a TCP stream proxy on the Curie server Tailnet address for explicitly allowed Tailnet machines:
 
@@ -281,7 +300,7 @@ If no backup exists, recreate application users and trigger a cache refresh.
 Cache path:
 
 ```text
-/var/lib/curie/iceberg-cache/current
+/var/lib/curie/serving-cache/current
 ```
 
 PostgreSQL data is stored in the Docker volume:
