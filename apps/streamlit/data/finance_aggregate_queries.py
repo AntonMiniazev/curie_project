@@ -4,8 +4,8 @@ from data.cache_reader import table_path
 from data.query_utils import MonthSelection, filter_sql, query
 from shared.report_scope import ReportScope
 
-PERFORMANCE = "curie_financial_performance_monthly_store"
-PRODUCT = "curie_financial_product_margin_monthly_store"
+PERFORMANCE = "financial_performance_monthly_store"
+PRODUCT = "financial_product_margin_monthly_store"
 
 
 def monthly_performance(store_id: int | None, scope: ReportScope):

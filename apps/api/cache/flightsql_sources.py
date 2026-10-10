@@ -49,42 +49,42 @@ def _aggregate(name: str, columns: str, grain: str) -> SourceDataset:
 # The client-month bridge is the only relation with an identity grain.
 SOURCES: tuple[SourceDataset, ...] = (
     _aggregate(
-        "curie_marketing_sales_budget_monthly_store",
+        "marketing_sales_budget_monthly_store",
         "month store_id store_name city sales_amount order_count budget_sales_amount budget_order_count",
         "month store_id",
     ),
     _aggregate(
-        "curie_marketing_product_sales_monthly_store",
+        "marketing_product_sales_monthly_store",
         "month store_id store_name city product_id product_name category_name sales_amount order_count",
         "month store_id product_id",
     ),
     _aggregate(
-        "curie_marketing_category_sales_monthly_store",
+        "marketing_category_sales_monthly_store",
         "month store_id store_name city category_name sales_amount order_count",
         "month store_id category_name",
     ),
     _aggregate(
-        "curie_marketing_client_metrics_monthly_store",
+        "marketing_client_metrics_monthly_store",
         "month store_id store_name city active_client_count new_client_count client_base_start churned_clients",
         "month store_id",
     ),
     _aggregate(
-        "curie_marketing_active_client_month",
+        "marketing_active_client_month",
         "month store_id client_id",
         "month store_id client_id",
     ),
     _aggregate(
-        "curie_financial_performance_monthly_store",
+        "financial_performance_monthly_store",
         "month store_id store_name city revenue_amount product_cost_amount delivery_cost_amount gross_profit_amount budget_revenue_amount",
         "month store_id",
     ),
     _aggregate(
-        "curie_financial_product_margin_monthly_store",
+        "financial_product_margin_monthly_store",
         "month store_id store_name city product_id product_name category_name revenue_amount product_cost_amount",
         "month store_id product_id",
     ),
     _aggregate(
-        "curie_delivery_courier_performance_monthly_store",
+        "delivery_courier_performance_monthly_store",
         "month store_id store_name city courier_id fullname courier_type delivered_order_count delivery_cost_amount",
         "month store_id courier_id",
     ),

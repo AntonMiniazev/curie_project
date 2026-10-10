@@ -4,7 +4,7 @@ from data.cache_reader import table_path
 from data.query_utils import MonthSelection, filter_sql, query
 from shared.report_scope import ReportScope
 
-COURIER = "curie_delivery_courier_performance_monthly_store"
+COURIER = "delivery_courier_performance_monthly_store"
 CourierTypeSelection = tuple[str, ...] | None
 
 

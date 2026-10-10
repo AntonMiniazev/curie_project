@@ -19,19 +19,19 @@ def test_report_query_filters_before_aggregation(tmp_path: Path, monkeypatch) ->
     with duckdb.connect(str(database)) as con:
         con.execute("CREATE SCHEMA cache")
         con.execute(
-            "CREATE TABLE cache.curie_marketing_sales_budget_monthly_store "
+            "CREATE TABLE cache.marketing_sales_budget_monthly_store "
             "(store_id INTEGER, sales_amount INTEGER)"
         )
         con.execute(
-            "INSERT INTO cache.curie_marketing_sales_budget_monthly_store "
+            "INSERT INTO cache.marketing_sales_budget_monthly_store "
             "VALUES (1, 10), (2, 90)"
         )
         con.execute(
-            "CREATE TABLE cache.curie_marketing_active_client_month "
+            "CREATE TABLE cache.marketing_active_client_month "
             "(store_id INTEGER, client_id INTEGER)"
         )
         con.execute(
-            "INSERT INTO cache.curie_marketing_active_client_month VALUES (1, 11), (2, 22)"
+            "INSERT INTO cache.marketing_active_client_month VALUES (1, 11), (2, 22)"
         )
     monkeypatch.setattr(
         query_utils, "connect", lambda: duckdb.connect(str(database), read_only=True)
@@ -39,13 +39,13 @@ def test_report_query_filters_before_aggregation(tmp_path: Path, monkeypatch) ->
     scoped = ReportScope("one@example.com", False, (1,), "store-one")
     all_stores = ReportScope("region@example.com", True, (), "region")
     sql = "SELECT sum(sales_amount) AS total FROM CURIE_TABLE(?)"
-    ref = ["curie-table://curie_marketing_sales_budget_monthly_store"]
+    ref = ["curie-table://marketing_sales_budget_monthly_store"]
     assert query_utils.query(sql, ref, scoped).item() == 10
     assert query_utils.query(sql, ref, all_stores).item() == 100
     assert (
         query_utils.query(
             "SELECT count(*) FROM CURIE_TABLE(?)",
-            ["curie-table://curie_marketing_active_client_month"],
+            ["curie-table://marketing_active_client_month"],
             scoped,
         ).item()
         == 1
@@ -56,7 +56,7 @@ def test_report_query_rejects_missing_scope_and_untrusted_table(tmp_path: Path) 
     with pytest.raises(PermissionError):
         query_utils.query(
             "SELECT * FROM CURIE_TABLE(?)",
-            ["curie-table://curie_marketing_sales_budget_monthly_store"], None
+            ["curie-table://marketing_sales_budget_monthly_store"], None
         )
     with pytest.raises(ValueError, match="Unexpected Curie cache table"):
         query_utils._compile("SELECT * FROM CURIE_TABLE(?)", ["curie-table://secrets"])

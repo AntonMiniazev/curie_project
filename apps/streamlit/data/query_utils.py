@@ -15,14 +15,14 @@ from shared.report_scope import ReportScope
 MonthSelection = str | date | Sequence[str | date] | None
 _PARAMETER = re.compile(r"CURIE_TABLE\(\?\)|\?")
 _VIEW_ORDER = (
-    "curie_marketing_sales_budget_monthly_store",
-    "curie_marketing_product_sales_monthly_store",
-    "curie_marketing_category_sales_monthly_store",
-    "curie_marketing_client_metrics_monthly_store",
-    "curie_marketing_active_client_month",
-    "curie_financial_performance_monthly_store",
-    "curie_financial_product_margin_monthly_store",
-    "curie_delivery_courier_performance_monthly_store",
+    "marketing_sales_budget_monthly_store",
+    "marketing_product_sales_monthly_store",
+    "marketing_category_sales_monthly_store",
+    "marketing_client_metrics_monthly_store",
+    "marketing_active_client_month",
+    "financial_performance_monthly_store",
+    "financial_product_margin_monthly_store",
+    "delivery_courier_performance_monthly_store",
 )
 
 
@@ -122,9 +122,9 @@ def filter_sql(
 def store_dimension(scope: ReportScope, domain: str) -> pl.DataFrame:
     """Return the stores present in one domain within the signed scope."""
     tables = {
-        "Marketing": "curie_marketing_sales_budget_monthly_store",
-        "Financial": "curie_financial_performance_monthly_store",
-        "Delivery": "curie_delivery_courier_performance_monthly_store",
+        "Marketing": "marketing_sales_budget_monthly_store",
+        "Financial": "financial_performance_monthly_store",
+        "Delivery": "delivery_courier_performance_monthly_store",
     }
     return query(
         """SELECT store_id, any_value(store_name) AS store_name,

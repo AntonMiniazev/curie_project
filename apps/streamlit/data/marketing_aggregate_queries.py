@@ -4,11 +4,11 @@ from data.cache_reader import table_path
 from data.query_utils import MonthSelection, filter_sql, query
 from shared.report_scope import ReportScope
 
-SALES = "curie_marketing_sales_budget_monthly_store"
-PRODUCT = "curie_marketing_product_sales_monthly_store"
-CATEGORY = "curie_marketing_category_sales_monthly_store"
-CLIENTS = "curie_marketing_client_metrics_monthly_store"
-ACTIVITY = "curie_marketing_active_client_month"
+SALES = "marketing_sales_budget_monthly_store"
+PRODUCT = "marketing_product_sales_monthly_store"
+CATEGORY = "marketing_category_sales_monthly_store"
+CLIENTS = "marketing_client_metrics_monthly_store"
+ACTIVITY = "marketing_active_client_month"
 
 
 def _monthly(table: str, fields: str, store_id: int | None, scope: ReportScope):
