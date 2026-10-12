@@ -227,13 +227,13 @@ def _period_variance_pct(sales_vs_budget: pl.DataFrame) -> float | None:
     return actual_sales / budget_sales - 1
 
 
-def _period_churn_pct(client_churn: pl.DataFrame) -> float | None:
-    """Return weighted churn percent across selected months."""
+def _period_churn_rate(client_churn: pl.DataFrame) -> float | None:
+    """Return the client-base-weighted average monthly churn as a ratio."""
     churned_clients = _sum_column(client_churn, "churned_clients")
     client_base = _sum_column(client_churn, "client_base_start")
     if churned_clients is None or not client_base:
         return None
-    return churned_clients / client_base * 100
+    return churned_clients / client_base
 
 
 # Table column contracts stay near the dashboard because they are report-specific
@@ -467,7 +467,7 @@ period_active_clients = (
 )
 period_budget_variance = _sum_column(sales_vs_budget, "sales_variance_amount")
 period_variance_pct = _period_variance_pct(sales_vs_budget)
-period_churn_pct = _period_churn_pct(client_churn)
+period_churn_rate = _period_churn_rate(client_churn)
 
 kpi_grid(
     [
@@ -480,7 +480,7 @@ kpi_grid(
             format_value(period_budget_variance, "money_k", decimals=0),
         ),
         ("Variance %", format_value(period_variance_pct, "percent")),
-        ("Churn %", format_value(period_churn_pct, "percent")),
+        ("Avg monthly churn", format_value(period_churn_rate, "percent")),
     ]
 )
 
