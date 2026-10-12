@@ -480,7 +480,7 @@ kpi_grid(
             format_value(period_budget_variance, "money_k", decimals=0),
         ),
         ("Variance %", format_value(period_variance_pct, "percent")),
-        ("Avg monthly churn", format_value(period_churn_rate, "percent")),
+        ("Churn %", format_value(period_churn_rate, "percent")),
     ]
 )
 
